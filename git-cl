@@ -315,7 +315,8 @@ def clutil_get_tracked_files(files: list[str]) -> list[str]:
     # Filter out untracked files
     tracked_files = []
     for abs_path, orig_path in valid_paths.items():
-        if abs_path not in untracked_files and not is_under_untracked_dirs(abs_path):
+        if (abs_path not in untracked_files and
+                not is_under_untracked_dirs(abs_path)):
             tracked_files.append(orig_path)
 
     return tracked_files
@@ -347,7 +348,8 @@ def clutil_get_file_status_map() -> dict[str, str]:
     return status_map
 
 
-def clutil_format_file_status(file: str, status_map: dict[str, str], git_root: Path) -> str:
+def clutil_format_file_status(
+        file: str, status_map: dict[str, str], git_root: Path) -> str:
     """Format a file with its status for display."""
     abs_file = (Path.cwd() / file).resolve()
     try:

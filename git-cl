@@ -391,8 +391,8 @@ def clutil_read_commit_message_file(file_path: str) -> str:
         with open(path, 'r', encoding='utf-8') as f:
             content = f.read()
 
-    except (OSError, UnicodeDecodeError) as e:
-        raise OSError(f"Cannot read file: {e}") from e
+    except (OSError, UnicodeDecodeError) as error:
+        raise OSError(f"Cannot read file: {error}") from error
 
     # Validate content
     if not content or not content.strip():

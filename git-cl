@@ -166,8 +166,8 @@ def clutil_validate_name(name: str) -> bool:
     if not name:
         return False
 
-    # Check for reasonable length (1-100 characters)
-    if len(name) > 100 or len(name) == 0:
+    # Check for reasonable length (max 100 characters)
+    if len(name) > 100:
         return False
 
     # Only allow safe characters: letters, numbers, hyphens, underscores, dots

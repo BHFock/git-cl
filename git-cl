@@ -395,11 +395,11 @@ def cl_add(args: argparse.Namespace) -> None:
 
 def cl_stage(args: argparse.Namespace) -> None:
     """
-    Stages all tracked files in the given changelist and
+    Stages all tracked files in the given changelist and optionally
     deletes the changelist.
 
     Args:
-        args: argparse.Namespace with 'name' attribute (changelist name).
+        args: argparse.Namespace with 'name' and 'keep' attributes.
     """
     changelists = clutil_load()
     name = args.name
@@ -422,9 +422,13 @@ def cl_stage(args: argparse.Namespace) -> None:
         print(f"Error staging files: {error}")
         return
 
-    del changelists[name]
-    clutil_save(changelists)
-    print(f"Deleted changelist '{name}'")
+    # Only delete if --keep flag is not set
+    if not args.keep:
+        del changelists[name]
+        clutil_save(changelists)
+        print(f"Deleted changelist '{name}'")
+    else:
+        print(f"Kept changelist '{name}' (use --keep flag to preserve)")
 
 
 def cl_list(_args: argparse.Namespace) -> None:
@@ -515,10 +519,10 @@ def cl_delete(args: argparse.Namespace) -> None:
 
 def cl_commit(args: argparse.Namespace) -> None:
     """
-    Commits all tracked files in the specified changelist, then deletes it.
+    Commits all tracked files in the specified changelist, then optionally deletes it.
 
     Args:
-        args: argparse.Namespace with 'name' and 'message' attributes.
+        args: argparse.Namespace with 'name', 'message', and 'keep' attributes.
     """
     changelists = clutil_load()
     name = args.name
@@ -532,7 +536,6 @@ def cl_commit(args: argparse.Namespace) -> None:
         print(f"No tracked files to commit in changelist '{name}'.")
         return
 
-    # Instead of calling 'git add' then 'git commit'
     try:
         subprocess.run(["git", "commit", "-m", args.message, "--"]
                        + to_commit, check=True)
@@ -540,9 +543,13 @@ def cl_commit(args: argparse.Namespace) -> None:
         print(f"Error committing changelist '{name}': {error}")
         return
 
-    del changelists[name]
-    clutil_save(changelists)
-    print(f"Deleted changelist '{name}'")
+    # Only delete if --keep flag is not set
+    if not args.keep:
+        del changelists[name]
+        clutil_save(changelists)
+        print(f"Deleted changelist '{name}'")
+    else:
+        print(f"Kept changelist '{name}' (use --keep flag to preserve)")
 
 
 def main() -> None:
@@ -635,25 +642,34 @@ def main() -> None:
     # stage
     stage_parser = subparsers.add_parser(
         'stage',
-        help='Stage all tracked files in a changelist and delete it',
-        description=("Stages all **tracked** files from the changelist and "
-                     "deletes the changelist afterward.")
+        help='Stage all tracked files in a changelist',
+        description=(
+            "Stages all **tracked** files from the changelist. "
+            "By default, deletes the changelist afterward unless --keep is specified."
+        )
     )
     stage_parser.add_argument('name', metavar='CHANGELIST',
                               help='Name of the changelist')
+    stage_parser.add_argument('--keep', action='store_true',
+                              help='Keep the changelist after staging (do not delete)')
     stage_parser.set_defaults(func=cl_stage)
 
     # commit
     commit_parser = subparsers.add_parser(
         'commit',
         help='Commit all tracked files in a changelist',
-        description=("Stages and commits all **tracked** files from the "
-                     "changelist using the provided message.")
+        description=(
+            "Stages and commits all **tracked** files from the "
+            "changelist using the provided message. "
+            "By default, deletes the changelist afterward unless --keep is specified."
+        )
     )
     commit_parser.add_argument('name', metavar='CHANGELIST',
                                help='Name of the changelist')
     commit_parser.add_argument('-m', '--message', required=True,
                                help='Commit message')
+    commit_parser.add_argument('--keep', action='store_true',
+                               help='Keep the changelist after committing (do not delete)')
     commit_parser.set_defaults(func=cl_commit)
 
     args = parser.parse_args()

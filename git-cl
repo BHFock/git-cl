@@ -654,9 +654,10 @@ def main() -> None:
                               help='Keep the changelist after staging (do not delete)')
     stage_parser.set_defaults(func=cl_stage)
 
-    # commit
+    # commit / ci
     commit_parser = subparsers.add_parser(
         'commit',
+        aliases=['ci'],
         help='Commit all tracked files in a changelist',
         description=(
             "Stages and commits all **tracked** files from the "

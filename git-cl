@@ -2917,6 +2917,11 @@ def cl_help(args: argparse.Namespace) -> None:
     args.parser.print_help()
 
 
+# =============================================================================
+# MAIN ENTRY POINT
+# =============================================================================
+
+
 def main() -> None:
     """
     Entry point for the git-cl command-line interface.

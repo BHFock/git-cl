@@ -326,27 +326,42 @@ def clutil_get_tracked_files(files: list[str]) -> list[str]:
 
 
 def clutil_get_file_status_map() -> dict[str, str]:
-    """Get a mapping of files to their git status codes."""
+    """Get a mapping of files to their Git 2-letter status codes."""
     git_root = clutil_get_git_root()
     output = clutil_get_git_status(include_untracked=True)
 
+    # Allowlist of known meaningful status codes
+    INTERESTING_CODES = {
+        '??',  # untracked
+        ' M',  # modified (unstaged)
+        'M ',  # modified (staged)
+        'MM',  # modified both staged + unstaged
+        'A ',  # added (staged)
+        'AM',  # added + modified
+        ' D',  # deleted (unstaged)
+        'D ',  # deleted (staged)
+        'R ',  # renamed
+        'RM',  # renamed + modified
+    }
+
     status_map = {}
+
     for line in output:
+        if len(line) < 4:
+            continue  # malformed line, ignore
         code = line[:2]
         raw_path = line[3:].strip()
+
+        # Handle renamed files
+        if code.startswith('R') and '->' in raw_path:
+            raw_path = raw_path.split('->')[-1].strip()
+
         abs_path = (git_root / raw_path).resolve()
         rel_path = abs_path.relative_to(git_root).as_posix()
 
-        if code == "??":
-            status_map[rel_path] = "??"
-        elif code in (" D", "D "):
-            status_map[rel_path] = "D"
-        elif code.strip().startswith("A"):
-            status_map[rel_path] = "A"
-        elif "M" in code or "T" in code or "R" in code or "C" in code:
-            status_map[rel_path] = "M"
-        else:
-            status_map[rel_path] = " "
+        if code in INTERESTING_CODES:
+            status_map[rel_path] = code
+        # else: ignore uninteresting or unknown status
 
     return status_map
 

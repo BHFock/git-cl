@@ -36,6 +36,9 @@
 """
 git-cl: Manage changelists within a Git working directory.
 
+Repository: https://github.com/BHFock/git-cl
+Note: This project may or may not be actively maintained in the future.
+
 This CLI tool allows you to group files into named changelists before staging
 or committing. Changelists are saved in a 'cl.json' file inside the Git
 directory. You can then operate on changelists as logical groups: staging,

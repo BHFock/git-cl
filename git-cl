@@ -530,15 +530,10 @@ def cl_commit(args: argparse.Namespace) -> None:
         print(f"No tracked files to commit in changelist '{name}'.")
         return
 
+    # Instead of calling 'git add' then 'git commit'
     try:
-        subprocess.run(["git", "add", "--"] + to_commit, check=True)
-    except subprocess.CalledProcessError as error:
-        print(f"Error staging files for commit: {error}")
-        return
-
-    try:
-        subprocess.run(["git", "commit", "-m", args.message], check=True)
-        print(f"Committed changelist '{name}' with message: {args.message}")
+        subprocess.run(["git", "commit", "-m", args.message, "--"]
+                       + to_commit, check=True)
     except subprocess.CalledProcessError as error:
         print(f"Error committing changelist '{name}': {error}")
         return

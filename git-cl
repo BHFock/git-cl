@@ -123,7 +123,8 @@ def clutil_save(data: dict[str, list[str]]) -> None:
 
 def clutil_validate_files(files: list[str]) -> list[str]:
     """
-    Validates that files exist on disk and are safe to use.
+    Validates that file paths are safe, exist on disk, and are within the
+    repository. Note: This does not check if the file is tracked by Git.
 
     Args:
         files (list): List of file paths to validate.
@@ -147,8 +148,7 @@ def clutil_validate_files(files: list[str]) -> list[str]:
         if full_path.exists():
             valid.append(sanitized)  # Use sanitized path instead of original
         else:
-            print(f"Warning: '{sanitized}' does not exist or "
-                  "is not tracked by Git.")
+            print(f"Warning: '{sanitized}' does not exist.")
     return valid
 
 

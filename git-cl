@@ -2951,7 +2951,7 @@ def main() -> None:
 
     subparsers = parser.add_subparsers(dest='command', title='Commands')
 
-    # add
+    # ADD
     add_parser = subparsers.add_parser('add', aliases=['a'],
                                        help='Add files to a named changelist',
                                        description=(
@@ -2966,7 +2966,7 @@ def main() -> None:
                                   "in the changelist"))
     add_parser.set_defaults(func=cl_add)
 
-    # remove
+    # REMOVE
     remove_parser = subparsers.add_parser('remove', aliases=['r', 'rm'],
                                           help=("Remove files from any "
                                                 "changelist"),
@@ -2978,7 +2978,7 @@ def main() -> None:
                                      "from changelists"))
     remove_parser.set_defaults(func=cl_remove)
 
-    # delete
+    # DELETE
     delete_parser = subparsers.add_parser('delete', aliases=['del'],
                                           help=("Delete one or more "
                                                 "changelists"),
@@ -2993,7 +2993,7 @@ def main() -> None:
                                help='Delete all changelists')
     delete_parser.set_defaults(func=cl_delete)
 
-    # status / st
+    # STATUS
     status_parser = subparsers.add_parser('status', aliases=['s', 'st'],
                                           help=("Show file changes grouped by "
                                                 "changelist"),
@@ -3015,7 +3015,7 @@ def main() -> None:
                                help='Disable colored output')
     status_parser.set_defaults(func=cl_status)
 
-    # diff
+    # DIFF
     diff_parser = subparsers.add_parser('diff',
                                         help=("Show git diff for one or more "
                                               "changelists"),
@@ -3034,7 +3034,7 @@ def main() -> None:
                              help='Show both unstaged and staged diffs')
     diff_parser.set_defaults(func=cl_diff)
 
-    # checkout
+    # CHECKOUT
     checkout_parser = subparsers.add_parser('checkout', aliases=['co'],
                                             help=("Checkout (revert) files "
                                                   "from changelists"),
@@ -3057,7 +3057,7 @@ def main() -> None:
                                  help='Skip confirmation prompt')
     checkout_parser.set_defaults(func=cl_checkout)
 
-    # stage
+    # STAGE
     stage_parser = subparsers.add_parser('stage',
                                          help=("Stage tracked files from a "
                                                "changelist"),
@@ -3076,7 +3076,7 @@ def main() -> None:
                               help='Delete the changelist after staging')
     stage_parser.set_defaults(func=cl_stage)
 
-    # unstage
+    # UNSTAGE
     unstage_parser = subparsers.add_parser('unstage',
                                            help=("Unstage tracked files from "
                                                  "a changelist"),
@@ -3094,7 +3094,7 @@ def main() -> None:
                                 help='Delete the changelist after unstaging')
     unstage_parser.set_defaults(func=cl_unstage)
 
-    # commit / ci
+    # COMMIT
     commit_parser = subparsers.add_parser('commit', aliases=['ci'],
                                           help=("Commit tracked files from a "
                                                 "changelist (auto-stages, "
@@ -3120,7 +3120,7 @@ def main() -> None:
                                help='Keep the changelist after committing')
     commit_parser.set_defaults(func=cl_commit)
 
-    # stash
+    # STASH
     stash_parser = subparsers.add_parser('stash', aliases=['sh'],
                                          help='Stash changes in changelist(s)',
                                          description=(
@@ -3139,7 +3139,7 @@ def main() -> None:
                              help='Stash all active changelists')
     stash_parser.set_defaults(func=cl_stash)
 
-    # unstash
+    # UNSTASH
     unstash_parser = subparsers.add_parser('unstash', aliases=['us'],
                                            help=("Restore stashed "
                                                  "changelist(s)"),
@@ -3163,7 +3163,7 @@ def main() -> None:
                                       "conflicts detected"))
     unstash_parser.set_defaults(func=cl_unstash)
 
-    # branch
+    # BRANCH
     branch_parser = subparsers.add_parser('branch', aliases=['br'],
                                           help=("Create branch from "
                                                 "changelist workflow"),
@@ -3190,7 +3190,7 @@ def main() -> None:
                                      "branch (default: current branch)"))
     branch_parser.set_defaults(func=cl_branch)
 
-    # help command
+    # HELP
     help_parser = subparsers.add_parser('help',
                                         help='Show this help message',
                                         description=(

@@ -1813,12 +1813,12 @@ def clutil_process_unstash_result(
         files: List of files that were restored
         current_branch: Current Git branch
     """
-    success_msg = f"✓ Successfully unstashed changelist '{base_name}'"
+    success_msg = f"  Successfully unstashed changelist '{base_name}'"
     if current_branch:
         success_msg += f" to branch '{current_branch}'"
     print(success_msg)
-    print(f"✓ Restored {len(files)} files to working directory")
-    print("✓ Ready to work on your feature!")
+    print(f"  Restored {len(files)} files to working directory")
+    print("  Ready to work on your feature!")
 
     # Show the files that were restored
     if len(files) <= 10:
@@ -1910,11 +1910,11 @@ def clutil_print_stash_success(
         file_categories: Categorized files
         current_branch: Current Git branch
     """
-    success_msg = f"✓ Successfully stashed changelist '{name}'"
+    success_msg = f"  Successfully stashed changelist '{name}'"
     if current_branch:
         success_msg += f" from branch '{current_branch}'"
     print(success_msg)
-    print(f"✓ Stashed {len(stashable_files)} file(s):")
+    print(f"  Stashed {len(stashable_files)} file(s):")
 
     # Show breakdown of what was stashed
     categories_to_show = {
@@ -1927,14 +1927,9 @@ def clutil_print_stash_success(
     for category_key, category_display in categories_to_show.items():
         files_list = file_categories.get(category_key, [])
         if files_list:
-            print(f"  - {len(files_list)} with {category_display}")
+            print(f"    {len(files_list)} with {category_display}")
 
-    print("✓ Working directory is now clean for this changelist")
-    print(
-        f"Next: Create a feature branch and unstash: "
-        f"git checkout -b feature && "
-        f"git cl unstash {name}"
-    )
+    print("  Working directory is now clean for this changelist")
 
 
 def clutil_show_active_changelists(

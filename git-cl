@@ -651,14 +651,15 @@ def main() -> None:
             "  git cl commit my-feature -F commit-msg.txt\n"
             "  git cl delete my-feature"
         ),
-        formatter_class=argparse.RawTextHelpFormatter
+        formatter_class=argparse.RawTextHelpFormatter,
+        add_help=False
     )
 
     parser.add_argument(
         '--version',
         action='version',
         version=f'git-cl {__version__}',
-        help='Show version and exit'
+        help=argparse.SUPPRESS
     )
 
     subparsers = parser.add_subparsers(dest='command', title='Commands')

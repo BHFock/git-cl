@@ -396,7 +396,8 @@ def clutil_read_commit_message_file(file_path: str) -> str:
 
     # Validate content
     if not content or not content.strip():
-        raise ValueError("Commit message file is empty or contains only whitespace")
+        raise ValueError(
+            "Commit message file is empty or contains only whitespace")
 
     # Process the content similar to how Git does it:
     # - Strip trailing whitespace from each line
@@ -408,7 +409,8 @@ def clutil_read_commit_message_file(file_path: str) -> str:
         lines.pop()
 
     if not lines:
-        raise ValueError("Commit message file contains no content after processing")
+        raise ValueError(
+            "Commit message file contains no content after processing")
 
     # Join lines back together
     processed_content = '\n'.join(lines)
@@ -573,10 +575,12 @@ def cl_delete(args: argparse.Namespace) -> None:
 
 def cl_commit(args: argparse.Namespace) -> None:
     """
-    Commits all tracked files in the specified changelist, then optionally deletes it.
+    Commits all tracked files in the specified changelist, then optionally
+    deletes it.
 
     Args:
-        args: argparse.Namespace with 'name', 'message'/'file', and 'keep' attributes.
+        args: argparse.Namespace with 'name', 'message'/'file',
+              and 'keep' attributes.
     """
     changelists = clutil_load()
     name = args.name
@@ -714,13 +718,15 @@ def main() -> None:
         help='Stage all tracked files in a changelist',
         description=(
             "Stages all **tracked** files from the changelist. "
-            "By default, deletes the changelist afterward unless --keep is specified."
+            "By default, deletes the changelist afterward unless "
+            "--keep is specified."
         )
     )
     stage_parser.add_argument('name', metavar='CHANGELIST',
                               help='Name of the changelist')
-    stage_parser.add_argument('--keep', action='store_true',
-                              help='Keep the changelist after staging (do not delete)')
+    stage_parser.add_argument(
+        '--keep', action='store_true',
+        help='Keep the changelist after staging (do not delete)')
     stage_parser.set_defaults(func=cl_stage)
 
     # commit / ci
@@ -731,7 +737,8 @@ def main() -> None:
         description=(
             "Stages and commits all **tracked** files from the "
             "changelist using the provided message. "
-            "By default, deletes the changelist afterward unless --keep is specified."
+            "By default, deletes the changelist afterward "
+            "unless --keep is specified."
         )
     )
     commit_parser.add_argument('name', metavar='CHANGELIST',
@@ -740,12 +747,13 @@ def main() -> None:
     # Create mutually exclusive group for message options
     msg_group = commit_parser.add_mutually_exclusive_group(required=True)
     msg_group.add_argument('-m', '--message',
-                          help='Commit message')
+                           help='Commit message')
     msg_group.add_argument('-F', '--file',
-                          help='Read commit message from file')
+                           help='Read commit message from file')
 
-    commit_parser.add_argument('--keep', action='store_true',
-                               help='Keep the changelist after committing (do not delete)')
+    commit_parser.add_argument(
+        '--keep', action='store_true',
+        help='Keep the changelist after committing (do not delete)')
     commit_parser.set_defaults(func=cl_commit)
 
     args = parser.parse_args()

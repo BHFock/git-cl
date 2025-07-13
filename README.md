@@ -12,9 +12,18 @@
 
 ## Installation
 
-Make sure `git-cl` is executable and available in your `$PATH`. A common setup uses your home directory:
+To use `git cl` as a [Git subcommand](https://git.github.io/htmldocs/howto/new-command.html), place the executable script named `git-cl` in a directory that's part of your system’s `$PATH`, such as `~/bin`. For example:
 
 ```bash
 chmod +x git-cl
 mkdir -p ~/bin
 mv git-cl ~/bin/
+```
+
+Make sure `~/bin` is listed in your `$PATH`. You’ll then be able to run:
+
+```bash
+git cl list
+```
+
+Git will recognise `git-cl` as the handler for `git cl`, just like its built-in commands.

@@ -43,6 +43,9 @@ git cl list       # or: git cl ls
 # View modified files grouped by changelist
 git cl status     # or: git cl st
 
+# Stage all files in a changelist and delete it
+git cl add docs-fix
+
 # Commit all changes in a changelist
 git cl commit docs-fix -m "Update documentation layout and intro"
 

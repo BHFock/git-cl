@@ -1,0 +1,75 @@
+#!/usr/bin/env python3
+import argparse
+import sys
+
+def cl_add(args):
+    if args.files:
+        print(f"Adding files to changelist '{args.name}': {args.files}")
+        # Implement: add files to named changelist
+    else:
+        print(f"Staging files from changelist '{args.name}' and deleting it")
+        # Implement: stage and delete changelist
+
+def cl_list(args):
+    print("Listing all changelists")
+    # Implement: load and display changelists
+
+def cl_status(args):
+    print("Showing modified files grouped by changelist")
+    # Implement: cross-check changes against changelists
+
+def cl_remove(args):
+    for file in args.files:
+        print(f"Removing '{file}' from its changelist")
+        # Implement: find and remove file from its changelist
+
+def cl_delete(args):
+    print(f"Deleting changelist '{args.name}'")
+    # Implement: delete changelist, regardless of contents
+
+def cl_commit(args):
+    print(f"Committing changelist '{args.name}' with message: {args.message}")
+    # Implement: stage + commit files, then delete changelist
+
+def main():
+    parser = argparse.ArgumentParser(prog='git-cl', description='Manage changelists in Git')
+
+    subparsers = parser.add_subparsers(dest='command', required=True)
+
+    # add
+    add_parser = subparsers.add_parser('add')
+    add_parser.add_argument('name')
+    add_parser.add_argument('files', nargs='*')
+    add_parser.set_defaults(func=cl_add)
+
+    # list / ls
+    list_parser = subparsers.add_parser('list')
+    list_parser.set_defaults(func=cl_list)
+    subparsers.add_parser('ls').set_defaults(func=cl_list)
+
+    # status / st
+    status_parser = subparsers.add_parser('status')
+    status_parser.set_defaults(func=cl_status)
+    subparsers.add_parser('st').set_defaults(func=cl_status)
+
+    # remove
+    remove_parser = subparsers.add_parser('remove')
+    remove_parser.add_argument('files', nargs='+')
+    remove_parser.set_defaults(func=cl_remove)
+
+    # delete
+    delete_parser = subparsers.add_parser('delete')
+    delete_parser.add_argument('name')
+    delete_parser.set_defaults(func=cl_delete)
+
+    # commit
+    commit_parser = subparsers.add_parser('commit')
+    commit_parser.add_argument('name')
+    commit_parser.add_argument('-m', '--message', required=True)
+    commit_parser.set_defaults(func=cl_commit)
+
+    args = parser.parse_args()
+    args.func(args)
+
+if __name__ == '__main__':
+    main()

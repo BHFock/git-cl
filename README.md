@@ -62,5 +62,32 @@ git cl delete docs-fix
 Changelists are created on demand when adding files. Every changelist must be named explicitly — there is no default or unnamed group
 
 
+## Example Workflow
 
+Let’s say you’re working on a feature, making several changes across multiple files. Instead of staging them immediately, you group them by intent
+
+```bash
+# Add files you’re happy with to a changelist
+git cl add ok src/core.py tests/test_core.py
+
+# Add test-specific or experimental changes to a separate list
+git cl add test_only tests/setup_test_env.sh
+
+# Add files you know you don’t want to commit yet
+git cl add do_not_commit notes/tmp.txt
+```
+
+You iterate and clean up your work. Once everything in the `ok` changelist is confirmed, you stage those files with:
+
+```bash
+git cl add ok
+```
+
+This moves the files to Git’s index and clears the changelist — ready for a focused commit:
+
+```bash
+git commit -m "Implement core feature"
+```
+
+Meanwhile, other changelists remain untouched and visible in `git cl status` — keeping your workspace organised without hiding files from your main view.
 

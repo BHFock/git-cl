@@ -27,3 +27,34 @@ git cl list
 ```
 
 Git will recognise `git-cl` as the handler for `git cl`, just like its built-in commands.
+
+
+## Usage
+
+Below are a few common tasks using `git cl`:
+
+```bash
+# Create a changelist implicitly by adding files to it
+git cl add docs-fix README.md docs/index.md
+
+# List all changelists and their assigned files
+git cl list       # or: git cl ls
+
+# View modified files grouped by changelist
+git cl status     # or: git cl st
+
+# Commit all changes in a changelist
+git cl commit docs-fix -m "Update documentation layout and intro"
+
+# Remove files from a changelist
+git cl remove docs-fix README.md
+
+# Delete a changelist (does not modify files or Git index)
+git cl delete docs-fix
+```
+
+Changelists are created on demand when adding files. Every changelist must be named explicitly — there is no default or unnamed group
+
+
+
+

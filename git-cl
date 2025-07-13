@@ -1,71 +1,106 @@
 #!/usr/bin/env python3
+"""
+git-cl: Manage changelists within a Git working directory.
+
+Inspired by Subversion's changelist concept, this tool allows developers to
+group files by intent before staging or committing, enabling cleaner workflows.
+"""
+
 import argparse
 import sys
 
 def cl_add(args):
+    """
+    Add files to a named changelist, or if no files are given,
+    stage all files from that changelist and delete it.
+    """
     if args.files:
+        # TODO: Validate files exist and are in the working directory
         print(f"Adding files to changelist '{args.name}': {args.files}")
-        # Implement: add files to named changelist
     else:
+        # TODO: Load changelist, git-add all files, then delete the changelist
         print(f"Staging files from changelist '{args.name}' and deleting it")
-        # Implement: stage and delete changelist
 
 def cl_list(args):
+    """
+    Display all changelists and the files they contain.
+    """
+    # TODO: Load changelist data and print formatted table
     print("Listing all changelists")
-    # Implement: load and display changelists
 
 def cl_status(args):
+    """
+    Show modified files grouped by their changelists.
+    Helps distinguish staged vs. uncommitted changes.
+    """
+    # TODO: Compare working directory with changelists
     print("Showing modified files grouped by changelist")
-    # Implement: cross-check changes against changelists
 
 def cl_remove(args):
+    """
+    Remove each specified file from its changelist.
+    """
     for file in args.files:
+        # TODO: Find changelist containing the file and remove it
         print(f"Removing '{file}' from its changelist")
-        # Implement: find and remove file from its changelist
 
 def cl_delete(args):
+    """
+    Delete a changelist by name, even if it contains files.
+    """
+    # TODO: Remove changelist from storage
     print(f"Deleting changelist '{args.name}'")
-    # Implement: delete changelist, regardless of contents
 
 def cl_commit(args):
+    """
+    Stage all files in a changelist and commit them with the given message.
+    The changelist is deleted afterwards.
+    """
+    # TODO: Validate files, stage them, commit via subprocess, then delete changelist
     print(f"Committing changelist '{args.name}' with message: {args.message}")
-    # Implement: stage + commit files, then delete changelist
 
 def main():
-    parser = argparse.ArgumentParser(prog='git-cl', description='Manage changelists in Git')
+    """
+    Entry point for the git-cl tool.
+    Parses CLI arguments and dispatches subcommand functions.
+    """
+    parser = argparse.ArgumentParser(
+        prog='git-cl',
+        description='Organise files into changelists before staging or committing'
+    )
 
     subparsers = parser.add_subparsers(dest='command', required=True)
 
-    # add
-    add_parser = subparsers.add_parser('add')
-    add_parser.add_argument('name')
-    add_parser.add_argument('files', nargs='*')
+    # Add command
+    add_parser = subparsers.add_parser('add', help='Add files to a changelist or stage a changelist')
+    add_parser.add_argument('name', help='Name of the changelist')
+    add_parser.add_argument('files', nargs='*', help='Files to add (optional)')
     add_parser.set_defaults(func=cl_add)
 
-    # list / ls
-    list_parser = subparsers.add_parser('list')
+    # List / ls
+    list_parser = subparsers.add_parser('list', help='Show all changelists')
     list_parser.set_defaults(func=cl_list)
-    subparsers.add_parser('ls').set_defaults(func=cl_list)
+    subparsers.add_parser('ls', help='Alias for list').set_defaults(func=cl_list)
 
-    # status / st
-    status_parser = subparsers.add_parser('status')
+    # Status / st
+    status_parser = subparsers.add_parser('status', help='Show changes grouped by changelist')
     status_parser.set_defaults(func=cl_status)
-    subparsers.add_parser('st').set_defaults(func=cl_status)
+    subparsers.add_parser('st', help='Alias for status').set_defaults(func=cl_status)
 
-    # remove
-    remove_parser = subparsers.add_parser('remove')
-    remove_parser.add_argument('files', nargs='+')
+    # Remove
+    remove_parser = subparsers.add_parser('remove', help='Remove files from their changelists')
+    remove_parser.add_argument('files', nargs='+', help='Files to remove')
     remove_parser.set_defaults(func=cl_remove)
 
-    # delete
-    delete_parser = subparsers.add_parser('delete')
-    delete_parser.add_argument('name')
+    # Delete
+    delete_parser = subparsers.add_parser('delete', help='Delete a changelist by name')
+    delete_parser.add_argument('name', help='Name of the changelist')
     delete_parser.set_defaults(func=cl_delete)
 
-    # commit
-    commit_parser = subparsers.add_parser('commit')
-    commit_parser.add_argument('name')
-    commit_parser.add_argument('-m', '--message', required=True)
+    # Commit
+    commit_parser = subparsers.add_parser('commit', help='Commit all files in a changelist')
+    commit_parser.add_argument('name', help='Name of the changelist')
+    commit_parser.add_argument('-m', '--message', required=True, help='Commit message')
     commit_parser.set_defaults(func=cl_commit)
 
     args = parser.parse_args()

@@ -52,10 +52,10 @@ git cl add docs-fix
 # Commit all changes in a changelist
 git cl commit docs-fix -m "Update documentation layout and intro"
 
-# Remove files from a changelist
-git cl remove docs-fix README.md
+# Remove a file from its changelist
+git cl remove README.md
 
-# Delete a changelist (does not modify files or Git index)
+# Delete a changelist manually (even if it still contains files)
 git cl delete docs-fix
 ```
 

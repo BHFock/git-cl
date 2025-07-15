@@ -56,7 +56,7 @@ git cl list       # or: git cl ls
 git cl status     # or: git cl st
 
 # Stage all files in a changelist and delete it
-git cl add docs-fix
+git cl stage docs-fix
 
 # Commit all changes in a changelist
 git cl commit docs-fix -m "Update documentation layout and intro"
@@ -94,7 +94,7 @@ git cl st    # or 'git st' if you've set up the alias
 Once everything in the `ok` changelist is confirmed, you stage those files with:
 
 ```bash
-git cl add ok
+git cl stage ok
 ```
 
 This moves the files to Git’s index and clears the changelist — ready for a focused commit:

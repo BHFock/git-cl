@@ -11,15 +11,17 @@ import sys
 
 def cl_add(args):
     """
-    Add files to a named changelist, or if no files are given,
-    stage all files from that changelist and delete it.
+    Add files to a named changelist.
     """
-    if args.files:
-        # TODO: Validate files exist and are in the working directory
-        print(f"Adding files to changelist '{args.name}': {args.files}")
-    else:
-        # TODO: Load changelist, git-add all files, then delete the changelist
-        print(f"Staging files from changelist '{args.name}' and deleting it")
+    # TODO: Validate files exist and are in the working directory
+    print(f"Adding files to changelist '{args.name}': {args.files}")
+
+def cl_stage(args):
+    """
+    Stage all files in a changelist and delete it.
+    """
+    # TODO: Load changelist, git-add all files, then delete the changelist
+    print(f"Staging files from changelist '{args.name}' and deleting it")
 
 def cl_list(args):
     """
@@ -72,10 +74,15 @@ def main():
     subparsers = parser.add_subparsers(dest='command', required=True)
 
     # Add command
-    add_parser = subparsers.add_parser('add', help='Add files to a changelist or stage a changelist')
+    add_parser = subparsers.add_parser('add', help='Add files to a changelist')
     add_parser.add_argument('name', help='Name of the changelist')
-    add_parser.add_argument('files', nargs='*', help='Files to add (optional)')
+    add_parser.add_argument('files', nargs='+', help='Files to add')
     add_parser.set_defaults(func=cl_add)
+
+    # Stage command
+    stage_parser = subparsers.add_parser('stage', help='Stage all files in a changelist and delete it')
+    stage_parser.add_argument('name', help='Name of the changelist')
+    stage_parser.set_defaults(func=cl_stage)
 
     # List / ls
     list_parser = subparsers.add_parser('list', help='Show all changelists')

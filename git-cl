@@ -9,20 +9,33 @@ group files by intent before staging or committing, enabling cleaner workflows.
 import argparse
 import json
 import sys
+import subprocess
 from pathlib import Path
 
-CL_FILE = Path(".git") / "cl.json"
+def get_cl_file():
+    try:
+        git_dir = subprocess.check_output(
+            ["git", "rev-parse", "--git-dir"],
+            stderr=subprocess.DEVNULL,
+            text=True
+        ).strip()
+        return Path(git_dir) / "cl.json"
+    except subprocess.CalledProcessError:
+        print("Error: Not inside a Git repository.")
+        sys.exit(1)
 
 def load_changelists():
-    if CL_FILE.exists():
-        with open(CL_FILE, "r") as f:
+    cl_file = get_cl_file()
+    if cl_file.exists():
+        with open(cl_file, "r") as f:
             return json.load(f)
     return {}
 
 def save_changelists(data):
+    cl_file = get_cl_file()
     # Remove empty changelists before saving
     cleaned = {k: v for k, v in data.items() if v}
-    with open(CL_FILE, "w") as f:
+    with open(cl_file, "w") as f:
         json.dump(cleaned, f, indent=2)
 
 def validate_files(files):
@@ -150,3 +163,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+

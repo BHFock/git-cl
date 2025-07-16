@@ -20,8 +20,10 @@ def load_changelists():
     return {}
 
 def save_changelists(data):
+    # Remove empty changelists before saving
+    cleaned = {k: v for k, v in data.items() if v}
     with open(CL_FILE, "w") as f:
-        json.dump(data, f, indent=2)
+        json.dump(cleaned, f, indent=2)
 
 def validate_files(files):
     valid = []

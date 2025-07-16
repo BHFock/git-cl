@@ -83,14 +83,66 @@ def cl_list(args):
         for file in files:
             print(f"  {file}")
 
+
 def cl_status(args):
     """
-    Show modified files grouped by their changelists.
-    Helps distinguish staged vs. uncommitted changes.
+    Show files grouped by changelist.
+    Displays status as:
+      [M]   modified
+      [??]  untracked
+      [ ]   unchanged
     """
-    # TODO: Compare working directory with changelists
-    print("Showing modified files grouped by changelist")
+    changelists = cl_load()
+    if not changelists:
+        print("No changelists found.")
+        return
 
+    # Get the Git root directory
+    try:
+        git_root = Path(
+            subprocess.check_output(["git", "rev-parse", "--show-toplevel"], text=True).strip()
+        ).resolve()
+    except subprocess.CalledProcessError:
+        print("Error: Not inside a Git repository.")
+        sys.exit(1)
+
+    # Get detailed status info
+    try:
+        output = subprocess.check_output(
+            ["git", "status", "--porcelain", "--untracked-files=all"], text=True
+        ).splitlines()
+    except subprocess.CalledProcessError:
+        print("Error: Failed to run git status.")
+        sys.exit(1)
+
+    # Build status map
+    status_map = {}
+    for line in output:
+        code = line[:2]
+        raw_path = line[3:].strip()
+        abs_path = (git_root / raw_path).resolve()
+        rel_path = abs_path.relative_to(git_root).as_posix()
+        if code == "??":
+            status_map[rel_path] = "??"
+        else:
+            status_map[rel_path] = "M"
+
+    # Print changelists
+    for cl_name, files in changelists.items():
+        print(f"{cl_name}:")
+        for file in files:
+            abs_file = (Path.cwd() / file).resolve()
+            try:
+                rel_file = abs_file.relative_to(git_root).as_posix()
+            except ValueError:
+                rel_file = file
+
+            status = status_map.get(rel_file, " ")
+            tag = f"[{status}]" if status != " " else "[ ]"
+            print(f"  {tag} {file}")
+
+
+    
 def cl_remove(args):
     """
     Remove each specified file from its changelist.

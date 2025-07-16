@@ -74,8 +74,14 @@ def cl_list(args):
     """
     Display all changelists and the files they contain.
     """
-    # TODO: Load changelist data and print formatted table
-    print("Listing all changelists")
+    changelists = cl_load()
+    if not changelists:
+        print("No changelists found.")
+        return
+    for name, files in changelists.items():
+        print(f"{name}:")
+        for file in files:
+            print(f"  {file}")
 
 def cl_status(args):
     """

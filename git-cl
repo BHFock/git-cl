@@ -63,12 +63,95 @@ def cl_add(args):
     cl_save(changelists)
     print(f"Added to '{args.name}': {files}")
 
+
 def cl_stage(args):
     """
-    Stage all files in a changelist and delete it.
+    Stage all tracked files in a changelist and delete it.
     """
-    # TODO: Load changelist, git-add all files, then delete the changelist
-    print(f"Staging files from changelist '{args.name}' and deleting it")
+    changelists = cl_load()
+    name = args.name
+
+    if name not in changelists:
+        print(f"Changelist '{name}' not found.")
+        return
+
+    files = changelists[name]
+
+    # Validate file existence and get absolute paths
+    valid_files = cl_validate_files(files)
+    git_root = None
+
+    try:
+        git_root = Path(
+            subprocess.check_output(["git", "rev-parse", "--show-toplevel"], text=True).strip()
+        ).resolve()
+    except subprocess.CalledProcessError:
+        print("Error: Not inside a Git repository.")
+        return
+
+    # Map original file paths to their absolute paths for filtering
+    valid_paths = {}
+    for f in valid_files:
+        abs_path = (Path.cwd() / f).resolve()
+        valid_paths[abs_path] = f
+
+    # Get git status to detect untracked files/directories
+    try:
+        output = subprocess.check_output(
+            ["git", "status", "--porcelain"], text=True
+        ).splitlines()
+    except subprocess.CalledProcessError:
+        print("Error: Failed to get git status.")
+        return
+
+    untracked_files = set()
+    untracked_dirs = set()
+
+    for line in output:
+        if line.startswith("??"):
+            raw_path = line[3:].strip()
+            abs_path = (git_root / raw_path).resolve()
+            if abs_path.is_dir():
+                untracked_dirs.add(abs_path)
+            else:
+                untracked_files.add(abs_path)
+
+    def is_under_untracked_dirs(path):
+        for d in untracked_dirs:
+            try:
+                path.relative_to(d)
+                return True
+            except ValueError:
+                continue
+        return False
+
+    # Filter out untracked files and files inside untracked directories
+    to_stage = []
+    for abs_path, orig_path in valid_paths.items():
+        if abs_path in untracked_files:
+            continue
+        if is_under_untracked_dirs(abs_path):
+            continue
+        to_stage.append(orig_path)
+
+    if not to_stage:
+        print(f"No tracked files to stage in changelist '{name}'.")
+        return
+
+    try:
+        subprocess.run(["git", "add", "--"] + to_stage, check=True)
+        print(f"Staged tracked files from changelist '{name}':")
+        for f in to_stage:
+            print(f"  {f}")
+    except subprocess.CalledProcessError:
+        print("Error: Failed to stage files.")
+        return
+
+    # Always delete changelist regardless of what was staged
+    del changelists[name]
+    cl_save(changelists)
+    print(f"Deleted changelist '{name}'")
+
 
 def cl_list(args):
     """

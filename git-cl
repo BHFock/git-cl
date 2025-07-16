@@ -88,6 +88,7 @@ def cl_status(args):
     Show files grouped by changelist.
     Displays status as:
       [M]   modified
+      [D]   deleted
       [??]  untracked
       [ ]   unchanged
     """
@@ -118,10 +119,15 @@ def cl_status(args):
         raw_path = line[3:].strip()
         abs_path = (git_root / raw_path).resolve()
         rel_path = abs_path.relative_to(git_root).as_posix()
+
         if code == "??":
             status_map[rel_path] = "??"
-        else:
+        elif "D" in code:
+            status_map[rel_path] = "D"
+        elif "M" in code:
             status_map[rel_path] = "M"
+        else:
+            status_map[rel_path] = " "
 
     # Flatten changelist files to set for quick lookup
     assigned_files = set()
@@ -154,6 +160,7 @@ def cl_status(args):
             status = status_map.get(file, " ")
             tag = f"[{status}]" if status != " " else "[ ]"
             print(f"  {tag} {file}")
+
     
 def cl_remove(args):
     """

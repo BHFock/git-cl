@@ -104,3 +104,7 @@ git commit -m "Implement core feature"
 ```
 
 Meanwhile, other changelists remain untouched and visible in `git cl status` — keeping your workspace organised without hiding files from your main view.
+
+## Maintenance Disclaimer
+
+This tool was developed for my own use and is provided as-is. I’m not actively maintaining it, but it’s functional and might be useful to others. Feel free to fork, modify, or take over maintenance. Pull requests are welcome, but I can’t guarantee timely responses.

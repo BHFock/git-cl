@@ -284,11 +284,97 @@ def cl_delete(args):
 
 def cl_commit(args):
     """
-    Stage all files in a changelist and commit them with the given message.
+    Stage all tracked files in a changelist and commit them with the given message.
     The changelist is deleted afterwards.
     """
-    # TODO: Validate files, stage them, commit via subprocess, then delete changelist
-    print(f"Committing changelist '{args.name}' with message: {args.message}")
+    changelists = cl_load()
+    name = args.name
+
+    if name not in changelists:
+        print(f"Changelist '{name}' not found.")
+        return
+
+    files = changelists[name]
+
+    # Validate files exist
+    valid_files = cl_validate_files(files)
+
+    try:
+        git_root = Path(
+            subprocess.check_output(["git", "rev-parse", "--show-toplevel"], text=True).strip()
+        ).resolve()
+    except subprocess.CalledProcessError:
+        print("Error: Not inside a Git repository.")
+        return
+
+    # Map original files to absolute paths
+    valid_paths = {}
+    for f in valid_files:
+        abs_path = (Path.cwd() / f).resolve()
+        valid_paths[abs_path] = f
+
+    # Get git status to detect untracked files/directories
+    try:
+        output = subprocess.check_output(
+            ["git", "status", "--porcelain"], text=True
+        ).splitlines()
+    except subprocess.CalledProcessError:
+        print("Error: Failed to get git status.")
+        return
+
+    untracked_files = set()
+    untracked_dirs = set()
+    for line in output:
+        if line.startswith("??"):
+            raw_path = line[3:].strip()
+            abs_path = (git_root / raw_path).resolve()
+            if abs_path.is_dir():
+                untracked_dirs.add(abs_path)
+            else:
+                untracked_files.add(abs_path)
+
+    def is_under_untracked_dirs(path):
+        for d in untracked_dirs:
+            try:
+                path.relative_to(d)
+                return True
+            except ValueError:
+                continue
+        return False
+
+    # Filter out untracked files and those inside untracked directories
+    to_commit = []
+    for abs_path, orig_path in valid_paths.items():
+        if abs_path in untracked_files:
+            continue
+        if is_under_untracked_dirs(abs_path):
+            continue
+        to_commit.append(orig_path)
+
+    if not to_commit:
+        print(f"No tracked files to commit in changelist '{name}'.")
+        return
+
+    # Stage files
+    try:
+        subprocess.run(["git", "add", "--"] + to_commit, check=True)
+    except subprocess.CalledProcessError:
+        print("Error: Failed to stage files.")
+        return
+
+    # Commit staged files with the message
+    try:
+        subprocess.run(["git", "commit", "-m", args.message], check=True)
+        print(f"Committed changelist '{name}' with message: {args.message}")
+    except subprocess.CalledProcessError:
+        print("Error: Commit failed.")
+        return
+
+    # Delete changelist
+    del changelists[name]
+    cl_save(changelists)
+    print(f"Deleted changelist '{name}'")
+
 
 def main():
     """

@@ -12,7 +12,7 @@ import sys
 import subprocess
 from pathlib import Path
 
-def get_cl_file():
+def cl_get_file():
     try:
         git_dir = subprocess.check_output(
             ["git", "rev-parse", "--git-dir"],
@@ -24,21 +24,20 @@ def get_cl_file():
         print("Error: Not inside a Git repository.")
         sys.exit(1)
 
-def load_changelists():
-    cl_file = get_cl_file()
+def cl_load():
+    cl_file = cl_get_file()
     if cl_file.exists():
         with open(cl_file, "r") as f:
             return json.load(f)
     return {}
 
-def save_changelists(data):
-    cl_file = get_cl_file()
-    # Remove empty changelists before saving
+def cl_save(data):
+    cl_file = cl_get_file()
     cleaned = {k: v for k, v in data.items() if v}
     with open(cl_file, "w") as f:
         json.dump(cleaned, f, indent=2)
 
-def validate_files(files):
+def cl_validate_files(files):
     valid = []
     for file in files:
         if Path(file).exists():
@@ -51,8 +50,8 @@ def cl_add(args):
     """
     Add files to a named changelist.
     """
-    changelists = load_changelists()
-    files = validate_files(args.files)
+    changelists = cl_load()
+    files = cl_validate_files(args.files)
     if args.name not in changelists:
         changelists[args.name] = []
     for file in files:
@@ -61,7 +60,7 @@ def cl_add(args):
                 cl.remove(file)
         if file not in changelists[args.name]:
             changelists[args.name].append(file)
-    save_changelists(changelists)
+    cl_save(changelists)
     print(f"Added to '{args.name}': {files}")
 
 def cl_stage(args):

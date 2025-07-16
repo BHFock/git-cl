@@ -191,8 +191,13 @@ def cl_delete(args):
     """
     Delete a changelist by name, even if it contains files.
     """
-    # TODO: Remove changelist from storage
-    print(f"Deleting changelist '{args.name}'")
+    changelists = cl_load()
+    if args.name in changelists:
+        del changelists[args.name]
+        cl_save(changelists)
+        print(f"Deleted changelist '{args.name}'")
+    else:
+        print(f"Changelist '{args.name}' not found.")
 
 def cl_commit(args):
     """

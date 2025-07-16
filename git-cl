@@ -83,11 +83,13 @@ def cl_list(args):
         for file in files:
             print(f"  {file}")
 
+
 def cl_status(args):
     """
     Show files grouped by changelist.
     Displays status as:
       [M]   modified
+      [A]   added (staged new files)
       [D]   deleted
       [??]  untracked
       [ ]   unchanged
@@ -122,11 +124,14 @@ def cl_status(args):
 
         if code == "??":
             status_map[rel_path] = "??"
-        elif "D" in code:
+        elif code == " D":
             status_map[rel_path] = "D"
-        elif "M" in code:
+        elif code == "A " or code == "AM" or code == "A?":
+            status_map[rel_path] = "A"
+        elif "M" in code or "T" in code or "R" in code or "C" in code:
             status_map[rel_path] = "M"
         else:
+            # Default to space (unchanged)
             status_map[rel_path] = " "
 
     # Flatten changelist files to set for quick lookup

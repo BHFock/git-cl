@@ -7,14 +7,47 @@ group files by intent before staging or committing, enabling cleaner workflows.
 """
 
 import argparse
+import json
 import sys
+from pathlib import Path
+
+CL_FILE = Path(".git") / "cl.json"
+
+def load_changelists():
+    if CL_FILE.exists():
+        with open(CL_FILE, "r") as f:
+            return json.load(f)
+    return {}
+
+def save_changelists(data):
+    with open(CL_FILE, "w") as f:
+        json.dump(data, f, indent=2)
+
+def validate_files(files):
+    valid = []
+    for file in files:
+        if Path(file).exists():
+            valid.append(file)
+        else:
+            print(f"Warning: '{file}' does not exist or is not tracked by Git.")
+    return valid
 
 def cl_add(args):
     """
     Add files to a named changelist.
     """
-    # TODO: Validate files exist and are in the working directory
-    print(f"Adding files to changelist '{args.name}': {args.files}")
+    changelists = load_changelists()
+    files = validate_files(args.files)
+    if args.name not in changelists:
+        changelists[args.name] = []
+    for file in files:
+        for cl in changelists.values():
+            if file in cl:
+                cl.remove(file)
+        if file not in changelists[args.name]:
+            changelists[args.name].append(file)
+    save_changelists(changelists)
+    print(f"Added to '{args.name}': {files}")
 
 def cl_stage(args):
     """

@@ -83,7 +83,6 @@ def cl_list(args):
         for file in files:
             print(f"  {file}")
 
-
 def cl_status(args):
     """
     Show files grouped by changelist.
@@ -93,9 +92,6 @@ def cl_status(args):
       [ ]   unchanged
     """
     changelists = cl_load()
-    if not changelists:
-        print("No changelists found.")
-        return
 
     # Get the Git root directory
     try:
@@ -115,7 +111,7 @@ def cl_status(args):
         print("Error: Failed to run git status.")
         sys.exit(1)
 
-    # Build status map
+    # Build status map: {file_path: status}
     status_map = {}
     for line in output:
         code = line[:2]
@@ -127,7 +123,12 @@ def cl_status(args):
         else:
             status_map[rel_path] = "M"
 
-    # Print changelists
+    # Flatten changelist files to set for quick lookup
+    assigned_files = set()
+    for files in changelists.values():
+        assigned_files.update(files)
+
+    # Print changelists and their files
     for cl_name, files in changelists.items():
         print(f"{cl_name}:")
         for file in files:
@@ -141,7 +142,18 @@ def cl_status(args):
             tag = f"[{status}]" if status != " " else "[ ]"
             print(f"  {tag} {file}")
 
+    # Find files in git status but NOT in any changelist
+    no_cl_files = []
+    for file in status_map.keys():
+        if file not in assigned_files:
+            no_cl_files.append(file)
 
+    if no_cl_files:
+        print("No Changelist:")
+        for file in sorted(no_cl_files):
+            status = status_map.get(file, " ")
+            tag = f"[{status}]" if status != " " else "[ ]"
+            print(f"  {tag} {file}")
     
 def cl_remove(args):
     """

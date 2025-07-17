@@ -382,44 +382,94 @@ def cl_commit(args):
     print(f"Deleted changelist '{name}'")
 
 def main():
-    """
-    Entry point: Parses command-line arguments and dispatches to the appropriate handler.
-    """
     parser = argparse.ArgumentParser(
         prog='git-cl',
-        description='Organise files into changelists before staging or committing'
+        description='Manage Git changelists: group related files before staging or committing.',
+        epilog=(
+            "Example usage:\n"
+            "  git cl add my-feature file1.py file2.py\n"
+            "  git cl status\n"
+            "  git cl stage my-feature\n"
+            "  git cl commit my-feature -m 'Implement feature'\n"
+            "  git cl delete my-feature"
+        ),
+        formatter_class=argparse.RawTextHelpFormatter
     )
-    subparsers = parser.add_subparsers(dest='command', required=True)
 
-    add_parser = subparsers.add_parser('add', help='Add files to a changelist')
-    add_parser.add_argument('name', help='Name of the changelist')
-    add_parser.add_argument('files', nargs='+', help='Files to add')
+    parser.add_argument(
+        '--version',
+        action='version',
+        version='git-cl 0.1.0',
+        help='Show version and exit'
+    )
+
+    subparsers = parser.add_subparsers(dest='command', required=True, title='Commands')
+
+    # add
+    add_parser = subparsers.add_parser(
+        'add',
+        help='Add files to a named changelist',
+        description='Add one or more files to a named changelist. '
+                    'If the changelist does not exist, it will be created.'
+    )
+    add_parser.add_argument('name', metavar='CHANGESET', help='Name of the changelist')
+    add_parser.add_argument('files', metavar='FILE', nargs='+', help='Files to add to the changelist')
     add_parser.set_defaults(func=cl_add)
 
-    stage_parser = subparsers.add_parser('stage', help='Stage all files in a changelist and delete it')
-    stage_parser.add_argument('name', help='Name of the changelist')
+    # stage
+    stage_parser = subparsers.add_parser(
+        'stage',
+        help='Stage all tracked files in a changelist and delete it',
+        description='Stages all **tracked** files from the changelist and deletes the changelist afterward.'
+    )
+    stage_parser.add_argument('name', metavar='CHANGESET', help='Name of the changelist')
     stage_parser.set_defaults(func=cl_stage)
 
-    list_parser = subparsers.add_parser('list', help='Show all changelists')
-    list_parser.set_defaults(func=cl_list)
-    subparsers.add_parser('ls', help='Alias for list').set_defaults(func=cl_list)
-
-    status_parser = subparsers.add_parser('status', help='Show changes grouped by changelist')
-    status_parser.set_defaults(func=cl_status)
-    subparsers.add_parser('st', help='Alias for status').set_defaults(func=cl_status)
-
-    remove_parser = subparsers.add_parser('remove', help='Remove files from their changelists')
-    remove_parser.add_argument('files', nargs='+', help='Files to remove')
-    remove_parser.set_defaults(func=cl_remove)
-
-    delete_parser = subparsers.add_parser('delete', help='Delete a changelist by name')
-    delete_parser.add_argument('name', help='Name of the changelist')
-    delete_parser.set_defaults(func=cl_delete)
-
-    commit_parser = subparsers.add_parser('commit', help='Commit all files in a changelist')
-    commit_parser.add_argument('name', help='Name of the changelist')
+    # commit
+    commit_parser = subparsers.add_parser(
+        'commit',
+        help='Commit all tracked files in a changelist',
+        description='Stages and commits all **tracked** files from the changelist using the provided message.'
+    )
+    commit_parser.add_argument('name', metavar='CHANGESET', help='Name of the changelist')
     commit_parser.add_argument('-m', '--message', required=True, help='Commit message')
     commit_parser.set_defaults(func=cl_commit)
+
+    # list / ls
+    list_parser = subparsers.add_parser(
+        'list',
+        aliases=['ls'],
+        help='List all changelists and their files',
+        description='Displays all changelists and the files associated with each.'
+    )
+    list_parser.set_defaults(func=cl_list)
+
+    # status / st
+    status_parser = subparsers.add_parser(
+        'status',
+        aliases=['st'],
+        help='Show working tree changes grouped by changelist',
+        description='Displays all file changes grouped by changelist. Unassigned changes appear under "No Changelist".'
+    )
+    status_parser.set_defaults(func=cl_status)
+
+    # remove
+    remove_parser = subparsers.add_parser(
+        'remove',
+        help='Remove one or more files from their changelists',
+        description='Detaches the specified files from any changelists they belong to.'
+    )
+    remove_parser.add_argument('files', metavar='FILE', nargs='+', help='Files to remove from any changelist')
+    remove_parser.set_defaults(func=cl_remove)
+
+    # delete
+    delete_parser = subparsers.add_parser(
+        'delete',
+        help='Delete a changelist by name',
+        description='Deletes the specified changelist and removes its file references.'
+    )
+    delete_parser.add_argument('name', metavar='CHANGESET', help='Name of the changelist to delete')
+    delete_parser.set_defaults(func=cl_delete)
 
     args = parser.parse_args()
     args.func(args)

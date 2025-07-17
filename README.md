@@ -1,7 +1,8 @@
+# git-cl
+
+> A minimal Git extension for changelist-based workflows — inspired by Subversion, built for clarity.
 
 ![Status: Prototype](https://img.shields.io/badge/status-prototype-blue)
-
-# git-cl
 
 `git-cl` is a prototype command-line tool that introduces changelists to Git, inspired by Subversion. It allows users to assign working directory files to named changelists, making it easier to manage partial commits and organise work by intent.
 
@@ -112,3 +113,8 @@ Meanwhile, other changelists remain untouched and visible in `git cl status` —
 ## Maintenance Disclaimer
 
 This tool was developed for my own use and is provided as-is. I’m not actively maintaining it, but it’s functional and might be useful to others. Feel free to fork, modify, or take over maintenance.
+
+## License
+
+BSD 3-Clause License — see [LICENSE](./LICENSE) for details.
+

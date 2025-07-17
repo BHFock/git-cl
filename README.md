@@ -112,7 +112,7 @@ Meanwhile, other changelists remain untouched and visible in `git cl status` —
 
 ## Maintenance Disclaimer
 
-This tool was developed for my own use and is provided as-is. I’m not actively maintaining it, but it’s functional and might be useful to others. Feel free to fork, modify, or take over maintenance.
+This is a personal prototype, built to support my own Git workflow. It’s shared as-is for reference. No active maintenance or collaboration is planned — but forks are welcome.
 
 ## License
 

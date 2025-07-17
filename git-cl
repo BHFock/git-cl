@@ -1,6 +1,18 @@
 #!/usr/bin/env python3
 """
 git-cl: Manage changelists within a Git working directory.
+
+This CLI tool allows you to group files into named changelists before staging or committing.
+Changelists are saved in a 'cl.json' file inside the Git directory. You can then operate on
+changelists as logical groups: staging, committing, listing, or deleting them.
+
+Features:
+- Add/remove files to/from changelists
+- Stage or commit all files in a changelist
+- Show status grouped by changelists
+- Delete changelists when done
+
+This tool is intended for use within Git repositories.
 """
 
 import argparse
@@ -10,6 +22,15 @@ import subprocess
 from pathlib import Path
 
 def cl_get_file():
+    """
+    Returns the path to the changelist file inside the Git directory.
+
+    Returns:
+        Path: Path to the '.git/cl.json' file.
+
+    Raises:
+        SystemExit: If not inside a Git repository.
+    """
     try:
         git_dir = subprocess.check_output(
             ["git", "rev-parse", "--git-dir"],
@@ -22,6 +43,12 @@ def cl_get_file():
         sys.exit(1)
 
 def cl_load():
+    """
+    Loads changelist data from the 'cl.json' file.
+
+    Returns:
+        dict: A mapping of changelist names to lists of file paths.
+    """
     cl_file = cl_get_file()
     if cl_file.exists():
         try:
@@ -33,6 +60,12 @@ def cl_load():
     return {}
 
 def cl_save(data):
+    """
+    Saves the changelist data to 'cl.json', omitting empty changelists.
+
+    Args:
+        data (dict): Mapping of changelist names to lists of files.
+    """
     cl_file = cl_get_file()
     cleaned = {k: v for k, v in data.items() if v}
     try:
@@ -42,6 +75,15 @@ def cl_save(data):
         print(f"Error saving changelists: {e}")
 
 def cl_validate_files(files):
+    """
+    Validates that files exist on disk.
+
+    Args:
+        files (list): List of file paths to validate.
+
+    Returns:
+        list: List of existing and valid file paths.
+    """
     valid = []
     for file in files:
         if Path(file).exists():
@@ -51,6 +93,12 @@ def cl_validate_files(files):
     return valid
 
 def cl_add(args):
+    """
+    Adds one or more files to the specified changelist, creating it if needed.
+
+    Args:
+        args: argparse.Namespace with 'name' and 'files' attributes.
+    """
     changelists = cl_load()
     files = cl_validate_files(args.files)
     if args.name not in changelists:
@@ -65,6 +113,12 @@ def cl_add(args):
     print(f"Added to '{args.name}': {files}")
 
 def cl_stage(args):
+    """
+    Stages all tracked files in the given changelist and deletes the changelist.
+
+    Args:
+        args: argparse.Namespace with 'name' attribute (changelist name).
+    """
     changelists = cl_load()
     name = args.name
     if name not in changelists:
@@ -131,6 +185,12 @@ def cl_stage(args):
     print(f"Deleted changelist '{name}'")
 
 def cl_list(args):
+    """
+    Lists all changelists and their associated files.
+
+    Args:
+        args: argparse.Namespace (not used).
+    """
     changelists = cl_load()
     if not changelists:
         print("No changelists found.")
@@ -141,6 +201,12 @@ def cl_list(args):
             print(f"  {file}")
 
 def cl_status(args):
+    """
+    Displays git status grouped by changelist membership.
+
+    Args:
+        args: argparse.Namespace (not used).
+    """
     changelists = cl_load()
 
     try:
@@ -202,6 +268,12 @@ def cl_status(args):
             print(f"  {tag} {file}")
 
 def cl_remove(args):
+    """
+    Removes one or more files from any changelists they are part of.
+
+    Args:
+        args: argparse.Namespace with 'files' attribute.
+    """
     changelists = cl_load()
     removed = []
 
@@ -219,6 +291,12 @@ def cl_remove(args):
         cl_save(changelists)
 
 def cl_delete(args):
+    """
+    Deletes a changelist by name.
+
+    Args:
+        args: argparse.Namespace with 'name' attribute.
+    """
     changelists = cl_load()
     if args.name in changelists:
         del changelists[args.name]
@@ -228,6 +306,12 @@ def cl_delete(args):
         print(f"Changelist '{args.name}' not found.")
 
 def cl_commit(args):
+    """
+    Commits all tracked files in the specified changelist, then deletes it.
+
+    Args:
+        args: argparse.Namespace with 'name' and 'message' attributes.
+    """
     changelists = cl_load()
     name = args.name
     if name not in changelists:
@@ -298,6 +382,9 @@ def cl_commit(args):
     print(f"Deleted changelist '{name}'")
 
 def main():
+    """
+    Entry point: Parses command-line arguments and dispatches to the appropriate handler.
+    """
     parser = argparse.ArgumentParser(
         prog='git-cl',
         description='Organise files into changelists before staging or committing'

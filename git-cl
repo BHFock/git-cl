@@ -9,39 +9,42 @@ import sys
 import subprocess
 from pathlib import Path
 
-def get_git_root():
-    try:
-        return Path(subprocess.check_output(
-            ["git", "rev-parse", "--show-toplevel"],
-            text=True
-        ).strip()).resolve()
-    except subprocess.CalledProcessError:
-        print("Error: Not inside a Git repository.")
-        sys.exit(1)
-
 def cl_get_file():
-    git_dir = subprocess.check_output(["git", "rev-parse", "--git-dir"], text=True).strip()
-    return Path(git_dir).resolve() / "cl.json"
+    try:
+        git_dir = subprocess.check_output(
+            ["git", "rev-parse", "--git-dir"],
+            stderr=subprocess.DEVNULL,
+            text=True
+        ).strip()
+        return Path(git_dir) / "cl.json"
+    except subprocess.CalledProcessError as e:
+        print(f"Error: Not inside a Git repository. {e}")
+        sys.exit(1)
 
 def cl_load():
     cl_file = cl_get_file()
     if cl_file.exists():
-        with open(cl_file, "r") as f:
-            return json.load(f)
+        try:
+            with open(cl_file, "r") as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"Error reading changelists: {e}")
+            return {}
     return {}
 
 def cl_save(data):
     cl_file = cl_get_file()
     cleaned = {k: v for k, v in data.items() if v}
-    with open(cl_file, "w") as f:
-        json.dump(cleaned, f, indent=2)
+    try:
+        with open(cl_file, "w") as f:
+            json.dump(cleaned, f, indent=2)
+    except Exception as e:
+        print(f"Error saving changelists: {e}")
 
 def cl_validate_files(files):
-    git_root = get_git_root()
     valid = []
     for file in files:
-        abs_path = (git_root / file).resolve()
-        if abs_path.exists():
+        if Path(file).exists():
             valid.append(file)
         else:
             print(f"Warning: '{file}' does not exist or is not tracked by Git.")
@@ -49,16 +52,7 @@ def cl_validate_files(files):
 
 def cl_add(args):
     changelists = cl_load()
-    git_root = get_git_root()
-    files = []
-    for f in args.files:
-        abs_path = (Path(f).resolve())
-        try:
-            rel_path = abs_path.relative_to(git_root).as_posix()
-            files.append(rel_path)
-        except ValueError:
-            print(f"Warning: '{f}' is outside the Git repository.")
-    files = cl_validate_files(files)
+    files = cl_validate_files(args.files)
     if args.name not in changelists:
         changelists[args.name] = []
     for file in files:
@@ -76,16 +70,28 @@ def cl_stage(args):
     if name not in changelists:
         print(f"Changelist '{name}' not found.")
         return
-    files = changelists[name]
-    git_root = get_git_root()
 
+    files = changelists[name]
     valid_files = cl_validate_files(files)
+
+    try:
+        git_root = Path(
+            subprocess.check_output(["git", "rev-parse", "--show-toplevel"], text=True).strip()
+        ).resolve()
+    except subprocess.CalledProcessError as e:
+        print(f"Error: Not inside a Git repository. {e}")
+        return
+
     valid_paths = {}
     for f in valid_files:
-        abs_path = (git_root / f).resolve()
+        abs_path = (Path.cwd() / f).resolve()
         valid_paths[abs_path] = f
 
-    output = subprocess.check_output(["git", "status", "--porcelain"], text=True).splitlines()
+    try:
+        output = subprocess.check_output(["git", "status", "--porcelain"], text=True).splitlines()
+    except subprocess.CalledProcessError as e:
+        print(f"Error getting git status: {e}")
+        return
 
     untracked_files = set()
     untracked_dirs = set()
@@ -99,13 +105,7 @@ def cl_stage(args):
                 untracked_files.add(abs_path)
 
     def is_under_untracked_dirs(path):
-        for d in untracked_dirs:
-            try:
-                path.relative_to(d)
-                return True
-            except ValueError:
-                continue
-        return False
+        return any(path.is_relative_to(d) for d in untracked_dirs)
 
     to_stage = []
     for abs_path, orig_path in valid_paths.items():
@@ -115,11 +115,16 @@ def cl_stage(args):
 
     if not to_stage:
         print(f"No tracked files to stage in changelist '{name}'.")
-    else:
+        return
+
+    try:
         subprocess.run(["git", "add", "--"] + to_stage, check=True)
         print(f"Staged tracked files from changelist '{name}':")
         for f in to_stage:
             print(f"  {f}")
+    except subprocess.CalledProcessError as e:
+        print(f"Error staging files: {e}")
+        return
 
     del changelists[name]
     cl_save(changelists)
@@ -137,11 +142,22 @@ def cl_list(args):
 
 def cl_status(args):
     changelists = cl_load()
-    git_root = get_git_root()
 
-    output = subprocess.check_output(
-        ["git", "status", "--porcelain", "--untracked-files=all"], text=True
-    ).splitlines()
+    try:
+        git_root = Path(
+            subprocess.check_output(["git", "rev-parse", "--show-toplevel"], text=True).strip()
+        ).resolve()
+    except subprocess.CalledProcessError as e:
+        print(f"Error: Not inside a Git repository. {e}")
+        sys.exit(1)
+
+    try:
+        output = subprocess.check_output(
+            ["git", "status", "--porcelain", "--untracked-files=all"], text=True
+        ).splitlines()
+    except subprocess.CalledProcessError as e:
+        print(f"Error: Failed to run git status. {e}")
+        sys.exit(1)
 
     status_map = {}
     for line in output:
@@ -149,11 +165,12 @@ def cl_status(args):
         raw_path = line[3:].strip()
         abs_path = (git_root / raw_path).resolve()
         rel_path = abs_path.relative_to(git_root).as_posix()
+
         if code == "??":
             status_map[rel_path] = "??"
         elif code == " D":
             status_map[rel_path] = "D"
-        elif code.startswith("A") or "A" in code:
+        elif code.strip().startswith("A"):
             status_map[rel_path] = "A"
         elif "M" in code or "T" in code or "R" in code or "C" in code:
             status_map[rel_path] = "M"
@@ -167,39 +184,33 @@ def cl_status(args):
     for cl_name, files in changelists.items():
         print(f"{cl_name}:")
         for file in files:
-            status = status_map.get(file, " ")
+            abs_file = (Path.cwd() / file).resolve()
+            try:
+                rel_file = abs_file.relative_to(git_root).as_posix()
+            except ValueError:
+                rel_file = file
+            status = status_map.get(rel_file, " ")
             tag = f"[{status}]" if status != " " else "[ ]"
             print(f"  {tag} {file}")
 
-    no_cl_files = []
-    for file in status_map.keys():
-        if file not in assigned_files:
-            no_cl_files.append(file)
-
+    no_cl_files = [file for file in status_map if file not in assigned_files]
     if no_cl_files:
         print("No Changelist:")
         for file in sorted(no_cl_files):
-            status = status_map.get(file, " ")
+            status = status_map[file]
             tag = f"[{status}]" if status != " " else "[ ]"
             print(f"  {tag} {file}")
 
 def cl_remove(args):
     changelists = cl_load()
-    git_root = get_git_root()
     removed = []
 
     for file in args.files:
-        abs_path = Path(file).resolve()
-        try:
-            rel_path = abs_path.relative_to(git_root).as_posix()
-        except ValueError:
-            print(f"'{file}' is outside the Git repository.")
-            continue
         for name, files in changelists.items():
-            if rel_path in files:
-                files.remove(rel_path)
-                removed.append(rel_path)
-                print(f"Removed '{rel_path}' from changelist '{name}'")
+            if file in files:
+                files.remove(file)
+                removed.append(file)
+                print(f"Removed '{file}' from changelist '{name}'")
                 break
         else:
             print(f"'{file}' was not found in any changelist.")
@@ -223,16 +234,28 @@ def cl_commit(args):
         print(f"Changelist '{name}' not found.")
         return
 
-    git_root = get_git_root()
     files = changelists[name]
     valid_files = cl_validate_files(files)
 
+    try:
+        git_root = Path(
+            subprocess.check_output(["git", "rev-parse", "--show-toplevel"], text=True).strip()
+        ).resolve()
+    except subprocess.CalledProcessError as e:
+        print(f"Error: Not inside a Git repository. {e}")
+        return
+
     valid_paths = {}
     for f in valid_files:
-        abs_path = (git_root / f).resolve()
+        abs_path = (Path.cwd() / f).resolve()
         valid_paths[abs_path] = f
 
-    output = subprocess.check_output(["git", "status", "--porcelain"], text=True).splitlines()
+    try:
+        output = subprocess.check_output(["git", "status", "--porcelain"], text=True).splitlines()
+    except subprocess.CalledProcessError as e:
+        print(f"Error getting git status: {e}")
+        return
+
     untracked_files = set()
     untracked_dirs = set()
     for line in output:
@@ -245,13 +268,7 @@ def cl_commit(args):
                 untracked_files.add(abs_path)
 
     def is_under_untracked_dirs(path):
-        for d in untracked_dirs:
-            try:
-                path.relative_to(d)
-                return True
-            except ValueError:
-                continue
-        return False
+        return any(path.is_relative_to(d) for d in untracked_dirs)
 
     to_commit = []
     for abs_path, orig_path in valid_paths.items():
@@ -263,9 +280,18 @@ def cl_commit(args):
         print(f"No tracked files to commit in changelist '{name}'.")
         return
 
-    subprocess.run(["git", "add", "--"] + to_commit, check=True)
-    subprocess.run(["git", "commit", "-m", args.message], check=True)
-    print(f"Committed changelist '{name}' with message: {args.message}")
+    try:
+        subprocess.run(["git", "add", "--"] + to_commit, check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Error staging files for commit: {e}")
+        return
+
+    try:
+        subprocess.run(["git", "commit", "-m", args.message], check=True)
+        print(f"Committed changelist '{name}' with message: {args.message}")
+    except subprocess.CalledProcessError as e:
+        print(f"Error committing changelist '{name}': {e}")
+        return
 
     del changelists[name]
     cl_save(changelists)

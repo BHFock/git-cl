@@ -21,7 +21,7 @@ Changelists are stored in a simple `cl.json` file inside your repository’s `.g
 
 To use `git cl` as a [Git subcommand](https://git.github.io/htmldocs/howto/new-command.html), place the executable script named `git-cl` in a directory that’s part of your system’s `$PATH`, such as `~/bin`. For example:
 
-```bash
+```
 chmod +x git-cl
 mkdir -p ~/bin
 mv git-cl ~/bin/
@@ -29,7 +29,7 @@ mv git-cl ~/bin/
 
 Make sure `~/bin` is listed in your `$PATH`. You’ll then be able to run:
 
-```bash
+```
 git cl list
 ```
 
@@ -39,7 +39,7 @@ Git will recognise `git-cl` as the handler for `git cl`, just like its built-in 
 
 For a more integrated experience, you can alias `git st` to show the changelist-enhanced status:
 
-```bash
+```
 git config alias.st '!git cl st'
 ```
 
@@ -72,7 +72,7 @@ git cl remove README.md
 git cl delete docs-fix
 ```
 
-Changelists are created on demand when adding files. Every changelist must be named explicitly — there is no default or unnamed group
+Changelists are created on demand when adding files. Every changelist must be named explicitly — there is no default or automatic group.
 
 ## Example Workflow
 
@@ -111,4 +111,4 @@ Meanwhile, other changelists remain untouched and visible in `git cl status` —
 
 ## Maintenance Disclaimer
 
-This tool was developed for my own use and is provided as-is. I’m not actively maintaining it, but it’s functional and might be useful to others. Feel free to fork, modify, or take over maintenance. Pull requests are welcome, but I can’t guarantee timely responses.
+This tool was developed for my own use and is provided as-is. I’m not actively maintaining it, but it’s functional and might be useful to others. Feel free to fork, modify, or take over maintenance.

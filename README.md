@@ -1,6 +1,6 @@
 # git-cl
 
-> A minimal Git extension for changelist-based workflows — inspired by Subversion, built for clarity.
+> A minimal Git extension for changelist-based workflows — inspired by Subversion.
 
 ![Status: Prototype](https://img.shields.io/badge/status-prototype-blue)
 

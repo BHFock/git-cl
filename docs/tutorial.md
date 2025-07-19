@@ -187,3 +187,15 @@ To get a changelist-aware status view.
 - Changelists are stored in .git/cl.json and are never versioned or shared.
 - You can use changelists inside any branch.
 
+## Summary of Commands
+
+| Task                        | Command                             |
+| --------------------------- | ----------------------------------- |
+| Add files to a changelist   | `git cl add <name> <files...>`      |
+| List changelists            | `git cl list` or `git cl ls`        |
+| View grouped status         | `git cl status` or `git cl st`      |
+| Stage a changelist          | `git cl stage <name>`               |
+| Commit a changelist         | `git cl commit <name> -m "Message"` |
+| Remove file from changelist | `git cl remove <file>`              |
+| Delete a changelist         | `git cl delete <name>`              |
+

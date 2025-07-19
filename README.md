@@ -1,6 +1,6 @@
 # git-cl
 
-> A minimal Git extension for changelist-based workflows — inspired by Subversion.
+> Git extension for grouping files before commit - changelists like in SVN
 
 ![Status: Prototype](https://img.shields.io/badge/status-prototype-blue)
 

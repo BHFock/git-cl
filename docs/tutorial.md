@@ -138,4 +138,29 @@ git cl remove <file1> <file2> ...
 git cl delete <changelist-name>
 ```
 
+## 3. Example Workflow
+
+Suppose you're working on both documentation and a test setup.
+
+```
+git cl add docs README.md docs/index.md
+git cl add tests tests/dev_env.sh
+git cl add temp notes/debug.txt
+```
+
+You can check the changelists:
+
+```
+git cl st
+```
+
+Once the documentation changes are ready:
+
+```
+git cl stage docs
+git commit -m "Refactor documentation"
+```
+
+The other changelists remain untouched, so you can continue working on them separately.
+
 

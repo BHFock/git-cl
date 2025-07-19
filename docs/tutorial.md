@@ -54,3 +54,88 @@ Changelists are not a replacement for branches — they help manage your **uncom
 
    ```bash
    export PATH="$HOME/bin:$PATH"
+
+## 2. Basic Commands
+
+### Add files to a changelist
+
+```bash
+git cl add <changelist-name> <file1> <file2> ...
+```
+
+Files are moved from any other changelist if needed.
+
+Example:
+
+```bash
+git cl add docs README.md docs/index.md
+```
+
+### List changelists
+
+```bash
+git cl list
+# or
+git cl ls
+```
+
+### Show grouped status
+
+```bash
+git cl status
+# or
+git cl st
+```
+
+Example output:
+
+```
+docs:
+  [M] README.md
+  [M] docs/index.md
+
+No Changelist:
+  [??] scratch.txt
+  [M] main.py
+```
+
+### Stage a changelist
+
+```
+git cl stage <changelist-name>
+```
+
+This will:
+
+- Stage all tracked files
+- Skip untracked or unstageable files
+- Delete the changelist after staging
+
+Example:
+
+```
+git cl stage docs
+git commit -m "Improve documentation"
+```
+
+### Commit a changelist
+
+```
+git cl commit <changelist-name> -m "Commit message"
+```
+
+Stages and commits tracked files, then deletes the changelist.
+
+### Remove files from changelists
+
+```
+git cl remove <file1> <file2> ...
+```
+
+### Delete a changelist
+
+```
+git cl delete <changelist-name>
+```
+
+

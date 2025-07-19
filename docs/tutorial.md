@@ -164,3 +164,19 @@ git commit -m "Refactor documentation"
 The other changelists remain untouched, so you can continue working on them separately.
 
 
+## 4. Optional: Alias for git st
+
+To use git st for grouped status:
+
+```
+git config alias.st '!git cl st'
+```
+
+Now you can run:
+
+```
+git st
+```
+
+To get a changelist-aware status view.
+

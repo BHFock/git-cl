@@ -180,3 +180,10 @@ git st
 
 To get a changelist-aware status view.
 
+## 5. Notes
+
+- A file can belong to only one changelist at a time.
+- Untracked files are shown but are not included in staging or commits.
+- Changelists are stored in .git/cl.json and are never versioned or shared.
+- You can use changelists inside any branch.
+

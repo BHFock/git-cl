@@ -86,7 +86,7 @@ def cl_load() -> dict[str, list[str]]:
         try:
             with open(cl_file, "r") as f:
                 return json.load(f)
-        except Exception as e:
+        except (json.JSONDecodeError, OSError) as e:
             print(f"Error reading changelists: {e}")
             return {}
     return {}

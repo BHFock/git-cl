@@ -144,7 +144,7 @@ def cl_add(args: argparse.Namespace) -> None:
     cl_save(changelists)
     print(f"Added to '{args.name}': {files}")
 
-def cl_stage(args):
+def cl_stage(args: argparse.Namespace) -> None:
     """
     Stages all tracked files in the given changelist and deletes the changelist.
 

@@ -53,7 +53,7 @@ import sys
 import subprocess
 from pathlib import Path
 
-def cl_get_file():
+def cl_get_file() -> Path:
     """
     Returns the path to the changelist file inside the Git directory.
 

@@ -232,7 +232,7 @@ def cl_list(args: argparse.Namespace) -> None:
         for file in files:
             print(f"  {file}")
 
-def cl_status(args):
+def cl_status(args: argparse.Namespace) -> None:
     """
     Displays git status grouped by changelist membership.
 

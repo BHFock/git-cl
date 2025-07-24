@@ -124,7 +124,7 @@ def cl_validate_files(files: list[str]) -> list[str]:
             print(f"Warning: '{file}' does not exist or is not tracked by Git.")
     return valid
 
-def cl_add(args):
+def cl_add(args: argparse.Namespace) -> None:
     """
     Adds one or more files to the specified changelist, creating it if needed.
 

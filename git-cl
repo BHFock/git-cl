@@ -91,7 +91,7 @@ def cl_load() -> dict[str, list[str]]:
             return {}
     return {}
 
-def cl_save(data):
+def cl_save(data: dict[str, list[str]]) -> None:
     """
     Saves the changelist data to 'cl.json', omitting empty changelists.
 

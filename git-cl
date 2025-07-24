@@ -301,7 +301,7 @@ def cl_status(args: argparse.Namespace) -> None:
             tag = f"[{status}]" if status != " " else "[ ]"
             print(f"  {tag} {file}")
 
-def cl_remove(args):
+def cl_remove(args: argparse.Namespace) -> None:
     """
     Removes one or more files from any changelists they are part of.
 
@@ -324,7 +324,7 @@ def cl_remove(args):
     if removed:
         cl_save(changelists)
 
-def cl_delete(args):
+def cl_delete(args: argparse.Namespace) -> None:
     """
     Deletes a changelist by name.
 
@@ -339,7 +339,7 @@ def cl_delete(args):
     else:
         print(f"Changelist '{args.name}' not found.")
 
-def cl_commit(args):
+def cl_commit(args: argparse.Namespace) -> None:
     """
     Commits all tracked files in the specified changelist, then deletes it.
 

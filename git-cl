@@ -103,7 +103,7 @@ def cl_save(data: dict[str, list[str]]) -> None:
     try:
         with open(cl_file, "w") as f:
             json.dump(cleaned, f, indent=2)
-    except Exception as e:
+    except OSError as e:
         print(f"Error saving changelists: {e}")
 
 def cl_validate_files(files: list[str]) -> list[str]:

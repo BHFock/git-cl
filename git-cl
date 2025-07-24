@@ -74,7 +74,7 @@ def cl_get_file() -> Path:
         print(f"Error: Not inside a Git repository. {e}")
         sys.exit(1)
 
-def cl_load():
+def cl_load() -> dict[str, list[str]]:
     """
     Loads changelist data from the 'cl.json' file.
 

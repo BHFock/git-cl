@@ -4,7 +4,7 @@
 
 ![Status: Prototype](https://img.shields.io/badge/status-prototype-blue)
 
-`git-cl` is a prototype command-line tool that introduces changelists to Git, inspired by Subversion. It allows users to assign working directory files to named changelists, making it easier to manage partial commits and organise work by intent.
+`git-cl` is a prototype command-line tool that introduces changelists to Git. It allows users to assign working directory files to named changelists, making it easier to manage partial commits and organise work by intent.
 
 ## Features
 

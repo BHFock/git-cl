@@ -70,8 +70,9 @@ def cl_get_file() -> Path:
             text=True
         ).strip()
         return Path(git_dir) / "cl.json"
-    except subprocess.CalledProcessError as e:
-        print(f"Error: Not inside a Git repository. {e}")
+    except subprocess.CalledProcessError:
+        print("Error: Not inside a Git repository.")
+        print("Please run this command from within a Git repository.")
         sys.exit(1)
 
 def cl_load() -> dict[str, list[str]]:

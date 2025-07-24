@@ -216,7 +216,7 @@ def cl_stage(args: argparse.Namespace) -> None:
     cl_save(changelists)
     print(f"Deleted changelist '{name}'")
 
-def cl_list(args):
+def cl_list(args: argparse.Namespace) -> None:
     """
     Lists all changelists and their associated files.
 

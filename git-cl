@@ -415,7 +415,7 @@ def cl_commit(args: argparse.Namespace) -> None:
     cl_save(changelists)
     print(f"Deleted changelist '{name}'")
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(
         prog='git-cl',
         description='Manage Git changelists: group related files before staging or committing.',

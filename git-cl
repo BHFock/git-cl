@@ -106,7 +106,7 @@ def cl_save(data):
     except Exception as e:
         print(f"Error saving changelists: {e}")
 
-def cl_validate_files(files):
+def cl_validate_files(files: list[str]) -> list[str]:
     """
     Validates that files exist on disk.
 

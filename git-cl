@@ -97,8 +97,8 @@ def clutil_load() -> dict[str, list[str]]:
         try:
             with open(cl_file, "r", encoding="utf-8") as file_handle:
                 return json.load(file_handle)
-        except (json.JSONDecodeError, OSError) as e:
-            print(f"Error reading changelists: {e}")
+        except (json.JSONDecodeError, OSError) as error:
+            print(f"Error reading changelists: {error}")
             return {}
     return {}
 
@@ -115,8 +115,8 @@ def clutil_save(data: dict[str, list[str]]) -> None:
     try:
         with open(cl_file, "w", encoding="utf-8") as file_handle:
             json.dump(cleaned, file_handle, indent=2)
-    except OSError as e:
-        print(f"Error saving changelists: {e}")
+    except OSError as error:
+        print(f"Error saving changelists: {error}")
 
 
 def clutil_validate_files(files: list[str]) -> list[str]:
@@ -212,8 +212,8 @@ def cl_stage(args: argparse.Namespace) -> None:
             subprocess.check_output(["git", "rev-parse", "--show-toplevel"],
                                     text=True).strip()
         ).resolve()
-    except subprocess.CalledProcessError as e:
-        print(f"Error: Not inside a Git repository. {e}")
+    except subprocess.CalledProcessError as error:
+        print(f"Error: Not inside a Git repository. {error}")
         return
 
     valid_paths = {}
@@ -224,8 +224,8 @@ def cl_stage(args: argparse.Namespace) -> None:
     try:
         output = subprocess.check_output(["git", "status", "--porcelain"],
                                          text=True).splitlines()
-    except subprocess.CalledProcessError as e:
-        print(f"Error getting git status: {e}")
+    except subprocess.CalledProcessError as error:
+        print(f"Error getting git status: {error}")
         return
 
     untracked_files = set()
@@ -257,8 +257,8 @@ def cl_stage(args: argparse.Namespace) -> None:
         print(f"Staged tracked files from changelist '{name}':")
         for file in to_stage:
             print(f"  {file}")
-    except subprocess.CalledProcessError as e:
-        print(f"Error staging files: {e}")
+    except subprocess.CalledProcessError as error:
+        print(f"Error staging files: {error}")
         return
 
     del changelists[name]
@@ -297,16 +297,16 @@ def cl_status(args: argparse.Namespace) -> None:
             subprocess.check_output(["git", "rev-parse", "--show-toplevel"],
                                     text=True).strip()
         ).resolve()
-    except subprocess.CalledProcessError as e:
-        print(f"Error: Not inside a Git repository. {e}")
+    except subprocess.CalledProcessError as error:
+        print(f"Error: Not inside a Git repository. {error}")
         sys.exit(1)
 
     try:
         output = subprocess.check_output(
             ["git", "status", "--porcelain", "--untracked-files=all"],
             text=True).splitlines()
-    except subprocess.CalledProcessError as e:
-        print(f"Error: Failed to run git status. {e}")
+    except subprocess.CalledProcessError as error:
+        print(f"Error: Failed to run git status. {error}")
         sys.exit(1)
 
     status_map = {}
@@ -415,8 +415,8 @@ def cl_commit(args: argparse.Namespace) -> None:
             subprocess.check_output(["git", "rev-parse", "--show-toplevel"],
                                     text=True).strip()
         ).resolve()
-    except subprocess.CalledProcessError as e:
-        print(f"Error: Not inside a Git repository. {e}")
+    except subprocess.CalledProcessError as error:
+        print(f"Error: Not inside a Git repository. {error}")
         return
 
     valid_paths = {}
@@ -427,8 +427,8 @@ def cl_commit(args: argparse.Namespace) -> None:
     try:
         output = subprocess.check_output(["git", "status", "--porcelain"],
                                          text=True).splitlines()
-    except subprocess.CalledProcessError as e:
-        print(f"Error getting git status: {e}")
+    except subprocess.CalledProcessError as error:
+        print(f"Error getting git status: {error}")
         return
 
     untracked_files = set()
@@ -457,15 +457,15 @@ def cl_commit(args: argparse.Namespace) -> None:
 
     try:
         subprocess.run(["git", "add", "--"] + to_commit, check=True)
-    except subprocess.CalledProcessError as e:
-        print(f"Error staging files for commit: {e}")
+    except subprocess.CalledProcessError as error:
+        print(f"Error staging files for commit: {error}")
         return
 
     try:
         subprocess.run(["git", "commit", "-m", args.message], check=True)
         print(f"Committed changelist '{name}' with message: {args.message}")
-    except subprocess.CalledProcessError as e:
-        print(f"Error committing changelist '{name}': {e}")
+    except subprocess.CalledProcessError as error:
+        print(f"Error committing changelist '{name}': {error}")
         return
 
     del changelists[name]

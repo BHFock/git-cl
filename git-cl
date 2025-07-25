@@ -31,6 +31,8 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
+# pylint: disable=invalid-name
+#
 """
 git-cl: Manage changelists within a Git working directory.
 
@@ -318,6 +320,46 @@ def clutil_get_tracked_files(files: list[str]) -> list[str]:
 
     return tracked_files
 
+
+def clutil_get_file_status_map() -> dict[str, str]:
+    """Get a mapping of files to their git status codes."""
+    git_root = clutil_get_git_root()
+    output = clutil_get_git_status(include_untracked=True)
+
+    status_map = {}
+    for line in output:
+        code = line[:2]
+        raw_path = line[3:].strip()
+        abs_path = (git_root / raw_path).resolve()
+        rel_path = abs_path.relative_to(git_root).as_posix()
+
+        if code == "??":
+            status_map[rel_path] = "??"
+        elif code in (" D", "D "):
+            status_map[rel_path] = "D"
+        elif code.strip().startswith("A"):
+            status_map[rel_path] = "A"
+        elif "M" in code or "T" in code or "R" in code or "C" in code:
+            status_map[rel_path] = "M"
+        else:
+            status_map[rel_path] = " "
+
+    return status_map
+
+
+def clutil_format_file_status(file: str, status_map: dict[str, str], git_root: Path) -> str:
+    """Format a file with its status for display."""
+    abs_file = (Path.cwd() / file).resolve()
+    try:
+        rel_file = abs_file.relative_to(git_root).as_posix()
+    except ValueError:
+        rel_file = file
+
+    status = status_map.get(rel_file, " ")
+    tag = f"[{status}]" if status != " " else "[ ]"
+    return f"  {tag} {file}"
+
+
 # =============================================================================
 # CLI COMMANDS
 # =============================================================================
@@ -408,47 +450,18 @@ def cl_status(_args: argparse.Namespace) -> None:
         args: argparse.Namespace (not used).
     """
     changelists = clutil_load()
-
     git_root = clutil_get_git_root()
+    status_map = clutil_get_file_status_map()
 
-    output = clutil_get_git_status(include_untracked=True)
-
-    status_map = {}
-    for line in output:
-        code = line[:2]
-        raw_path = line[3:].strip()
-        abs_path = (git_root / raw_path).resolve()
-        rel_path = abs_path.relative_to(git_root).as_posix()
-
-        if code == "??":
-            status_map[rel_path] = "??"
-        elif code == " D":
-            status_map[rel_path] = "D"
-        elif code == "D ":
-            status_map[rel_path] = "D"
-        elif code.strip().startswith("A"):
-            status_map[rel_path] = "A"
-        elif "M" in code or "T" in code or "R" in code or "C" in code:
-            status_map[rel_path] = "M"
-        else:
-            status_map[rel_path] = " "
-
+    # Show files grouped by changelist
     assigned_files = set()
-    for files in changelists.values():
-        assigned_files.update(files)
-
     for cl_name, files in changelists.items():
         print(f"{cl_name}:")
         for file in files:
-            abs_file = (Path.cwd() / file).resolve()
-            try:
-                rel_file = abs_file.relative_to(git_root).as_posix()
-            except ValueError:
-                rel_file = file
-            status = status_map.get(rel_file, " ")
-            tag = f"[{status}]" if status != " " else "[ ]"
-            print(f"  {tag} {file}")
+            print(clutil_format_file_status(file, status_map, git_root))
+        assigned_files.update(files)
 
+    # Show unassigned files
     no_cl_files = [file for file in status_map if file not in assigned_files]
     if no_cl_files:
         print("No Changelist:")

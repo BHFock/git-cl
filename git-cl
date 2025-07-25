@@ -160,13 +160,28 @@ def clutil_validate_name(name: str) -> bool:
     Returns:
         bool: True if the name is valid, False otherwise.
     """
-    if not name or name.isspace():
+    # Check for empty names
+    if not name:
         return False
-    if name in ['.', '..', 'HEAD', 'master', 'main']:
+
+    # Check for reasonable length (1-100 characters)
+    if len(name) > 100 or len(name) == 0:
         return False
-    if any(char in name for char in ['/', '\\', ':', '*', '?',
-                                     '"', '<', '>', '|']):
+
+    # Only allow safe characters: letters, numbers, hyphens, underscores, dots
+    allowed_chars = set('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.')
+    if not all(char in allowed_chars for char in name):
         return False
+
+    # Don't allow names that are only dots (filesystem issues)
+    if all(char == '.' for char in name):
+        return False
+
+    # Check for Git reserved words (only the critical ones)
+    reserved_names = {'HEAD', 'FETCH_HEAD', 'ORIG_HEAD', 'MERGE_HEAD', 'CHERRY_PICK_HEAD', 'index'}
+    if name in reserved_names:
+        return False
+
     return True
 
 

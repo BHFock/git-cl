@@ -55,7 +55,7 @@ import sys
 import subprocess
 from pathlib import Path
 
-def cl_get_file() -> Path:
+def clutil_get_file() -> Path:
     """
     Returns the path to the changelist file inside the Git directory.
 
@@ -84,7 +84,7 @@ def clutil_load() -> dict[str, list[str]]:
     Returns:
         dict: A mapping of changelist names to lists of file paths.
     """
-    cl_file = cl_get_file()
+    cl_file = clutil_get_file()
     if cl_file.exists():
         try:
             with open(cl_file, "r") as f:
@@ -101,7 +101,7 @@ def cl_save(data: dict[str, list[str]]) -> None:
     Args:
         data (dict): Mapping of changelist names to lists of files.
     """
-    cl_file = cl_get_file()
+    cl_file = clutil_get_file()
     cleaned = {k: v for k, v in data.items() if v}
     try:
         with open(cl_file, "w") as f:

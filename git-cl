@@ -169,7 +169,12 @@ def clutil_validate_name(name: str) -> bool:
         return False
 
     # Only allow safe characters: letters, numbers, hyphens, underscores, dots
-    allowed_chars = set('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.')
+    allowed_chars = set(
+        'abcdefghijklmnopqrstuvwxyz'
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+        '0123456789-_.'
+    )
+
     if not all(char in allowed_chars for char in name):
         return False
 
@@ -178,7 +183,8 @@ def clutil_validate_name(name: str) -> bool:
         return False
 
     # Check for Git reserved words (only the critical ones)
-    reserved_names = {'HEAD', 'FETCH_HEAD', 'ORIG_HEAD', 'MERGE_HEAD', 'CHERRY_PICK_HEAD', 'index'}
+    reserved_names = {'HEAD', 'FETCH_HEAD', 'ORIG_HEAD', 'MERGE_HEAD',
+                      'CHERRY_PICK_HEAD', 'index'}
     if name in reserved_names:
         return False
 
@@ -274,7 +280,6 @@ def clutil_sanitize_path(file_path: str, git_root: Path) -> str | None:
     except (OSError, ValueError, RuntimeError):
         # Any path resolution errors
         return None
-
 
 
 # =============================================================================

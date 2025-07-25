@@ -55,6 +55,10 @@ import sys
 import subprocess
 from pathlib import Path
 
+# =============================================================================
+# INTERNAL UTILITIES
+# =============================================================================
+
 def clutil_get_file() -> Path:
     """
     Returns the path to the changelist file inside the Git directory.
@@ -144,6 +148,10 @@ def clutil_validate_name(name: str) -> bool:
     if any(char in name for char in ['/', '\\', ':', '*', '?', '"', '<', '>', '|']):
         return False
     return True
+
+# =============================================================================
+# CLI COMMANDS
+# =============================================================================
 
 def cl_add(args: argparse.Namespace) -> None:
     """

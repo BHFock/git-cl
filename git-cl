@@ -217,9 +217,9 @@ def cl_stage(args: argparse.Namespace) -> None:
         return
 
     valid_paths = {}
-    for f in valid_files:
-        abs_path = (Path.cwd() / f).resolve()
-        valid_paths[abs_path] = f
+    for file in valid_files:
+        abs_path = (Path.cwd() / file).resolve()
+        valid_paths[abs_path] = file
 
     try:
         output = subprocess.check_output(["git", "status", "--porcelain"],
@@ -255,8 +255,8 @@ def cl_stage(args: argparse.Namespace) -> None:
     try:
         subprocess.run(["git", "add", "--"] + to_stage, check=True)
         print(f"Staged tracked files from changelist '{name}':")
-        for f in to_stage:
-            print(f"  {f}")
+        for file in to_stage:
+            print(f"  {file}")
     except subprocess.CalledProcessError as e:
         print(f"Error staging files: {e}")
         return
@@ -420,9 +420,9 @@ def cl_commit(args: argparse.Namespace) -> None:
         return
 
     valid_paths = {}
-    for f in valid_files:
-        abs_path = (Path.cwd() / f).resolve()
-        valid_paths[abs_path] = f
+    for file in valid_files:
+        abs_path = (Path.cwd() / file).resolve()
+        valid_paths[abs_path] = file
 
     try:
         output = subprocess.check_output(["git", "status", "--porcelain"],

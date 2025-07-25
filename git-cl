@@ -181,6 +181,31 @@ def clutil_get_git_root() -> Path:
         sys.exit(1)
 
 
+def clutil_get_git_status(include_untracked: bool = False) -> list[str]:
+    """
+    Returns the output of 'git status --porcelain' as a list of lines.
+
+    Args:
+        include_untracked (bool): If True, includes untracked files using
+                                  '--untracked-files=all'.
+
+    Returns:
+        list[str]: Each line represents a file's status.
+
+    Raises:
+        SystemExit: If the git command fails.
+    """
+    cmd = ["git", "status", "--porcelain"]
+    if include_untracked:
+        cmd.append("--untracked-files=all")
+
+    try:
+        return subprocess.check_output(cmd, text=True).splitlines()
+    except subprocess.CalledProcessError as error:
+        print(f"Error getting git status: {error}")
+        sys.exit(1)
+
+
 # =============================================================================
 # CLI COMMANDS
 # =============================================================================
@@ -236,12 +261,7 @@ def cl_stage(args: argparse.Namespace) -> None:
         abs_path = (Path.cwd() / file).resolve()
         valid_paths[abs_path] = file
 
-    try:
-        output = subprocess.check_output(["git", "status", "--porcelain"],
-                                         text=True).splitlines()
-    except subprocess.CalledProcessError as error:
-        print(f"Error getting git status: {error}")
-        return
+    output = clutil_get_git_status()
 
     untracked_files = set()
     untracked_dirs = set()
@@ -309,13 +329,7 @@ def cl_status(_args: argparse.Namespace) -> None:
 
     git_root = clutil_get_git_root()
 
-    try:
-        output = subprocess.check_output(
-            ["git", "status", "--porcelain", "--untracked-files=all"],
-            text=True).splitlines()
-    except subprocess.CalledProcessError as error:
-        print(f"Error: Failed to run git status. {error}")
-        sys.exit(1)
+    output = clutil_get_git_status(include_untracked=True)
 
     status_map = {}
     for line in output:
@@ -425,12 +439,7 @@ def cl_commit(args: argparse.Namespace) -> None:
         abs_path = (Path.cwd() / file).resolve()
         valid_paths[abs_path] = file
 
-    try:
-        output = subprocess.check_output(["git", "status", "--porcelain"],
-                                         text=True).splitlines()
-    except subprocess.CalledProcessError as error:
-        print(f"Error getting git status: {error}")
-        return
+    output = clutil_get_git_status()
 
     untracked_files = set()
     untracked_dirs = set()

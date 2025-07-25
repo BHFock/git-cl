@@ -39,16 +39,6 @@ git cl list
 
 Git will recognise `git-cl` as the handler for `git cl`, just like its built-in commands.
 
-### Optional: Replace `git status` with changelist view
-
-For a more integrated experience, you can alias `git st` to show the changelist-enhanced status:
-
-```
-git config alias.st '!git cl st'
-```
-
-After setting this alias, `git st` will show your modified files grouped by changelist, making it easier to decide what to stage next. This is particularly useful for former Subversion users who want to maintain a similar workflow.
-
 ## Usage
 
 Below are a few common tasks using `git cl`:
@@ -96,7 +86,7 @@ git cl add do_not_commit notes/tmp.txt
 You iterate and clean up your work. To see what you have, check the changelist status:
 
 ```bash
-git cl st    # or 'git st' if you've set up the alias
+git cl status
 ```
 
 Once everything in the `ok` changelist is confirmed, you stage those files with:

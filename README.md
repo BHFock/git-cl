@@ -1,10 +1,8 @@
 # git-cl
 
-> Git extension for grouping files before commit - changelists like in SVN
+> A Git subcommand to manage changelists — group files before staging or committing, like in Subversion.
 
-![Status: Prototype](https://img.shields.io/badge/status-prototype-blue)
-
-`git-cl` is a prototype command-line tool that introduces changelists to Git. It allows users to assign working directory files to named changelists, making it easier to manage partial commits and organise work by intent.
+`git-cl` is a command-line tool that introduces changelists to Git. It allows users to assign working directory files to named changelists, making it easier to manage partial commits and organise work by intent.
 
 ## Features
 
@@ -13,6 +11,11 @@
 - Stage and commit changelist contents selectively
 - Simple JSON-based local tracking (no changes to Git internals)
 - Seamless integration via `git cl` subcommand interface
+
+### Requirements
+
+- Python 3.7+
+- Git installed and available in your `$PATH`
 
 ### How It Works
 
@@ -112,7 +115,7 @@ Meanwhile, other changelists remain untouched and visible in `git cl status` —
 
 ## Maintenance Disclaimer
 
-This is a personal prototype, built to support my own Git workflow. It’s shared as-is for reference. No active maintenance or collaboration is planned — but forks are welcome.
+This is a personal tool, built to support my own Git workflow. It’s shared as-is for reference. No active maintenance or collaboration is planned — but forks are welcome.
 
 ## License
 

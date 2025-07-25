@@ -77,7 +77,7 @@ def cl_get_file() -> Path:
         print("Please run this command from within a Git repository.")
         sys.exit(1)
 
-def cl_load() -> dict[str, list[str]]:
+def clutil_load() -> dict[str, list[str]]:
     """
     Loads changelist data from the 'cl.json' file.
 
@@ -155,7 +155,7 @@ def cl_add(args: argparse.Namespace) -> None:
     if not cl_validate_name(args.name):
         print(f"Error: Invalid changelist name '{args.name}'. Names cannot contain special characters or be Git reserved words.")
         return
-    changelists = cl_load()
+    changelists = clutil_load()
     files = cl_validate_files(args.files)
     if args.name not in changelists:
         changelists[args.name] = []
@@ -175,7 +175,7 @@ def cl_stage(args: argparse.Namespace) -> None:
     Args:
         args: argparse.Namespace with 'name' attribute (changelist name).
     """
-    changelists = cl_load()
+    changelists = clutil_load()
     name = args.name
     if name not in changelists:
         print(f"Changelist '{name}' not found.")
@@ -247,7 +247,7 @@ def cl_list(args: argparse.Namespace) -> None:
     Args:
         args: argparse.Namespace (not used).
     """
-    changelists = cl_load()
+    changelists = clutil_load()
     if not changelists:
         print("No changelists found.")
         return
@@ -263,7 +263,7 @@ def cl_status(args: argparse.Namespace) -> None:
     Args:
         args: argparse.Namespace (not used).
     """
-    changelists = cl_load()
+    changelists = clutil_load()
 
     try:
         git_root = Path(
@@ -332,7 +332,7 @@ def cl_remove(args: argparse.Namespace) -> None:
     Args:
         args: argparse.Namespace with 'files' attribute.
     """
-    changelists = cl_load()
+    changelists = clutil_load()
     removed = []
 
     for file in args.files:
@@ -355,7 +355,7 @@ def cl_delete(args: argparse.Namespace) -> None:
     Args:
         args: argparse.Namespace with 'name' attribute.
     """
-    changelists = cl_load()
+    changelists = clutil_load()
     if args.name in changelists:
         del changelists[args.name]
         cl_save(changelists)
@@ -370,7 +370,7 @@ def cl_commit(args: argparse.Namespace) -> None:
     Args:
         args: argparse.Namespace with 'name' and 'message' attributes.
     """
-    changelists = cl_load()
+    changelists = clutil_load()
     name = args.name
     if name not in changelists:
         print(f"Changelist '{name}' not found.")

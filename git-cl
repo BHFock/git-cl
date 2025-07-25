@@ -181,9 +181,9 @@ def cl_add(args: argparse.Namespace) -> None:
     if args.name not in changelists:
         changelists[args.name] = []
     for file in files:
-        for cl in changelists.values():
-            if file in cl:
-                cl.remove(file)
+        for clist in changelists.values():
+            if file in clist:
+                clist.remove(file)
         if file not in changelists[args.name]:
             changelists[args.name].append(file)
     clutil_save(changelists)

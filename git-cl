@@ -94,7 +94,7 @@ def clutil_load() -> dict[str, list[str]]:
             return {}
     return {}
 
-def cl_save(data: dict[str, list[str]]) -> None:
+def clutil_save(data: dict[str, list[str]]) -> None:
     """
     Saves the changelist data to 'cl.json', omitting empty changelists.
 
@@ -165,7 +165,7 @@ def cl_add(args: argparse.Namespace) -> None:
                 cl.remove(file)
         if file not in changelists[args.name]:
             changelists[args.name].append(file)
-    cl_save(changelists)
+    clutil_save(changelists)
     print(f"Added to '{args.name}': {files}")
 
 def cl_stage(args: argparse.Namespace) -> None:
@@ -237,7 +237,7 @@ def cl_stage(args: argparse.Namespace) -> None:
         return
 
     del changelists[name]
-    cl_save(changelists)
+    clutil_save(changelists)
     print(f"Deleted changelist '{name}'")
 
 def cl_list(args: argparse.Namespace) -> None:
@@ -346,7 +346,7 @@ def cl_remove(args: argparse.Namespace) -> None:
             print(f"'{file}' was not found in any changelist.")
 
     if removed:
-        cl_save(changelists)
+        clutil_save(changelists)
 
 def cl_delete(args: argparse.Namespace) -> None:
     """
@@ -358,7 +358,7 @@ def cl_delete(args: argparse.Namespace) -> None:
     changelists = clutil_load()
     if args.name in changelists:
         del changelists[args.name]
-        cl_save(changelists)
+        clutil_save(changelists)
         print(f"Deleted changelist '{args.name}'")
     else:
         print(f"Changelist '{args.name}' not found.")
@@ -436,7 +436,7 @@ def cl_commit(args: argparse.Namespace) -> None:
         return
 
     del changelists[name]
-    cl_save(changelists)
+    clutil_save(changelists)
     print(f"Deleted changelist '{name}'")
 
 def main() -> None:

@@ -159,6 +159,28 @@ def clutil_validate_name(name: str) -> bool:
     return True
 
 
+def clutil_get_git_root() -> Path:
+    """
+    Returns the absolute path to the root of the current Git repository.
+
+    Returns:
+        Path: The top-level directory of the Git repository.
+
+    Raises:
+        SystemExit: If the current directory is not inside a Git repository.
+    """
+    try:
+        return Path(
+            subprocess.check_output(
+                ["git", "rev-parse", "--show-toplevel"],
+                text=True
+            ).strip()
+        ).resolve()
+    except subprocess.CalledProcessError as error:
+        print(f"Error: Not inside a Git repository. {error}")
+        sys.exit(1)
+
+
 # =============================================================================
 # CLI COMMANDS
 # =============================================================================
@@ -207,14 +229,7 @@ def cl_stage(args: argparse.Namespace) -> None:
     files = changelists[name]
     valid_files = clutil_validate_files(files)
 
-    try:
-        git_root = Path(
-            subprocess.check_output(["git", "rev-parse", "--show-toplevel"],
-                                    text=True).strip()
-        ).resolve()
-    except subprocess.CalledProcessError as error:
-        print(f"Error: Not inside a Git repository. {error}")
-        return
+    git_root = clutil_get_git_root()
 
     valid_paths = {}
     for file in valid_files:
@@ -292,14 +307,7 @@ def cl_status(_args: argparse.Namespace) -> None:
     """
     changelists = clutil_load()
 
-    try:
-        git_root = Path(
-            subprocess.check_output(["git", "rev-parse", "--show-toplevel"],
-                                    text=True).strip()
-        ).resolve()
-    except subprocess.CalledProcessError as error:
-        print(f"Error: Not inside a Git repository. {error}")
-        sys.exit(1)
+    git_root = clutil_get_git_root()
 
     try:
         output = subprocess.check_output(
@@ -410,14 +418,7 @@ def cl_commit(args: argparse.Namespace) -> None:
     files = changelists[name]
     valid_files = clutil_validate_files(files)
 
-    try:
-        git_root = Path(
-            subprocess.check_output(["git", "rev-parse", "--show-toplevel"],
-                                    text=True).strip()
-        ).resolve()
-    except subprocess.CalledProcessError as error:
-        print(f"Error: Not inside a Git repository. {error}")
-        return
+    git_root = clutil_get_git_root()
 
     valid_paths = {}
     for file in valid_files:

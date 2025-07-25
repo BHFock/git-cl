@@ -34,10 +34,10 @@
 """
 git-cl: Manage changelists within a Git working directory.
 
-This CLI tool allows you to group files into named changelists before staging or
-committing. Changelists are saved in a 'cl.json' file inside the Git directory.
-You can then operate on changelists as logical groups: staging, committing,
-listing, or deleting them.
+This CLI tool allows you to group files into named changelists before staging
+or committing. Changelists are saved in a 'cl.json' file inside the Git
+directory. You can then operate on changelists as logical groups: staging,
+committing, listing, or deleting them.
 
 Features:
 - Add/remove files to/from changelists
@@ -134,7 +134,8 @@ def clutil_validate_files(files: list[str]) -> list[str]:
         if Path(file).exists():
             valid.append(file)
         else:
-            print(f"Warning: '{file}' does not exist or is not tracked by Git.")
+            print(f"Warning: '{file}' does not exist or "
+                  "is not tracked by Git.")
     return valid
 
 
@@ -152,7 +153,8 @@ def clutil_validate_name(name: str) -> bool:
         return False
     if name in ['.', '..', 'HEAD', 'master', 'main']:
         return False
-    if any(char in name for char in ['/', '\\', ':', '*', '?', '"', '<', '>', '|']):
+    if any(char in name for char in ['/', '\\', ':', '*', '?',
+                                     '"', '<', '>', '|']):
         return False
     return True
 
@@ -170,7 +172,9 @@ def cl_add(args: argparse.Namespace) -> None:
         args: argparse.Namespace with 'name' and 'files' attributes.
     """
     if not clutil_validate_name(args.name):
-        print(f"Error: Invalid changelist name '{args.name}'. Names cannot contain special characters or be Git reserved words.")
+        print(
+            f"Error: Invalid changelist name '{args.name}'. Names cannot "
+            "contain special characters or be Git reserved words.")
         return
     changelists = clutil_load()
     files = clutil_validate_files(args.files)
@@ -188,7 +192,8 @@ def cl_add(args: argparse.Namespace) -> None:
 
 def cl_stage(args: argparse.Namespace) -> None:
     """
-    Stages all tracked files in the given changelist and deletes the changelist.
+    Stages all tracked files in the given changelist and
+    deletes the changelist.
 
     Args:
         args: argparse.Namespace with 'name' attribute (changelist name).
@@ -204,7 +209,8 @@ def cl_stage(args: argparse.Namespace) -> None:
 
     try:
         git_root = Path(
-            subprocess.check_output(["git", "rev-parse", "--show-toplevel"], text=True).strip()
+            subprocess.check_output(["git", "rev-parse", "--show-toplevel"],
+                                    text=True).strip()
         ).resolve()
     except subprocess.CalledProcessError as e:
         print(f"Error: Not inside a Git repository. {e}")
@@ -216,7 +222,8 @@ def cl_stage(args: argparse.Namespace) -> None:
         valid_paths[abs_path] = f
 
     try:
-        output = subprocess.check_output(["git", "status", "--porcelain"], text=True).splitlines()
+        output = subprocess.check_output(["git", "status", "--porcelain"],
+                                         text=True).splitlines()
     except subprocess.CalledProcessError as e:
         print(f"Error getting git status: {e}")
         return
@@ -287,7 +294,8 @@ def cl_status(args: argparse.Namespace) -> None:
 
     try:
         git_root = Path(
-            subprocess.check_output(["git", "rev-parse", "--show-toplevel"], text=True).strip()
+            subprocess.check_output(["git", "rev-parse", "--show-toplevel"],
+                                    text=True).strip()
         ).resolve()
     except subprocess.CalledProcessError as e:
         print(f"Error: Not inside a Git repository. {e}")
@@ -295,8 +303,8 @@ def cl_status(args: argparse.Namespace) -> None:
 
     try:
         output = subprocess.check_output(
-            ["git", "status", "--porcelain", "--untracked-files=all"], text=True
-        ).splitlines()
+            ["git", "status", "--porcelain", "--untracked-files=all"],
+            text=True).splitlines()
     except subprocess.CalledProcessError as e:
         print(f"Error: Failed to run git status. {e}")
         sys.exit(1)
@@ -404,7 +412,8 @@ def cl_commit(args: argparse.Namespace) -> None:
 
     try:
         git_root = Path(
-            subprocess.check_output(["git", "rev-parse", "--show-toplevel"], text=True).strip()
+            subprocess.check_output(["git", "rev-parse", "--show-toplevel"],
+                                    text=True).strip()
         ).resolve()
     except subprocess.CalledProcessError as e:
         print(f"Error: Not inside a Git repository. {e}")
@@ -416,7 +425,8 @@ def cl_commit(args: argparse.Namespace) -> None:
         valid_paths[abs_path] = f
 
     try:
-        output = subprocess.check_output(["git", "status", "--porcelain"], text=True).splitlines()
+        output = subprocess.check_output(["git", "status", "--porcelain"],
+                                         text=True).splitlines()
     except subprocess.CalledProcessError as e:
         print(f"Error getting git status: {e}")
         return
@@ -466,7 +476,8 @@ def cl_commit(args: argparse.Namespace) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(
         prog='git-cl',
-        description='Manage Git changelists: group related files before staging or committing.',
+        description=("Manage Git changelists: group related files before "
+                     "staging or committing."),
         epilog=(
             "Example usage:\n"
             "  git cl add my-feature file1.py file2.py\n"
@@ -485,7 +496,8 @@ def main() -> None:
         help='Show version and exit'
     )
 
-    subparsers = parser.add_subparsers(dest='command', required=True, title='Commands')
+    subparsers = parser.add_subparsers(dest='command', required=True,
+                                       title='Commands')
 
     # add
     add_parser = subparsers.add_parser(
@@ -494,26 +506,32 @@ def main() -> None:
         description='Add one or more files to a named changelist. '
                     'If the changelist does not exist, it will be created.'
     )
-    add_parser.add_argument('name', metavar='CHANGELIST', help='Name of the changelist')
-    add_parser.add_argument('files', metavar='FILE', nargs='+', help='Files to add to the changelist')
+    add_parser.add_argument('name', metavar='CHANGELIST',
+                            help='Name of the changelist')
+    add_parser.add_argument('files', metavar='FILE', nargs='+',
+                            help='Files to add to the changelist')
     add_parser.set_defaults(func=cl_add)
 
     # remove
     remove_parser = subparsers.add_parser(
         'remove',
         help='Remove one or more files from their changelists',
-        description='Detaches the specified files from any changelists they belong to.'
+        description=("Detaches the specified files from any changelists "
+                     "they belong to.")
     )
-    remove_parser.add_argument('files', metavar='FILE', nargs='+', help='Files to remove from any changelist')
+    remove_parser.add_argument('files', metavar='FILE', nargs='+',
+                               help='Files to remove from any changelist')
     remove_parser.set_defaults(func=cl_remove)
 
     # delete
     delete_parser = subparsers.add_parser(
         'delete',
         help='Delete a changelist by name',
-        description='Deletes the specified changelist and removes its file references.'
+        description=("Deletes the specified changelist and removes its "
+                     "file references.")
     )
-    delete_parser.add_argument('name', metavar='CHANGELIST', help='Name of the changelist to delete')
+    delete_parser.add_argument('name', metavar='CHANGELIST',
+                               help='Name of the changelist to delete')
     delete_parser.set_defaults(func=cl_delete)
 
     # list / ls
@@ -521,7 +539,8 @@ def main() -> None:
         'list',
         aliases=['ls'],
         help='List all changelists and their files',
-        description='Displays all changelists and the files associated with each.'
+        description=("Displays all changelists and the files "
+                     "associated with each.")
     )
     list_parser.set_defaults(func=cl_list)
 
@@ -530,7 +549,8 @@ def main() -> None:
         'status',
         aliases=['st'],
         help='Show working tree changes grouped by changelist',
-        description='Displays all file changes grouped by changelist. Unassigned changes appear under "No Changelist".'
+        description=("Displays all file changes grouped by changelist. "
+                     "Unassigned changes appear under 'No Changelist'.")
     )
     status_parser.set_defaults(func=cl_status)
 
@@ -538,19 +558,24 @@ def main() -> None:
     stage_parser = subparsers.add_parser(
         'stage',
         help='Stage all tracked files in a changelist and delete it',
-        description='Stages all **tracked** files from the changelist and deletes the changelist afterward.'
+        description=("Stages all **tracked** files from the changelist and "
+                     "deletes the changelist afterward.")
     )
-    stage_parser.add_argument('name', metavar='CHANGELIST', help='Name of the changelist')
+    stage_parser.add_argument('name', metavar='CHANGELIST',
+                              help='Name of the changelist')
     stage_parser.set_defaults(func=cl_stage)
 
     # commit
     commit_parser = subparsers.add_parser(
         'commit',
         help='Commit all tracked files in a changelist',
-        description='Stages and commits all **tracked** files from the changelist using the provided message.'
+        description=("Stages and commits all **tracked** files from the "
+                     "changelist using the provided message.")
     )
-    commit_parser.add_argument('name', metavar='CHANGELIST', help='Name of the changelist')
-    commit_parser.add_argument('-m', '--message', required=True, help='Commit message')
+    commit_parser.add_argument('name', metavar='CHANGELIST',
+                               help='Name of the changelist')
+    commit_parser.add_argument('-m', '--message', required=True,
+                               help='Commit message')
     commit_parser.set_defaults(func=cl_commit)
 
     args = parser.parse_args()

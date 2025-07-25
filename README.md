@@ -12,6 +12,11 @@
 - Simple JSON-based local tracking (no changes to Git internals)
 - Seamless integration via `git cl` subcommand interface
 
+### Requirements
+
+- Python 3.7+
+- Git installed and available in your `$PATH`
+
 ### How It Works
 
 Changelists are stored in a simple `cl.json` file inside your repository’s `.git` directory. This keeps all metadata local and avoids polluting your working directory or history.

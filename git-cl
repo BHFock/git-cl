@@ -127,7 +127,7 @@ def clutil_validate_files(files: list[str]) -> list[str]:
             print(f"Warning: '{file}' does not exist or is not tracked by Git.")
     return valid
 
-def cl_validate_name(name: str) -> bool:
+def clutil_validate_name(name: str) -> bool:
     """
     Validates that a changelist name is safe to use.
 
@@ -152,7 +152,7 @@ def cl_add(args: argparse.Namespace) -> None:
     Args:
         args: argparse.Namespace with 'name' and 'files' attributes.
     """
-    if not cl_validate_name(args.name):
+    if not clutil_validate_name(args.name):
         print(f"Error: Invalid changelist name '{args.name}'. Names cannot contain special characters or be Git reserved words.")
         return
     changelists = clutil_load()

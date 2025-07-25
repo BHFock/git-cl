@@ -34,7 +34,7 @@ mv git-cl ~/bin/
 Make sure `~/bin` is listed in your `$PATH`. You’ll then be able to run:
 
 ```
-git cl list
+git cl -h
 ```
 
 Git will recognise `git-cl` as the handler for `git cl`, just like its built-in commands.

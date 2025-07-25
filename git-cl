@@ -95,7 +95,7 @@ def clutil_load() -> dict[str, list[str]]:
     cl_file = clutil_get_file()
     if cl_file.exists():
         try:
-            with open(cl_file, "r") as f:
+            with open(cl_file, "r", encoding="utf-8") as f:
                 return json.load(f)
         except (json.JSONDecodeError, OSError) as e:
             print(f"Error reading changelists: {e}")

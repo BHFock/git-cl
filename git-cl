@@ -109,7 +109,7 @@ def clutil_save(data: dict[str, list[str]]) -> None:
     except OSError as e:
         print(f"Error saving changelists: {e}")
 
-def cl_validate_files(files: list[str]) -> list[str]:
+def clutil_validate_files(files: list[str]) -> list[str]:
     """
     Validates that files exist on disk.
 
@@ -156,7 +156,7 @@ def cl_add(args: argparse.Namespace) -> None:
         print(f"Error: Invalid changelist name '{args.name}'. Names cannot contain special characters or be Git reserved words.")
         return
     changelists = clutil_load()
-    files = cl_validate_files(args.files)
+    files = clutil_validate_files(args.files)
     if args.name not in changelists:
         changelists[args.name] = []
     for file in files:
@@ -182,7 +182,7 @@ def cl_stage(args: argparse.Namespace) -> None:
         return
 
     files = changelists[name]
-    valid_files = cl_validate_files(files)
+    valid_files = clutil_validate_files(files)
 
     try:
         git_root = Path(
@@ -377,7 +377,7 @@ def cl_commit(args: argparse.Namespace) -> None:
         return
 
     files = changelists[name]
-    valid_files = cl_validate_files(files)
+    valid_files = clutil_validate_files(files)
 
     try:
         git_root = Path(

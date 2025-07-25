@@ -34,9 +34,10 @@
 """
 git-cl: Manage changelists within a Git working directory.
 
-This CLI tool allows you to group files into named changelists before staging or committing.
-Changelists are saved in a 'cl.json' file inside the Git directory. You can then operate on
-changelists as logical groups: staging, committing, listing, or deleting them.
+This CLI tool allows you to group files into named changelists before staging or
+committing. Changelists are saved in a 'cl.json' file inside the Git directory.
+You can then operate on changelists as logical groups: staging, committing,
+listing, or deleting them.
 
 Features:
 - Add/remove files to/from changelists
@@ -55,9 +56,11 @@ import sys
 import subprocess
 from pathlib import Path
 
+
 # =============================================================================
 # INTERNAL UTILITIES
 # =============================================================================
+
 
 def clutil_get_file() -> Path:
     """
@@ -81,6 +84,7 @@ def clutil_get_file() -> Path:
         print("Please run this command from within a Git repository.")
         sys.exit(1)
 
+
 def clutil_load() -> dict[str, list[str]]:
     """
     Loads changelist data from the 'cl.json' file.
@@ -98,6 +102,7 @@ def clutil_load() -> dict[str, list[str]]:
             return {}
     return {}
 
+
 def clutil_save(data: dict[str, list[str]]) -> None:
     """
     Saves the changelist data to 'cl.json', omitting empty changelists.
@@ -112,6 +117,7 @@ def clutil_save(data: dict[str, list[str]]) -> None:
             json.dump(cleaned, f, indent=2)
     except OSError as e:
         print(f"Error saving changelists: {e}")
+
 
 def clutil_validate_files(files: list[str]) -> list[str]:
     """
@@ -131,6 +137,7 @@ def clutil_validate_files(files: list[str]) -> list[str]:
             print(f"Warning: '{file}' does not exist or is not tracked by Git.")
     return valid
 
+
 def clutil_validate_name(name: str) -> bool:
     """
     Validates that a changelist name is safe to use.
@@ -149,9 +156,11 @@ def clutil_validate_name(name: str) -> bool:
         return False
     return True
 
+
 # =============================================================================
 # CLI COMMANDS
 # =============================================================================
+
 
 def cl_add(args: argparse.Namespace) -> None:
     """
@@ -175,6 +184,7 @@ def cl_add(args: argparse.Namespace) -> None:
             changelists[args.name].append(file)
     clutil_save(changelists)
     print(f"Added to '{args.name}': {files}")
+
 
 def cl_stage(args: argparse.Namespace) -> None:
     """
@@ -248,6 +258,7 @@ def cl_stage(args: argparse.Namespace) -> None:
     clutil_save(changelists)
     print(f"Deleted changelist '{name}'")
 
+
 def cl_list(args: argparse.Namespace) -> None:
     """
     Lists all changelists and their associated files.
@@ -263,6 +274,7 @@ def cl_list(args: argparse.Namespace) -> None:
         print(f"{name}:")
         for file in files:
             print(f"  {file}")
+
 
 def cl_status(args: argparse.Namespace) -> None:
     """
@@ -333,6 +345,7 @@ def cl_status(args: argparse.Namespace) -> None:
             tag = f"[{status}]" if status != " " else "[ ]"
             print(f"  {tag} {file}")
 
+
 def cl_remove(args: argparse.Namespace) -> None:
     """
     Removes one or more files from any changelists they are part of.
@@ -356,6 +369,7 @@ def cl_remove(args: argparse.Namespace) -> None:
     if removed:
         clutil_save(changelists)
 
+
 def cl_delete(args: argparse.Namespace) -> None:
     """
     Deletes a changelist by name.
@@ -370,6 +384,7 @@ def cl_delete(args: argparse.Namespace) -> None:
         print(f"Deleted changelist '{args.name}'")
     else:
         print(f"Changelist '{args.name}' not found.")
+
 
 def cl_commit(args: argparse.Namespace) -> None:
     """
@@ -446,6 +461,7 @@ def cl_commit(args: argparse.Namespace) -> None:
     del changelists[name]
     clutil_save(changelists)
     print(f"Deleted changelist '{name}'")
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(
@@ -539,6 +555,7 @@ def main() -> None:
 
     args = parser.parse_args()
     args.func(args)
+
 
 if __name__ == '__main__':
     main()

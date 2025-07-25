@@ -47,6 +47,8 @@ Features:
 This tool is intended for use within Git repositories.
 """
 
+__version__ = "0.1.0"
+
 import argparse
 import json
 import sys
@@ -455,7 +457,7 @@ def main() -> None:
     parser.add_argument(
         '--version',
         action='version',
-        version='git-cl 0.1.0',
+        version=f'git-cl {__version__}',
         help='Show version and exit'
     )
 

@@ -121,7 +121,7 @@ def clutil_save(data: dict[str, list[str]]) -> None:
 
 def clutil_validate_files(files: list[str]) -> list[str]:
     """
-    Validates that files exist on disk.
+    Validates that files exist on disk and are safe to use.
 
     Args:
         files (list): List of file paths to validate.
@@ -129,12 +129,23 @@ def clutil_validate_files(files: list[str]) -> list[str]:
     Returns:
         list: List of existing and valid file paths.
     """
+    git_root = clutil_get_git_root()  # Add this line
     valid = []
+
     for file in files:
-        if Path(file).exists():
-            valid.append(file)
+        # Sanitize the path first
+        sanitized = clutil_sanitize_path(file, git_root)
+
+        if sanitized is None:
+            print(f"Warning: Skipping invalid or unsafe path: '{file}'")
+            continue
+
+        # Check if the sanitized path exists
+        full_path = git_root / sanitized
+        if full_path.exists():
+            valid.append(sanitized)  # Use sanitized path instead of original
         else:
-            print(f"Warning: '{file}' does not exist or "
+            print(f"Warning: '{sanitized}' does not exist or "
                   "is not tracked by Git.")
     return valid
 
@@ -204,6 +215,51 @@ def clutil_get_git_status(include_untracked: bool = False) -> list[str]:
     except subprocess.CalledProcessError as error:
         print(f"Error getting git status: {error}")
         sys.exit(1)
+
+
+def clutil_sanitize_path(file_path: str, git_root: Path) -> str | None:
+    """
+    Sanitizes and validates a file path for safe use with Git commands.
+
+    Args:
+        file_path (str): The file path to sanitize
+        git_root (Path): The root directory of the Git repository
+
+    Returns:
+        str | None: The sanitized path relative to git_root, or None if invalid
+    """
+    try:
+        # Convert to Path object and resolve any relative components
+        path = Path(file_path)
+
+        # If it's relative, make it relative to current working directory
+        if not path.is_absolute():
+            path = Path.cwd() / path
+
+        # Resolve any .. or . components and get absolute path
+        path = path.resolve()
+
+        # Ensure the path is within the Git repository
+        try:
+            relative_path = path.relative_to(git_root)
+        except ValueError:
+            # Path is outside the Git repository
+            return None
+
+        # Convert back to string using forward slashes (Git standard)
+        sanitized = relative_path.as_posix()
+
+        # Basic security check: reject paths with dangerous characters
+        dangerous_chars = [';', '|', '&', '`', '$', '\n', '\r', '\0']
+        if any(char in sanitized for char in dangerous_chars):
+            return None
+
+        return sanitized
+
+    except (OSError, ValueError, RuntimeError):
+        # Any path resolution errors
+        return None
+
 
 
 # =============================================================================

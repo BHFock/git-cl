@@ -474,24 +474,23 @@ def main() -> None:
     add_parser.add_argument('files', metavar='FILE', nargs='+', help='Files to add to the changelist')
     add_parser.set_defaults(func=cl_add)
 
-    # stage
-    stage_parser = subparsers.add_parser(
-        'stage',
-        help='Stage all tracked files in a changelist and delete it',
-        description='Stages all **tracked** files from the changelist and deletes the changelist afterward.'
+    # remove
+    remove_parser = subparsers.add_parser(
+        'remove',
+        help='Remove one or more files from their changelists',
+        description='Detaches the specified files from any changelists they belong to.'
     )
-    stage_parser.add_argument('name', metavar='CHANGELIST', help='Name of the changelist')
-    stage_parser.set_defaults(func=cl_stage)
+    remove_parser.add_argument('files', metavar='FILE', nargs='+', help='Files to remove from any changelist')
+    remove_parser.set_defaults(func=cl_remove)
 
-    # commit
-    commit_parser = subparsers.add_parser(
-        'commit',
-        help='Commit all tracked files in a changelist',
-        description='Stages and commits all **tracked** files from the changelist using the provided message.'
+    # delete
+    delete_parser = subparsers.add_parser(
+        'delete',
+        help='Delete a changelist by name',
+        description='Deletes the specified changelist and removes its file references.'
     )
-    commit_parser.add_argument('name', metavar='CHANGELIST', help='Name of the changelist')
-    commit_parser.add_argument('-m', '--message', required=True, help='Commit message')
-    commit_parser.set_defaults(func=cl_commit)
+    delete_parser.add_argument('name', metavar='CHANGELIST', help='Name of the changelist to delete')
+    delete_parser.set_defaults(func=cl_delete)
 
     # list / ls
     list_parser = subparsers.add_parser(
@@ -511,23 +510,24 @@ def main() -> None:
     )
     status_parser.set_defaults(func=cl_status)
 
-    # remove
-    remove_parser = subparsers.add_parser(
-        'remove',
-        help='Remove one or more files from their changelists',
-        description='Detaches the specified files from any changelists they belong to.'
+    # stage
+    stage_parser = subparsers.add_parser(
+        'stage',
+        help='Stage all tracked files in a changelist and delete it',
+        description='Stages all **tracked** files from the changelist and deletes the changelist afterward.'
     )
-    remove_parser.add_argument('files', metavar='FILE', nargs='+', help='Files to remove from any changelist')
-    remove_parser.set_defaults(func=cl_remove)
+    stage_parser.add_argument('name', metavar='CHANGELIST', help='Name of the changelist')
+    stage_parser.set_defaults(func=cl_stage)
 
-    # delete
-    delete_parser = subparsers.add_parser(
-        'delete',
-        help='Delete a changelist by name',
-        description='Deletes the specified changelist and removes its file references.'
+    # commit
+    commit_parser = subparsers.add_parser(
+        'commit',
+        help='Commit all tracked files in a changelist',
+        description='Stages and commits all **tracked** files from the changelist using the provided message.'
     )
-    delete_parser.add_argument('name', metavar='CHANGELIST', help='Name of the changelist to delete')
-    delete_parser.set_defaults(func=cl_delete)
+    commit_parser.add_argument('name', metavar='CHANGELIST', help='Name of the changelist')
+    commit_parser.add_argument('-m', '--message', required=True, help='Commit message')
+    commit_parser.set_defaults(func=cl_commit)
 
     args = parser.parse_args()
     args.func(args)

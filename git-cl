@@ -95,8 +95,8 @@ def clutil_load() -> dict[str, list[str]]:
     cl_file = clutil_get_file()
     if cl_file.exists():
         try:
-            with open(cl_file, "r", encoding="utf-8") as f:
-                return json.load(f)
+            with open(cl_file, "r", encoding="utf-8") as file_handle:
+                return json.load(file_handle)
         except (json.JSONDecodeError, OSError) as e:
             print(f"Error reading changelists: {e}")
             return {}
@@ -113,8 +113,8 @@ def clutil_save(data: dict[str, list[str]]) -> None:
     cl_file = clutil_get_file()
     cleaned = {k: v for k, v in data.items() if v}
     try:
-        with open(cl_file, "w") as f:
-            json.dump(cleaned, f, indent=2)
+        with open(cl_file, "w", encoding="utf-8") as file_handle:
+            json.dump(cleaned, file_handle, indent=2)
     except OSError as e:
         print(f"Error saving changelists: {e}")
 

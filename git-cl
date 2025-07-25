@@ -474,6 +474,12 @@ def cl_commit(args: argparse.Namespace) -> None:
 
 
 def main() -> None:
+    """
+    Entry point for the git-cl command-line interface.
+
+    Parses command-line arguments and dispatches to the appropriate
+    subcommand handler (e.g., add, remove, stage, commit, etc.).
+    """
     parser = argparse.ArgumentParser(
         prog='git-cl',
         description=("Manage Git changelists: group related files before "

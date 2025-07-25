@@ -282,6 +282,42 @@ def clutil_sanitize_path(file_path: str, git_root: Path) -> str | None:
         return None
 
 
+def clutil_get_tracked_files(files: list[str]) -> list[str]:
+    """Extract tracked files from a list, excluding untracked files/dirs."""
+    valid_files = clutil_validate_files(files)
+    git_root = clutil_get_git_root()
+
+    # Build valid paths mapping
+    valid_paths = {}
+    for file in valid_files:
+        abs_path = (Path.cwd() / file).resolve()
+        valid_paths[abs_path] = file
+
+    # Get untracked files and directories
+    output = clutil_get_git_status()
+    untracked_files = set()
+    untracked_dirs = set()
+
+    for line in output:
+        if line.startswith("??"):
+            raw_path = line[3:].strip()
+            abs_path = (git_root / raw_path).resolve()
+            if abs_path.is_dir():
+                untracked_dirs.add(abs_path)
+            else:
+                untracked_files.add(abs_path)
+
+    def is_under_untracked_dirs(path):
+        return any(path.is_relative_to(d) for d in untracked_dirs)
+
+    # Filter out untracked files
+    tracked_files = []
+    for abs_path, orig_path in valid_paths.items():
+        if abs_path not in untracked_files and not is_under_untracked_dirs(abs_path):
+            tracked_files.append(orig_path)
+
+    return tracked_files
+
 # =============================================================================
 # CLI COMMANDS
 # =============================================================================
@@ -327,37 +363,7 @@ def cl_stage(args: argparse.Namespace) -> None:
         print(f"Changelist '{name}' not found.")
         return
 
-    files = changelists[name]
-    valid_files = clutil_validate_files(files)
-
-    git_root = clutil_get_git_root()
-
-    valid_paths = {}
-    for file in valid_files:
-        abs_path = (Path.cwd() / file).resolve()
-        valid_paths[abs_path] = file
-
-    output = clutil_get_git_status()
-
-    untracked_files = set()
-    untracked_dirs = set()
-    for line in output:
-        if line.startswith("??"):
-            raw_path = line[3:].strip()
-            abs_path = (git_root / raw_path).resolve()
-            if abs_path.is_dir():
-                untracked_dirs.add(abs_path)
-            else:
-                untracked_files.add(abs_path)
-
-    def is_under_untracked_dirs(path):
-        return any(path.is_relative_to(d) for d in untracked_dirs)
-
-    to_stage = []
-    for abs_path, orig_path in valid_paths.items():
-        if abs_path in untracked_files or is_under_untracked_dirs(abs_path):
-            continue
-        to_stage.append(orig_path)
+    to_stage = clutil_get_tracked_files(changelists[name])
 
     if not to_stage:
         print(f"No tracked files to stage in changelist '{name}'.")
@@ -505,37 +511,7 @@ def cl_commit(args: argparse.Namespace) -> None:
         print(f"Changelist '{name}' not found.")
         return
 
-    files = changelists[name]
-    valid_files = clutil_validate_files(files)
-
-    git_root = clutil_get_git_root()
-
-    valid_paths = {}
-    for file in valid_files:
-        abs_path = (Path.cwd() / file).resolve()
-        valid_paths[abs_path] = file
-
-    output = clutil_get_git_status()
-
-    untracked_files = set()
-    untracked_dirs = set()
-    for line in output:
-        if line.startswith("??"):
-            raw_path = line[3:].strip()
-            abs_path = (git_root / raw_path).resolve()
-            if abs_path.is_dir():
-                untracked_dirs.add(abs_path)
-            else:
-                untracked_files.add(abs_path)
-
-    def is_under_untracked_dirs(path):
-        return any(path.is_relative_to(d) for d in untracked_dirs)
-
-    to_commit = []
-    for abs_path, orig_path in valid_paths.items():
-        if abs_path in untracked_files or is_under_untracked_dirs(abs_path):
-            continue
-        to_commit.append(orig_path)
+    to_commit = clutil_get_tracked_files(changelists[name])
 
     if not to_commit:
         print(f"No tracked files to commit in changelist '{name}'.")

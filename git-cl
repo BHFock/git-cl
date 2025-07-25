@@ -266,7 +266,7 @@ def cl_stage(args: argparse.Namespace) -> None:
     print(f"Deleted changelist '{name}'")
 
 
-def cl_list(args: argparse.Namespace) -> None:
+def cl_list(_args: argparse.Namespace) -> None:
     """
     Lists all changelists and their associated files.
 
@@ -283,7 +283,7 @@ def cl_list(args: argparse.Namespace) -> None:
             print(f"  {file}")
 
 
-def cl_status(args: argparse.Namespace) -> None:
+def cl_status(_args: argparse.Namespace) -> None:
     """
     Displays git status grouped by changelist membership.
 

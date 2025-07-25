@@ -470,7 +470,7 @@ def main() -> None:
         description='Add one or more files to a named changelist. '
                     'If the changelist does not exist, it will be created.'
     )
-    add_parser.add_argument('name', metavar='CHANGESET', help='Name of the changelist')
+    add_parser.add_argument('name', metavar='CHANGELIST', help='Name of the changelist')
     add_parser.add_argument('files', metavar='FILE', nargs='+', help='Files to add to the changelist')
     add_parser.set_defaults(func=cl_add)
 
@@ -480,7 +480,7 @@ def main() -> None:
         help='Stage all tracked files in a changelist and delete it',
         description='Stages all **tracked** files from the changelist and deletes the changelist afterward.'
     )
-    stage_parser.add_argument('name', metavar='CHANGESET', help='Name of the changelist')
+    stage_parser.add_argument('name', metavar='CHANGELIST', help='Name of the changelist')
     stage_parser.set_defaults(func=cl_stage)
 
     # commit
@@ -489,7 +489,7 @@ def main() -> None:
         help='Commit all tracked files in a changelist',
         description='Stages and commits all **tracked** files from the changelist using the provided message.'
     )
-    commit_parser.add_argument('name', metavar='CHANGESET', help='Name of the changelist')
+    commit_parser.add_argument('name', metavar='CHANGELIST', help='Name of the changelist')
     commit_parser.add_argument('-m', '--message', required=True, help='Commit message')
     commit_parser.set_defaults(func=cl_commit)
 
@@ -526,7 +526,7 @@ def main() -> None:
         help='Delete a changelist by name',
         description='Deletes the specified changelist and removes its file references.'
     )
-    delete_parser.add_argument('name', metavar='CHANGESET', help='Name of the changelist to delete')
+    delete_parser.add_argument('name', metavar='CHANGELIST', help='Name of the changelist to delete')
     delete_parser.set_defaults(func=cl_delete)
 
     args = parser.parse_args()

@@ -14,7 +14,7 @@
 
 ### Requirements
 
-- Python 3.7+
+- Python 3.10+
 - Git installed and available in your `$PATH`
 
 ### How It Works

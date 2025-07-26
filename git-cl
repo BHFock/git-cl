@@ -362,6 +362,60 @@ def clutil_format_file_status(
     return f"  {tag} {file}"
 
 
+def clutil_read_commit_message_file(file_path: str) -> str:
+    """
+    Reads a commit message from a file, with validation and processing.
+
+    Args:
+        file_path (str): Path to the file containing the commit message
+
+    Returns:
+        str: The commit message content
+
+    Raises:
+        OSError: If the file cannot be read
+        ValueError: If the file is empty or contains only whitespace
+    """
+    try:
+        # Resolve path relative to current working directory
+        path = Path(file_path).resolve()
+
+        # Basic security check - ensure file exists and is readable
+        if not path.exists():
+            raise OSError(f"File does not exist: {file_path}")
+
+        if not path.is_file():
+            raise OSError(f"Path is not a file: {file_path}")
+
+        # Read the file
+        with open(path, 'r', encoding='utf-8') as f:
+            content = f.read()
+
+    except (OSError, UnicodeDecodeError) as e:
+        raise OSError(f"Cannot read file: {e}")
+
+    # Validate content
+    if not content or not content.strip():
+        raise ValueError("Commit message file is empty or contains only whitespace")
+
+    # Process the content similar to how Git does it:
+    # - Strip trailing whitespace from each line
+    # - Remove trailing empty lines
+    lines = [line.rstrip() for line in content.splitlines()]
+
+    # Remove trailing empty lines
+    while lines and not lines[-1]:
+        lines.pop()
+
+    if not lines:
+        raise ValueError("Commit message file contains no content after processing")
+
+    # Join lines back together
+    processed_content = '\n'.join(lines)
+
+    return processed_content
+
+
 # =============================================================================
 # CLI COMMANDS
 # =============================================================================
@@ -522,7 +576,7 @@ def cl_commit(args: argparse.Namespace) -> None:
     Commits all tracked files in the specified changelist, then optionally deletes it.
 
     Args:
-        args: argparse.Namespace with 'name', 'message', and 'keep' attributes.
+        args: argparse.Namespace with 'name', 'message'/'file', and 'keep' attributes.
     """
     changelists = clutil_load()
     name = args.name
@@ -536,8 +590,22 @@ def cl_commit(args: argparse.Namespace) -> None:
         print(f"No tracked files to commit in changelist '{name}'.")
         return
 
+    # Handle commit message - either from -m or -F
+    if args.message:
+        commit_message = args.message
+    elif args.file:
+        try:
+            commit_message = clutil_read_commit_message_file(args.file)
+        except (OSError, ValueError) as error:
+            print(f"Error reading commit message file '{args.file}': {error}")
+            return
+    else:
+        # This shouldn't happen due to mutually_exclusive_group(required=True)
+        print("Error: No commit message provided.")
+        return
+
     try:
-        subprocess.run(["git", "commit", "-m", args.message, "--"]
+        subprocess.run(["git", "commit", "-m", commit_message, "--"]
                        + to_commit, check=True)
     except subprocess.CalledProcessError as error:
         print(f"Error committing changelist '{name}': {error}")
@@ -569,6 +637,7 @@ def main() -> None:
             "  git cl status\n"
             "  git cl stage my-feature\n"
             "  git cl commit my-feature -m 'Implement feature'\n"
+            "  git cl commit my-feature -F commit-msg.txt\n"
             "  git cl delete my-feature"
         ),
         formatter_class=argparse.RawTextHelpFormatter
@@ -667,8 +736,14 @@ def main() -> None:
     )
     commit_parser.add_argument('name', metavar='CHANGELIST',
                                help='Name of the changelist')
-    commit_parser.add_argument('-m', '--message', required=True,
-                               help='Commit message')
+
+    # Create mutually exclusive group for message options
+    msg_group = commit_parser.add_mutually_exclusive_group(required=True)
+    msg_group.add_argument('-m', '--message',
+                          help='Commit message')
+    msg_group.add_argument('-F', '--file',
+                          help='Read commit message from file')
+
     commit_parser.add_argument('--keep', action='store_true',
                                help='Keep the changelist after committing (do not delete)')
     commit_parser.set_defaults(func=cl_commit)

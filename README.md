@@ -34,6 +34,7 @@ mv git-cl ~/bin/
 Make sure `~/bin` is listed in your `$PATH`. You’ll then be able to run:
 
 ```
+git cl --version
 git cl -h
 ```
 

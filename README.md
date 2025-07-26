@@ -9,6 +9,7 @@
 - Create and manage named changelists
 - View changes grouped by changelist
 - Stage and commit changelist contents selectively
+- Read commit messages from files using -F flag
 - Simple JSON-based local tracking (no changes to Git internals)
 - Seamless integration via `git cl` subcommand interface
 
@@ -57,8 +58,17 @@ git cl status     # or: git cl st
 # Stage all files in a changelist and delete it
 git cl stage docs-fix
 
+# Keep the changelist after staging
+git cl stage docs-fix --keep
+
 # Commit all changes in a changelist
 git cl commit docs-fix -m "Update documentation layout and intro"
+
+# Commit with message from file
+git cl commit docs-fix -F commit-message.txt
+
+# Keep the changelist after committing
+git cl commit docs-fix -m "Fix bug" --keep
 
 # Remove a file from its changelist
 git cl remove README.md

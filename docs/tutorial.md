@@ -241,15 +241,15 @@ Changelists are just local lists of files stored in `.git/cl.json`. They persist
 
 ## 4. Command Summary
 
-| Task                           | Command                               |
-| ------------------------------ | ------------------------------------- |
-| Add files to a changelist      | `git cl add <name> <files...>`        |
-| List changelists               | `git cl list` or `git cl ls`          |
-| View grouped status            | `git cl status` or `git cl st`        |
-| Stage a changelist             | `git cl stage <name>`                 |
-| Commit with inline message     | `git cl commit <name> -m "Message"`   |
-| Commit using message from file | `git cl commit <name> -F message.txt` |
-| Remove file from changelist    | `git cl remove <file>`                |
-| Delete a changelist            | `git cl delete <name>`                |
+| Task                           | Command                                        |
+| ------------------------------ | ---------------------------------------------- |
+| Add files to a changelist      | `git cl add <name> <files...>`                 |
+| List changelists               | `git cl list` or `git cl ls`                   |
+| View grouped status            | `git cl status` or `git cl st`                 |
+| Stage a changelist             | `git cl stage <name>` [--keep]                 |
+| Commit with inline message     | `git cl commit <name> -m "Message"` [--keep]   |
+| Commit using message from file | `git cl commit <name> -F message.txt` [--keep] |
+| Remove file from changelist    | `git cl remove <file>`                         |
+| Delete a changelist            | `git cl delete <name>`                         |
 
 [↑ Back to top](#git-cl-tutorial)

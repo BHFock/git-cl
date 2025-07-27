@@ -18,8 +18,9 @@ Welcome to the `git-cl` tutorial — a lightweight Git extension for organising 
   - [2.5 Commit a changelist](#25-commit-a-changelist)
   - [2.6 Remove files from changelists](#26-remove-files-from-changelists)
   - [2.7 Delete a changelist](#27-delete-a-changelist)
-- [3. FAQ & Common Pitfalls](#3-faq--common-pitfalls)
-- [4. Command Summary](#4-command-summary)
+- [3. Example Workflow: Changelists as Named Staging Areas](#3-example-workflow-changelists-as-named-staging-areas)
+- [4. FAQ & Common Pitfalls](#4-faq--common-pitfalls)
+- [5. Command Summary](#5-command-summary)
 
 </details>
 

@@ -77,7 +77,7 @@ git cl remove README.md
 git cl delete docs-fix
 ```
 
-See the [git-cl Tutorial](docs/TUTORIAL.md) for detailed usage, examples, and tips.
+See the [git-cl Tutorial](docs/tutorial.md) for detailed usage, examples, and tips.
 
 ## Maintenance Disclaimer
 

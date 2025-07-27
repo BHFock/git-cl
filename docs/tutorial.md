@@ -55,47 +55,35 @@ Use changelists to track *what you're working on*, even when it's not ready to c
 
 ## 2. Basic Commands
 
-### Adding files to a changelist
+The following commands are the core of `git-cl`. Each helps you manage your changelists as you prepare your working directory for staging or commits.
 
-When you have related changes in multiple files, you can group them together under a meaningful changelist name. This helps keep your work organised before staging or committing.
+### 2.1 Add files to a changelist
 
-To add files to a changelist, use:
-
-
-```bash
+```
 git cl add <changelist-name> <file1> <file2> ...
 ```
 
-This command moves the specified files into the named changelist, removing them from any other changelist if necessary.
+Groups files under a named changelist.
 
-#### Example
+A file can only belong to one changelist at a time; it will be moved if already assigned elsewhere.
 
-Say you're working on documentation updates in README.md and docs/index.md. Group these files into a docs changelist:
+#### Example:
 
-
-```bash
+```
 git cl add docs README.md docs/index.md
 ```
 
-Now these files are grouped and can be handled together in later commands.
+### 2.2 List all changelists
 
-### Listing all changelists
-
-To see what changelists you have and which files belong to each, run:
-
-```bash
-git cl list
 ```
-
-or the shortcut:
-
-```bash
+git cl list
+# or
 git cl ls
 ```
 
-#### Example output
+#### Example Output:
 
-```bash
+```
 docs:
   README.md
   docs/index.md
@@ -103,20 +91,18 @@ tests:
   tests/dev_env.sh
 ```
 
-### Viewing the status of your working directory by changelist
+### 2.3 View status by changelist
 
-When you're juggling several changes at once, it's helpful to see which files belong to which changelist. That’s what `git cl st` does.
-
-```bash
+```
 git cl status
 # or
 git cl st
 ```
 
-This command shows your working directory `git status` grouped by changelist. Modified files that aren't part of any changelist will appear under a separate No Changelist section.
+- Like git status, but grouped by changelist.
+- Shows modified ([M]), added ([A]), untracked ([??]) files.
 
-
-#### Example output
+#### Example Output:
 
 ```
 docs:
@@ -131,84 +117,62 @@ No Changelist:
   [??] scratch.txt
 ```
 
-This makes it easy to keep track of your intent: documentation changes are in one group, test setup in another, and ungrouped edits are still visible but clearly separated
-
-### Staging changes from a changelist
-
-Once you’re ready to commit a group of changes, you can stage them all at once by changelist name.
+### 2.4 Stage a changelist
 
 ```
 git cl stage <changelist-name>
 ```
 
-This will:
+- Stages all tracked files from the changelist.
+- Untracked files are skipped.
+- Changelist is deleted after staging.
 
-- Add all tracked files in that changelist to the Git staging area
-- Skip untracked files (like new files not yet added via git add)
-- Delete the changelist after staging
-
-#### Example
+#### Example:
 
 ```
 git cl stage docs
-git commit -m "Improve documentation"
+git commit -m "Refactor docs"
 ```
 
-Now the documentation files are committed, and the docs changelist is gone — because it served its purpose
-
-### Committing directly from a changelist
-
-Prefer to skip the separate `git commit` step? You can do both at once:
+### 2.5 Commit a changelist
 
 ```
-git cl commit <changelist-name> -m "Your commit message"
+git cl commit <changelist-name> -m "Message"
+git cl ci <changelist-name> -F commit.txt
 ```
 
-This will:
+- Commits tracked files and deletes the changelist.
+- Use `-F <file>` to supply commit message from a file (like regular Git).
 
-- Commit all tracked files with the given message
-- Delete the changelist
-
-
-#### Example
+#### Example:
 
 ```
-git cl commit tests -m "Set up test environment"
+git cl commit tests -m "Add test environment"
 ```
 
-This is handy for small focused changes where you’re ready to commit immediately. Alternatively to writing the commit message on the command line you can also read in the commit message from a file:
-
-```
-git cl commit <changelist-name> -F commit_message.txt
-```
-
-### Removing files from changelists
-
-If you no longer want a file to be grouped under a specific changelist, you can remove it using
+### 2.6 Remove files from changelists
 
 ```
 git cl remove <file1> <file2> ...
 ```
 
-This removes the listed files from whichever changelist they currently belong to. The files will still exist in your working directory — they're just no longer grouped.
+- Removes the given files from any changelist.
+- Files remain in the working directory.
 
-#### Example
+#### Example:
 
 ```
 git cl remove notes/debug.txt
 ```
 
-The file `notes/debug.txt` will now appear under the `No Changelist` section in `git cl st`.
-
-### Deleting a changelist
-
-Once a changelist has served its purpose you may want to remove the group itself
+### 2.7 Delete a changelist
 
 ```
 git cl delete <changelist-name>
 ```
 
-This deletes the changelist entry, but does not affect the files in your working directory. Files that were part of the deleted changelist will appear under No Changelist if they’re still modified or untracked.
+- Removes the changelist grouping.
+- Files stay untouched but show under “No Changelist” in cl st.
 
 ## 3. Example Workflow
 

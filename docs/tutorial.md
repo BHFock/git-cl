@@ -180,7 +180,7 @@ git cl remove <file1> <file2> ...
 ```
 
 - Removes the given files from any changelist.
-- Files remain in the working directory.
+- Files remain unchanged in your working directory.
 
 #### Example:
 

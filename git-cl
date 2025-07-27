@@ -624,6 +624,13 @@ def cl_commit(args: argparse.Namespace) -> None:
         print(f"Kept changelist '{name}' (use --keep flag to preserve)")
 
 
+def cl_help(args: argparse.Namespace) -> None:
+    """
+    Displays the main help message using argparse's built-in formatting.
+    """
+    args.parser.print_help()
+
+
 def main() -> None:
     """
     Entry point for the git-cl command-line interface.
@@ -654,8 +661,7 @@ def main() -> None:
         help='Show version and exit'
     )
 
-    subparsers = parser.add_subparsers(dest='command', required=True,
-                                       title='Commands')
+    subparsers = parser.add_subparsers(dest='command', title='Commands')
 
     # add
     add_parser = subparsers.add_parser(
@@ -756,7 +762,25 @@ def main() -> None:
         help='Keep the changelist after committing (do not delete)')
     commit_parser.set_defaults(func=cl_commit)
 
+    # help command
+    help_parser = subparsers.add_parser(
+        'help',
+        help='Show general help and command list',
+        description='Displays a summary of available git-cl commands.'
+    )
+    help_parser.set_defaults(func=cl_help, parser=parser)
+
     args = parser.parse_args()
+
+    # If no command was provided, show help
+    if args.command is None:
+        parser.print_help()
+        return
+
+    # Provide parser to all commands in case needed
+    if not hasattr(args, 'parser'):
+        args.parser = parser
+
     args.func(args)
 
 

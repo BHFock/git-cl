@@ -88,9 +88,9 @@ The following commands are the core of `git-cl`. Each helps you manage your chan
 git cl add <changelist-name> <file1> <file2> ...
 ```
 
-Groups files under a named changelist.
+- Groups files under a named changelist.
 
-A file can only belong to one changelist at a time; it will be moved if already assigned elsewhere.
+- A file can only belong to one changelist at a time; it will be moved if already assigned elsewhere.
 
 #### Example:
 

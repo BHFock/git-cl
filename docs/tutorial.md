@@ -1,39 +1,31 @@
 # git-cl Tutorial
 
-**Version:** 0.1.0  
-**Status:** Prototype
+**Status:** Draft Tutorial 
+
+Welcome to the `git-cl` tutorial — a lightweight tool to organise your Git working directory changes into **named changelists**. This helps you manage multiple ongoing changes efficiently before staging or committing them.
 
 ## What is `git-cl`?
 
-`git-cl` is a lightweight Git extension that adds changelist-style functionality, inspired by Subversion (SVN). It lets you group related file changes under a named label — ideal for organising changes before staging or committing them.
+`git-cl` is a Git Subcommand inspired by Subversion changelists. It lets you group related file changes under a named label — ideal for organising and managing uncommitted changes.
 
-This is useful when:
+Use it when:
 
-- You're working on multiple features or fixes at once
-- You want to split up a messy working directory
-- You want to stage changes with intent, not just by file
+- Working on multiple features or fixes simultaneously
+- Wanting to break down a messy working directory into manageable parts
+- Staging changes logically by intent, not just by file
 
-Internally, changelists are stored in `.git/cl.json`, keeping everything local and version-neutral.
+Changelists are stored locally in `.git/cl.json`, keeping everything isolated and version-neutral.
 
-## Changelists vs Staging Area vs Branches
 
-Git already has powerful tools. Here’s how changelists fit in:
+## How changelists fit into Git workflows
 
 | Concept        | Description                                | Purpose                          |
 |----------------|--------------------------------------------|----------------------------------|
 | Changelist     | A named group of files in the working tree | Organise uncommitted changes     |
-| Staging Area   | Selects what to include in a commit        | Prepares a commit                |
-| Branch         | A line of development with history         | Isolate parallel work streams    |
+| Staging Area   | Selects what to include in a commit        | Prepare commit content           |
+| Branch         | A line of development with history         | Isolate parallel development     |
 
-### When to use a changelist
-
-Use changelists when you want to:
-
-- Group files by topic before staging
-- Avoid accidental commits
-- Switch between related changes more easily
-
-Changelists are not a replacement for branches — they help manage your **uncommitted** work within a branch.
+Changelists are complementary to branches and staging — they help organise **uncommitted** work within a branch.
 
 ## 1. Installation
 

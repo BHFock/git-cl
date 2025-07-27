@@ -13,16 +13,16 @@
 - Simple JSON-based local tracking (no changes to Git internals)
 - Seamless integration via `git cl` subcommand interface
 
-### Requirements
-
-- Python 3.10+
-- Git installed and available in your `$PATH`
-
-### How It Works
+## How It Works
 
 Changelists are stored in a simple `cl.json` file inside your repository’s `.git` directory. This keeps all metadata local and avoids polluting your working directory or history.
 
 ## Installation
+
+### Requirements
+
+- Python 3.10+
+- Git installed and available in your `$PATH`
 
 To use `git cl` as a [Git subcommand](https://git.github.io/htmldocs/howto/new-command.html), place the executable script named `git-cl` in a directory that’s part of your system’s `$PATH`, such as `~/bin`. For example:
 
@@ -41,9 +41,9 @@ git cl -h
 
 Git will recognise `git-cl` as the handler for `git cl`, just like its built-in commands.
 
-## Usage
+## Quick Reference
 
-Below are a few common tasks using `git cl`, a Git changelist management tool designed for structured commit workflows.
+Below are common `git cl` commands for typical changelist workflows:
 
 ```bash
 # Create a changelist implicitly by adding files to it
@@ -77,42 +77,7 @@ git cl remove README.md
 git cl delete docs-fix
 ```
 
-Changelists are created on demand when adding files. Every changelist must be named explicitly — there is no default or automatic group.
-
-## Example Workflow
-
-Let’s say you’re working on a feature, making several changes across multiple files. Instead of staging them immediately, you group them by intent:
-
-```bash
-# Add files you're happy with to a changelist
-git cl add ok src/core.py tests/test_core.py
-
-# Add test-specific or experimental changes to a separate list
-git cl add test_only tests/setup_test_env.sh
-
-# Add files you know you don't want to commit yet
-git cl add do_not_commit notes/tmp.txt
-```
-
-You iterate and clean up your work. To see what you have, check the changelist status:
-
-```bash
-git cl status
-```
-
-Once everything in the `ok` changelist is confirmed, you stage those files with:
-
-```bash
-git cl stage ok
-```
-
-This moves the files to Git’s index and clears the changelist — ready for a focused commit:
-
-```bash
-git commit -m "Implement core feature"
-```
-
-Meanwhile, other changelists remain untouched and visible in `git cl status` — keeping your workspace organised without hiding files from your main view.
+See the [git-cl Tutorial](docs/TUTORIAL.md) for detailed usage, examples, and tips.
 
 ## Maintenance Disclaimer
 

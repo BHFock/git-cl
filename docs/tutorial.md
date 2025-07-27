@@ -45,7 +45,7 @@ Changelists help you manage changes before they’re staged or committed. They c
 | **Staging Area** | Selects what goes into the next commit      | Prepare commit content              |
 | **Branch**       | A line of development with commit history   | Isolate long-running or shared work |
 
-Use changelists to track *what you're working on*, even when it's not ready to commit — especially useful when tasks overlap on the same branch.
+Use changelists to track what you're working on, even when it's not ready to commit — especially useful when tasks overlap on the same branch.
 
 ## 1. Installation
 

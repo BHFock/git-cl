@@ -215,23 +215,7 @@ git commit -m "Refactor documentation"
 The other changelists remain untouched, so you can continue working on them separately.
 
 
-## 4. Optional: Alias for git st
-
-To use git st for grouped status:
-
-```
-git config alias.st '!git cl st'
-```
-
-Now you can run:
-
-```
-git st
-```
-
-To get a changelist-aware status view.
-
-## 5. Notes
+## 4. Notes
 
 - A file can belong to only one changelist at a time.
 - Untracked files are shown but are not included in staging or commits.
@@ -249,4 +233,33 @@ To get a changelist-aware status view.
 | Commit a changelist         | `git cl commit <name> -m "Message"` |
 | Remove file from changelist | `git cl remove <file>`              |
 | Delete a changelist         | `git cl delete <name>`              |
+
+
+## 5. Advanced Tips & Troubleshooting
+
+### Moving a file between changelists
+
+If you accidentally add a file to the wrong changelist — no worries. Just add it to the correct one:
+
+´´´
+git cl add correct-list path/to/file
+´´´
+
+This will automatically remove it from its previous changelist, so you don’t need to run `git cl remove` first.
+
+
+### Untracked files aren't staged or committed
+
+
+Untracked files (those marked `[??]` in `git status`) will show up in `git cl st` if they’re part of a changelist — but they won't be staged or committed by `git cl stage` or `git cl commit`.
+
+To include them:
+
+1. Use `git add <file>` manually
+2. Then stage or commit the changelist
+
+
+
+
+
 

@@ -53,24 +53,28 @@ Use changelists to track *what you're working on*, even when it's not ready to c
 
 2. Make it executable:
 
-   ```bash
+   ```
    chmod +x git-cl
-
+   ```
+   
 3. Move it into a directory in your system `PATH`:
 
-   ```bash
+   ```
    mkdir -p ~/bin
    mv git-cl ~/bin/
-
+   ```
+   
 4. Add this to your shell config file (`.bashrc`, `.zshrc`, etc.) if needed:
 
-   ```bash
+   ```
    export PATH="$HOME/bin:$PATH"
+   ```
 
 5. (Optional) Confirm it's working:
 
-   ```bash
+   ```
    git cl -h
+   ```
 
 [↑ Back to top](#git-cl-tutorial)
 

@@ -37,7 +37,7 @@ Changelists are stored in a local metadata file (`.git/cl.json`) inside your rep
 
 ## How changelists fit into Git workflows
 
-Changelists help you manage changes **before** they’re staged or committed. They complement Git’s existing concepts rather than replacing them:
+Changelists help you manage changes before they’re staged or committed. They complement Git’s existing concepts rather than replacing them:
 
 | Concept          | Description                                 | Role in Workflow                    |
 |------------------|---------------------------------------------|-------------------------------------|

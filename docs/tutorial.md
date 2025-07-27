@@ -62,7 +62,7 @@ git cl add <changelist-name> <file1> <file2> ...
 
 This command moves the specified files into the named changelist, removing them from any other changelist if necessary.
 
-#### Example:
+#### Example
 
 Say you're working on documentation updates in README.md and docs/index.md. Group these files into a docs changelist:
 
@@ -87,7 +87,7 @@ or the shortcut:
 git cl ls
 ```
 
-#### Example output:
+#### Example output
 
 ```bash
 docs:
@@ -97,9 +97,9 @@ tests:
   tests/dev_env.sh
 ```
 
+### Viewing the status of your working directory by changelist
 
-
-### Show grouped status
+When you're juggling several changes at once, it's helpful to see which files belong to which changelist. That’s what `git cl st` does.
 
 ```bash
 git cl status
@@ -107,19 +107,29 @@ git cl status
 git cl st
 ```
 
-Example output:
+This command shows your working directory `git status` grouped by changelist. Modified files that aren't part of any changelist will appear under a separate No Changelist section.
+
+
+#### Example output
 
 ```
 docs:
   [M] README.md
   [M] docs/index.md
 
+tests:
+  [A] tests/dev_env.sh
+
 No Changelist:
-  [??] scratch.txt
   [M] main.py
+  [??] scratch.txt
 ```
 
-### Stage a changelist
+This makes it easy to keep track of your intent: documentation changes are in one group, test setup in another, and ungrouped edits are still visible but clearly separated
+
+### Staging changes from a changelist
+
+Once you’re ready to commit a group of changes, you can stage them all at once by changelist name.
 
 ```
 git cl stage <changelist-name>
@@ -127,24 +137,45 @@ git cl stage <changelist-name>
 
 This will:
 
-- Stage all tracked files
-- Skip untracked or unstageable files
+- Add all tracked files in that changelist to the Git staging area
+- Skip untracked files (like new files not yet added via git add)
 - Delete the changelist after staging
 
-Example:
+#### Example
 
 ```
 git cl stage docs
 git commit -m "Improve documentation"
 ```
 
-### Commit a changelist
+Now the documentation files are committed, and the docs changelist is gone — because it served its purpose
+
+### Committing directly from a changelist
+
+Prefer to skip the separate `git commit` step? You can do both at once:
 
 ```
-git cl commit <changelist-name> -m "Commit message"
+git cl commit <changelist-name> -m "Your commit message"
 ```
 
-Stages and commits tracked files, then deletes the changelist.
+This will:
+
+- Commit all tracked files with the given message
+- Delete the changelist
+
+
+#### Example
+
+```
+git cl commit tests -m "Set up test environment"
+```
+
+This is handy for small focused changes where you’re ready to commit immediately. Alternatively to writing the commit message on the command line you can also read in the commit message from a file:
+
+```
+git cl commit <changelist-name> -F commit_message.txt
+```
+
 
 ### Remove files from changelists
 

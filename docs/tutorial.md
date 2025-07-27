@@ -241,7 +241,7 @@ This automatically reassigns the file to new-list.
 
 ### Why are changelists deleted after I stage or commit?
 
-This is the default behaviour — `git cl stage` and git `cl commit clean` up after themselves.
+This is the default behaviour — `git cl stage` and git `cl commit` clean up after themselves.
 
 If you want to keep the changelist after the operation, use the `--keep` flag:
 

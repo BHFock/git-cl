@@ -4,7 +4,8 @@
 Welcome to the `git-cl` tutorial — a lightweight Git extension for organising your working directory changes into **named changelists**. This helps you manage multiple ongoing changes efficiently before staging or committing them.
 
 
-## Table of Contents
+<details>
+<summary> Table of Contents</summary>
 
 - [What is `git-cl`](#what-is-git-cl)
 - [How changelists fit into Git workflows](#how-changelists-fit-into-git-workflows)
@@ -19,6 +20,8 @@ Welcome to the `git-cl` tutorial — a lightweight Git extension for organising 
   - [2.7 Delete a changelist](#27-delete-a-changelist)
 - [3. Tips, Notes & Troubleshooting](#3-tips-notes--troubleshooting)
 - [4. Command Summary](#4-command-summary)
+
+</details>
 
 
 ## What is `git-cl`?

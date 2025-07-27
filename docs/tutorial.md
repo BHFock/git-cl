@@ -31,7 +31,7 @@ Use it when:
 
 - Working on several features or fixes in parallel
 - Wanting to break down a messy working directory into logical units
-- Staging or committing changes by *intent* rather than *file*
+- Staging or committing changes by intent rather than file
 
 Changelists are stored in a local metadata file (`.git/cl.json`) inside your repo. They're not versioned or shared — meaning they’re lightweight and personal, like sticky notes on your working copy.
 

@@ -227,6 +227,8 @@ git commit -m "Implement core feature"
 
 The other changelists remain untouched, keeping your workspace organised and uncommitted changes visible.
 
+[↑ Back to top](#git-cl-tutorial)
+
 ## 4. FAQ & Common Pitfalls
 
 ### How do I move a file from one changelist to another?

@@ -210,6 +210,15 @@ git cl add new-list path/to/file
 
 This automatically reassigns the file to the new changelist.
 
+### Preserving changelists after staging/committing
+
+By default, changelists are deleted after staging or committing. To keep them:
+
+```
+git cl stage docs --keep
+git cl commit tests -m "Add tests" --keep
+```
+
 ### Untracked files aren’t automatically staged or committed
 
 Untracked files (those marked `[??]` in `git status`) will show up in `git cl st` if they’re part of a changelist — but they won't be staged or committed by `git cl stage` or `git cl commit`.

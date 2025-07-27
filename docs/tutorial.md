@@ -49,27 +49,55 @@ Changelists are complementary to branches and staging — they help organise **u
 
 ## 2. Basic Commands
 
-### Add files to a changelist
+### Adding files to a changelist
+
+When you have related changes in multiple files, you can group them together under a meaningful changelist name. This helps keep your work organised before staging or committing.
+
+To add files to a changelist, use:
+
 
 ```bash
 git cl add <changelist-name> <file1> <file2> ...
 ```
 
-Files are moved from any other changelist if needed.
+This command moves the specified files into the named changelist, removing them from any other changelist if necessary.
 
-Example:
+#### Example:
+
+Say you're working on documentation updates in README.md and docs/index.md. Group these files into a docs changelist:
+
 
 ```bash
 git cl add docs README.md docs/index.md
 ```
 
-### List changelists
+Now these files are grouped and can be handled together in later commands.
+
+### Listing all changelists
+
+To see what changelists you have and which files belong to each, run:
 
 ```bash
 git cl list
-# or
+```
+
+or the shortcut:
+
+```bash
 git cl ls
 ```
+
+#### Example output:
+
+```bash
+docs:
+  README.md
+  docs/index.md
+tests:
+  tests/dev_env.sh
+```
+
+
 
 ### Show grouped status
 

@@ -174,32 +174,8 @@ git cl delete <changelist-name>
 - Removes the changelist grouping.
 - Files stay untouched but show under “No Changelist” in cl st.
 
-## 3. Example Workflow
 
-Suppose you're working on both documentation and a test setup.
-
-```
-git cl add docs README.md docs/index.md
-git cl add tests tests/dev_env.sh
-git cl add temp notes/debug.txt
-```
-
-You can check the changelists:
-
-```
-git cl st
-```
-
-Once the documentation changes are ready:
-
-```
-git cl stage docs
-git commit -m "Refactor documentation"
-```
-
-The other changelists remain untouched, so you can continue working on them separately.
-
-## 4. Tips, Notes & Troubleshooting
+## 3. Tips, Notes & Troubleshooting
 
 ### Files belong to only one changelist
 
@@ -232,7 +208,7 @@ All changelist metadata is stored in `.git/cl.json`. This is local to your repos
 
 Changelists are independent of branches because they are just lists of files stored in `.git/cl.json`. They will continue to exist even if you change branches. This can be helpful — or potentially confusing. When in doubt, delete your changelists before switching branches
 
-## 5. Command Summary
+## 4. Command Summary
 
 | Task                           | Command                               |
 | ------------------------------ | ------------------------------------- |

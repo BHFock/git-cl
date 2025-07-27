@@ -38,7 +38,7 @@ Make sure `~/bin` is listed in your `$PATH`. You’ll then be able to run:
 
 ```
 git cl --version
-git cl -h
+git cl help
 ```
 
 Git will recognise `git-cl` as the handler for `git cl`, just like its built-in commands.

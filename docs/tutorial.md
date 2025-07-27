@@ -2,20 +2,19 @@
 
 **Status:** Draft Tutorial 
 
-Welcome to the `git-cl` tutorial — a lightweight tool to organise your Git working directory changes into **named changelists**. This helps you manage multiple ongoing changes efficiently before staging or committing them.
+Welcome to the `git-cl` tutorial — a lightweight Git extension for organising your working directory changes into **named changelists**. This helps you manage multiple ongoing changes efficiently before staging or committing them.
 
 ## What is `git-cl`?
 
-`git-cl` is a Git Subcommand inspired by Subversion changelists. It lets you group related file changes under a named label — ideal for organising and managing uncommitted changes.
+`git-cl` is a Git subcommand inspired by Subversion’s changelists. It lets you group related file changes under a named label — ideal for managing uncommitted edits when juggling multiple tasks.
 
 Use it when:
 
-- Working on multiple features or fixes simultaneously
-- Wanting to break down a messy working directory into manageable parts
-- Staging changes logically by intent, not just by file
+- Working on several features or fixes in parallel
+- Wanting to break down a messy working directory into logical units
+- Staging or committing changes by *intent* rather than *file*
 
-Changelists are stored locally in `.git/cl.json`, keeping everything isolated and version-neutral.
-
+Changelists are stored in a local metadata file (`.git/cl.json`) inside your repo. They're not versioned or shared — meaning they’re lightweight and personal, like sticky notes on your working copy.
 
 ## How changelists fit into Git workflows
 

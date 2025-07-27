@@ -200,9 +200,11 @@ To include them:
 
 All changelist metadata is stored in `.git/cl.json`. This is local to your repository and never shared via Git, keeping changelist structure flexible and personal.
 
-### Works with any branch
 
-Changelists are independent of branches because they are just lists of files stored in `.git/cl.json`. They will continue to exist even if you change branches. This can be helpful — or potentially confusing. When in doubt, delete your changelists before switching branches
+### Changelists persist across branches
+
+Changelists are just local lists of files stored in `.git/cl.json`. They persist when switching branches. This can be useful — but also confusing — if changelists refer to files that don’t exist in the new branch. In doubt, delete them with `git cl delete <name>`.
+
 
 ## 4. Command Summary
 

@@ -43,10 +43,15 @@ Use changelists to track *what you're working on*, even when it's not ready to c
    mkdir -p ~/bin
    mv git-cl ~/bin/
 
-4. Ensure `~/bin` is in your `PATH`, e.g. in `.bashrc` or `.zshrc`:
+4. Add this to your shell config file (`.bashrc`, `.zshrc`, etc.) if needed:
 
    ```bash
    export PATH="$HOME/bin:$PATH"
+
+5. (Optional) Confirm it's working:
+
+   ```bash
+   git cl -h
 
 ## 2. Basic Commands
 

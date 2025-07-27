@@ -1,8 +1,6 @@
 # git-cl Tutorial
 
-
-Welcome to the `git-cl` tutorial — a lightweight Git extension for organising your working directory changes into **named changelists**. This helps you manage multiple ongoing changes efficiently before staging or committing them.
-
+`git-cl` lets you group files into named changelists before staging or committing — like sticky notes for your working directory. This helps you manage multiple ongoing changes efficiently before staging or committing them.
 
 <details>
 <summary> Table of Contents</summary>

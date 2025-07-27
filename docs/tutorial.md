@@ -125,7 +125,7 @@ git cl st
 ```
 
 - Like `git status`, but grouped by changelist.
-- Shows modified (`[M]`), added (`[A]`), untracked ([`??]`) files.
+- Shows modified ([M]), added ([A]), untracked ([??]) files.
 
 #### Example Output:
 

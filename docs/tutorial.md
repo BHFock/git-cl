@@ -177,13 +177,9 @@ git cl delete <changelist-name>
 
 ## 3. Tips, Notes & Troubleshooting
 
-### Files belong to only one changelist
-
-Each file can be part of only one changelist at a time. Adding it to a new changelist will automatically remove it from any previous one.
-
 ### Moving a file between changelists
 
-You don’t need to manually remove a file from one changelist before adding it to another. Just run:
+Each file can be part of only one changelist at a time. You don’t need to manually remove a file from one changelist before adding it to another. Just run:
 
 ```
 git cl add new-list path/to/file

@@ -3,6 +3,24 @@
 
 Welcome to the `git-cl` tutorial — a lightweight Git extension for organising your working directory changes into **named changelists**. This helps you manage multiple ongoing changes efficiently before staging or committing them.
 
+
+## Table of Contents
+
+- [What is `git-cl`](#what-is-git-cl)
+- [How changelists fit into Git workflows](#how-changelists-fit-into-git-workflows)
+- [1. Installation](#1-installation)
+- [2. Basic Commands](#2-basic-commands)
+  - [2.1 Add files to a changelist](#21-add-files-to-a-changelist)
+  - [2.2 List all changelists](#22-list-all-changelists)
+  - [2.3 View status by changelist](#23-view-status-by-changelist)
+  - [2.4 Stage a changelist](#24-stage-a-changelist)
+  - [2.5 Commit a changelist](#25-commit-a-changelist)
+  - [2.6 Remove files from changelists](#26-remove-files-from-changelists)
+  - [2.7 Delete a changelist](#27-delete-a-changelist)
+- [3. Tips, Notes & Troubleshooting](#3-tips-notes--troubleshooting)
+- [4. Command Summary](#4-command-summary)
+
+
 ## What is `git-cl`?
 
 `git-cl` is a Git subcommand inspired by Subversion’s changelists. It lets you group related file changes under a named label — ideal for managing uncommitted edits when juggling multiple tasks.

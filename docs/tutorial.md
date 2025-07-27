@@ -264,13 +264,13 @@ Changelists are independent of branches because they are just lists of files sto
 
 ## 5. Command Summary
 
-| Task                        | Command                             |
-| --------------------------- | ----------------------------------- |
-| Add files to a changelist   | `git cl add <name> <files...>`      |
-| List changelists            | `git cl list` or `git cl ls`        |
-| View grouped status         | `git cl status` or `git cl st`      |
-| Stage a changelist          | `git cl stage <name>`               |
-| Commit a changelist         | `git cl commit <name> -m "Message"` |
-| Remove file from changelist | `git cl remove <file>`              |
-| Delete a changelist         | `git cl delete <name>`              |
-
+| Task                           | Command                               |
+| ------------------------------ | ------------------------------------- |
+| Add files to a changelist      | `git cl add <name> <files...>`        |
+| List changelists               | `git cl list` or `git cl ls`          |
+| View grouped status            | `git cl status` or `git cl st`        |
+| Stage a changelist             | `git cl stage <name>`                 |
+| Commit with inline message     | `git cl commit <name> -m "Message"`   |
+| Commit using message from file | `git cl commit <name> -F message.txt` |
+| Remove file from changelist    | `git cl remove <file>`                |
+| Delete a changelist            | `git cl delete <name>`                |

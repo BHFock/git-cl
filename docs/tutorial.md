@@ -229,13 +229,38 @@ git commit -m "Refactor documentation"
 
 The other changelists remain untouched, so you can continue working on them separately.
 
+## 4. Tips, Notes & Troubleshooting
 
-## 4. Notes
+### Files belong to only one changelist
 
-- A file can belong to only one changelist at a time.
-- Untracked files are shown but are not included in staging or commits.
-- Changelists are stored in .git/cl.json and are never versioned or shared.
-- You can use changelists inside any branch.
+Each file can be part of only one changelist at a time. Adding it to a new changelist will automatically remove it from any previous one.
+
+### Moving a file between changelists
+
+You don’t need to manually remove a file from one changelist before adding it to another. Just run:
+
+```
+git cl add new-list path/to/file
+```
+
+This automatically reassigns the file to the new changelist.
+
+### Untracked files aren’t automatically staged or committed
+
+Untracked files (those marked `[??]` in `git status`) will show up in `git cl st` if they’re part of a changelist — but they won't be staged or committed by `git cl stage` or `git cl commit`.
+
+To include them:
+
+1. Use `git add <file>` manually
+2. Then stage or commit the changelist
+
+### Changelists are local
+
+All changelist metadata is stored in `.git/cl.json`. This is local to your repository and never shared via Git, keeping changelist structure flexible and personal.
+
+### Works with any branch
+
+Changelists are independent of branches because they are just lists of files stored in `.git/cl.json`. They will continue to exist even if you change branches. This can be helpful — or potentially confusing. When in doubt, delete your changelists before switching branches
 
 ## 5. Command Summary
 
@@ -248,33 +273,4 @@ The other changelists remain untouched, so you can continue working on them sepa
 | Commit a changelist         | `git cl commit <name> -m "Message"` |
 | Remove file from changelist | `git cl remove <file>`              |
 | Delete a changelist         | `git cl delete <name>`              |
-
-
-## 5. Advanced Tips & Troubleshooting
-
-### Moving a file between changelists
-
-If you accidentally add a file to the wrong changelist — no worries. Just add it to the correct one:
-
-```
-git cl add correct-list path/to/file
-```
-
-This will automatically remove it from its previous changelist, so you don’t need to run `git cl remove` first.
-
-
-### Untracked files aren't staged or committed
-
-
-Untracked files (those marked `[??]` in `git status`) will show up in `git cl st` if they’re part of a changelist — but they won't be staged or committed by `git cl stage` or `git cl commit`.
-
-To include them:
-
-1. Use `git add <file>` manually
-2. Then stage or commit the changelist
-
-
-
-
-
 

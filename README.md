@@ -50,10 +50,10 @@ Below are a few common tasks using `git cl`:
 git cl add docs-fix README.md docs/index.md
 
 # List all changelists and their assigned files
-git cl list       # or: git cl ls
+git cl list
 
 # View modified files grouped by changelist
-git cl status     # or: git cl st
+git cl status
 
 # Stage all files in a changelist and delete it
 git cl stage docs-fix

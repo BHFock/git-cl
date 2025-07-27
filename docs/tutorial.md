@@ -73,6 +73,8 @@ Use changelists to track *what you're working on*, even when it's not ready to c
    ```bash
    git cl -h
 
+[↑ Back to top](#git-cl-tutorial)
+
 ## 2. Basic Commands
 
 The following commands are the core of `git-cl`. Each helps you manage your changelists as you prepare your working directory for staging or commits.
@@ -194,6 +196,7 @@ git cl delete <changelist-name>
 - Removes the changelist grouping.
 - Files remain in the working directory and will appear under “No Changelist” next time you run `git cl st`.
 
+[↑ Back to top](#git-cl-tutorial)
 
 ## 3. Tips, Notes & Troubleshooting
 
@@ -225,6 +228,7 @@ All changelist metadata is stored in `.git/cl.json`. This is local to your repos
 
 Changelists are just local lists of files stored in `.git/cl.json`. They persist when switching branches. This can be useful — but also confusing — if changelists refer to files that don’t exist in the new branch. In doubt, delete them with `git cl delete <name>`.
 
+[↑ Back to top](#git-cl-tutorial)
 
 ## 4. Command Summary
 
@@ -238,3 +242,5 @@ Changelists are just local lists of files stored in `.git/cl.json`. They persist
 | Commit using message from file | `git cl commit <name> -F message.txt` |
 | Remove file from changelist    | `git cl remove <file>`                |
 | Delete a changelist            | `git cl delete <name>`                |
+
+[↑ Back to top](#git-cl-tutorial)

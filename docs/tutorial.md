@@ -292,7 +292,7 @@ git cl delete old-list
 | Stage a changelist             | `git cl stage <name> [--keep]`                 |
 | Commit with inline message     | `git cl commit <name> -m "Message" [--keep]`   |
 | Commit using message from file | `git cl commit <name> -F message.txt [--keep]` |
-| Remove file from changelist    | `git cl remove <file>`                         |
+| Remove files from changelists  | `git cl remove <file1> <file2> ...`            |
 | Delete a changelist            | `git cl delete <name>`                         |
 
 [↑ Back to top](#git-cl-tutorial)

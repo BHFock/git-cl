@@ -198,7 +198,35 @@ git cl delete <changelist-name>
 
 [↑ Back to top](#git-cl-tutorial)
 
-## 3. FAQ & Common Pitfalls
+
+## 3. Example Workflow: Changelists as Named Staging Areas
+
+`git-cl` changelists can act like multiple named staging areas. Instead of staging files directly, you organise them into changelists — then selectively stage or commit based on those names.
+
+Let’s say you're working on a feature that involves several types of changes. You can group your work like this:
+
+```
+git cl add ok src/core.py tests/test_core.py
+git cl add test_only tests/setup_test_env.sh
+git cl add do_not_commit notes/tmp.txt
+```
+
+This separates clean changes from experimental ones. You can check your progress with:
+
+```
+git cl status
+```
+
+Once you're satisfied with the files in `ok`, you stage and commit them:
+
+```
+git cl stage ok
+git commit -m "Implement core feature"
+```
+
+The other changelists remain untouched, keeping your workspace organised and uncommitted changes visible.
+
+## 4. FAQ & Common Pitfalls
 
 ### How do I move a file from one changelist to another?
 
@@ -253,7 +281,7 @@ git cl delete old-list
 
 [↑ Back to top](#git-cl-tutorial)
 
-## 4. Command Summary
+## 5. Command Summary
 
 | Task                           | Command                                        |
 | ------------------------------ | ---------------------------------------------- |

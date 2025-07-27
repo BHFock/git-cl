@@ -25,7 +25,7 @@
 
 ## What is `git-cl`?
 
-`git-cl` is a Git subcommand inspired by Subversion’s changelists. It lets you group related file changes under a named label — ideal for managing uncommitted edits when juggling multiple tasks.
+`git-cl` is a Git subcommand inspired by Subversion’s changelists. It lets you group related file changes under a named label.
 
 Use it when:
 

@@ -1,15 +1,15 @@
 # git-cl
 
-> A Git subcommand to manage changelists — group files before staging or committing, like in Subversion.
+> A Git subcommand to manage named changelists — group files before staging or committing, like in Subversion.
 
-`git-cl` is a command-line tool that introduces changelists to Git. It allows users to assign working directory files to named changelists, making it easier to manage partial commits and organise work by intent.
+`git-cl` is a command-line tool for Git that introduces SVN-style changelists. It allows users to assign working directory files to named changelists, helping organise work by intent and manage partial commits more easily.
 
 ## Features
 
-- Create and manage named changelists
-- View changes grouped by changelist
-- Stage and commit changelist contents selectively
-- Read commit messages from files using -F flag
+- Create and manage named changelists to group related file changes
+- View changes grouped by changelist in a `git status`-like view
+- Stage and commit changelist contents selectively, by name
+- Read commit messages from files using `-F` (like `git commit`)
 - Simple JSON-based local tracking (no changes to Git internals)
 - Seamless integration via `git cl` subcommand interface
 
@@ -43,7 +43,7 @@ Git will recognise `git-cl` as the handler for `git cl`, just like its built-in 
 
 ## Usage
 
-Below are a few common tasks using `git cl`:
+Below are a few common tasks using `git cl`, a Git changelist management tool designed for structured commit workflows.
 
 ```bash
 # Create a changelist implicitly by adding files to it
@@ -118,7 +118,12 @@ Meanwhile, other changelists remain untouched and visible in `git cl status` —
 
 This is a personal tool, built to support my own Git workflow. It’s shared as-is for reference. No active maintenance or collaboration is planned — but forks are welcome.
 
+
 ## License
 
 BSD 3-Clause License — see [LICENSE](./LICENSE) for details.
+
+<!--
+#git-changelists #git-workflow-tools #svn-style-git #git-cli #partial-commits #git-subcommand
+-->
 

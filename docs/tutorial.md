@@ -18,7 +18,7 @@ Welcome to the `git-cl` tutorial — a lightweight Git extension for organising 
   - [2.5 Commit a changelist](#25-commit-a-changelist)
   - [2.6 Remove files from changelists](#26-remove-files-from-changelists)
   - [2.7 Delete a changelist](#27-delete-a-changelist)
-- [3. Tips, Notes & Troubleshooting](#3-tips-notes--troubleshooting)
+- [3. FAQ](#3-faq)
 - [4. Command Summary](#4-command-summary)
 
 </details>
@@ -198,44 +198,58 @@ git cl delete <changelist-name>
 
 [↑ Back to top](#git-cl-tutorial)
 
-## 3. Tips, Notes & Troubleshooting
+## 3. FAQ
 
-### Moving a file between changelists
+### How do I move a file from one changelist to another?
 
-Each file can be part of only one changelist at a time. You don’t need to manually remove a file from one changelist before adding it to another. Just run:
+Just run `git cl add` with the new changelist name. You don't need to remove it from the old one manually.
 
 ```
 git cl add new-list path/to/file
 ```
 
-This automatically reassigns the file to the new changelist.
+This automatically reassigns the file to new-list.
 
-### Preserving changelists after staging/committing
+### Why are changelists deleted after I stage or commit?
 
-By default, changelists are deleted after staging or committing. To keep them:
+This is the default behaviour — `git cl stage` and git `cl commit clean` up after themselves.
+
+If you want to keep the changelist after the operation, use the `--keep` flag:
 
 ```
-git cl stage docs --keep
-git cl commit tests -m "Add tests" --keep
+git cl stage my-list --keep
+git cl commit my-list -m "WIP" --keep
 ```
 
-### Untracked files aren’t automatically staged or committed
+### Why aren’t untracked files included when I stage or commit a changelist?
 
-Untracked files (those marked `[??]` in `git status`) will show up in `git cl st` if they’re part of a changelist — but they won't be staged or committed by `git cl stage` or `git cl commit`.
+Because git cl only stages or commits files already tracked by Git.
 
-To include them:
+If a file is untracked (`[??]`), it will show up in git cl st, but won’t be included when staging or committing.
 
-1. Use `git add <file>` manually
-2. Then stage or commit the changelist
+To include it:
 
-### Changelists are local
+```
+git add my-file.txt
+git cl stage my-changelist
+```
 
-All changelist metadata is stored in `.git/cl.json`. This is local to your repository and never shared via Git, keeping changelist structure flexible and personal.
+### Are changelists shared between team members?
 
+No. Changelists are stored locally in `.git/cl.json` and are not version-controlled or shared via Git. They're like personal to-do lists for your working directory.
 
-### Changelists persist across branches
+### Do changelists persist when switching branches?
 
-Changelists are just local lists of files stored in `.git/cl.json`. They persist when switching branches. This can be useful — but also confusing — if changelists refer to files that don’t exist in the new branch. In doubt, delete them with `git cl delete <name>`.
+Yes — changelists are local and independent of branches. This means:
+
+- You can keep working on the same files across branches
+- But beware: a changelist may reference files that don't exist in the new branch
+
+If things get messy, delete a stale changelist:
+
+```
+git cl delete old-list
+```
 
 [↑ Back to top](#git-cl-tutorial)
 

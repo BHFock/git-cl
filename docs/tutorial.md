@@ -176,18 +176,33 @@ This is handy for small focused changes where you’re ready to commit immediate
 git cl commit <changelist-name> -F commit_message.txt
 ```
 
+### Removing files from changelists
 
-### Remove files from changelists
+If you no longer want a file to be grouped under a specific changelist, you can remove it using
 
 ```
 git cl remove <file1> <file2> ...
 ```
 
-### Delete a changelist
+This removes the listed files from whichever changelist they currently belong to. The files will still exist in your working directory — they're just no longer grouped.
+
+#### Example
+
+```
+git cl remove notes/debug.txt
+```
+
+The file `notes/debug.txt` will now appear under the `No Changelist` section in `git cl st`.
+
+### Deleting a changelist
+
+Once a changelist has served its purpose you may want to remove the group itself
 
 ```
 git cl delete <changelist-name>
 ```
+
+This deletes the changelist entry, but does not affect the files in your working directory. Files that were part of the deleted changelist will appear under No Changelist if they’re still modified or untracked.
 
 ## 3. Example Workflow
 

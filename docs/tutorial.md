@@ -138,7 +138,7 @@ git commit -m "Refactor docs"
 
 ```
 git cl commit <changelist-name> -m "Message"
-git cl ci <changelist-name> -F commit.txt
+git cl commit <changelist-name> -F commit.txt
 ```
 
 - Commits tracked files and deletes the changelist.
@@ -172,7 +172,7 @@ git cl delete <changelist-name>
 ```
 
 - Removes the changelist grouping.
-- Files stay untouched but show under “No Changelist” in cl st.
+- Files remain in the working directory and will appear under “No Changelist” next time you run `git cl st`.
 
 
 ## 3. Tips, Notes & Troubleshooting

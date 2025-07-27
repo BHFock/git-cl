@@ -202,7 +202,7 @@ git cl delete <changelist-name>
 
 ## 3. Example Workflow: Changelists as Named Staging Areas
 
-`git-cl` changelists can act like multiple named staging areas. Instead of staging files directly, you organise them into changelists — then selectively stage or commit based on those names.
+`git-cl` changelists act like named pre-staging areas. Instead of staging files directly, you organise them into changelists — then selectively stage or commit based on those names.
 
 Let’s say you're working on a feature that involves several types of changes. You can group your work like this:
 

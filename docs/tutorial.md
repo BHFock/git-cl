@@ -222,7 +222,7 @@ The other changelists remain untouched, so you can continue working on them sepa
 - Changelists are stored in .git/cl.json and are never versioned or shared.
 - You can use changelists inside any branch.
 
-## Summary of Commands
+## 5. Command Summary
 
 | Task                        | Command                             |
 | --------------------------- | ----------------------------------- |
@@ -241,9 +241,9 @@ The other changelists remain untouched, so you can continue working on them sepa
 
 If you accidentally add a file to the wrong changelist — no worries. Just add it to the correct one:
 
-´´´
+```
 git cl add correct-list path/to/file
-´´´
+```
 
 This will automatically remove it from its previous changelist, so you don’t need to run `git cl remove` first.
 

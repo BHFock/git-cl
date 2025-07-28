@@ -378,7 +378,7 @@ def clutil_format_file_status(
         rel_file = file
 
     status = status_map.get(rel_file, " ")
-    tag = f"[{status}]" if status != " " else "[ ]"
+    tag = f"[{status}]" if status != " " else "[  ]"
     return f"  {tag} {file}"
 
 

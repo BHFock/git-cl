@@ -127,6 +127,8 @@ git cl st
 - Like `git status --porcelain`, but grouped by changelist.
 - Shows Git’s precise two-letter status codes.
 
+The following table explains the status codes shown in `git cl status`, which follow Git’s `--porcelain` format:
+
 | Code	| Meaning                    	 | Description                                            |
 | ----- | ---------------------------- | ------------------------------------------------------ |
 | [??]  |	Untracked                    | File is new and not yet tracked by Git                 |

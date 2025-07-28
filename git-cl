@@ -59,6 +59,7 @@ import argparse
 import json
 import sys
 import subprocess
+from typing import Optional
 from pathlib import Path
 
 
@@ -243,7 +244,7 @@ def clutil_get_git_status(include_untracked: bool = False) -> list[str]:
         sys.exit(1)
 
 
-def clutil_sanitize_path(file_path: str, git_root: Path) -> str | None:
+def clutil_sanitize_path(file_path: str, git_root: Path) -> Optional[str]:
     """
     Sanitizes and validates a file path for safe use with Git commands.
 

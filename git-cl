@@ -664,18 +664,15 @@ def main() -> None:
             "  git cl stage my-feature\n"
             "  git cl commit my-feature -m 'Implement feature'\n"
             "  git cl commit my-feature -F commit-msg.txt\n"
-            "  git cl delete my-feature"
-        ),
+            "  git cl delete my-feature"),
         formatter_class=argparse.RawTextHelpFormatter,
-        add_help=False
-    )
+        add_help=False)
 
     parser.add_argument(
         '--version',
         action='version',
         version=f'git-cl {__version__}',
-        help=argparse.SUPPRESS
-    )
+        help=argparse.SUPPRESS)
 
     subparsers = parser.add_subparsers(dest='command', title='Commands')
 
@@ -684,8 +681,7 @@ def main() -> None:
         'add',
         help='Add files to a named changelist',
         description='Add one or more files to a named changelist. '
-                    'If the changelist does not exist, it will be created.'
-    )
+                    'If the changelist does not exist, it will be created.')
     add_parser.add_argument('name', metavar='CHANGELIST',
                             help='Name of the changelist')
     add_parser.add_argument('files', metavar='FILE', nargs='+',
@@ -697,8 +693,7 @@ def main() -> None:
         'remove',
         help='Remove one or more files from their changelists',
         description=("Detaches the specified files from any changelists "
-                     "they belong to.")
-    )
+                     "they belong to."))
     remove_parser.add_argument('files', metavar='FILE', nargs='+',
                                help='Files to remove from any changelist')
     remove_parser.set_defaults(func=cl_remove)
@@ -708,8 +703,7 @@ def main() -> None:
         'delete',
         help='Delete a changelist by name',
         description=("Deletes the specified changelist and removes its "
-                     "file references.")
-    )
+                     "file references."))
     delete_parser.add_argument('name', metavar='CHANGELIST',
                                help='Name of the changelist to delete')
     delete_parser.set_defaults(func=cl_delete)
@@ -743,9 +737,7 @@ def main() -> None:
         description=(
             "Stages all **tracked** files from the changelist. "
             "By default, deletes the changelist afterward unless "
-            "--keep is specified."
-        )
-    )
+            "--keep is specified."))
     stage_parser.add_argument('name', metavar='CHANGELIST',
                               help='Name of the changelist')
     stage_parser.add_argument(
@@ -762,9 +754,7 @@ def main() -> None:
             "Stages and commits all **tracked** files from the "
             "changelist using the provided message. "
             "By default, deletes the changelist afterward "
-            "unless --keep is specified."
-        )
-    )
+            "unless --keep is specified."))
     commit_parser.add_argument('name', metavar='CHANGELIST',
                                help='Name of the changelist')
 
@@ -784,8 +774,7 @@ def main() -> None:
     help_parser = subparsers.add_parser(
         'help',
         help='Show general help and command list',
-        description='Displays a summary of available git-cl commands.'
-    )
+        description='Displays a summary of available git-cl commands.')
     help_parser.set_defaults(func=cl_help, parser=parser)
 
     args = parser.parse_args()

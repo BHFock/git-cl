@@ -326,26 +326,18 @@ def clutil_get_tracked_files(files: list[str]) -> list[str]:
     return tracked_files
 
 
-def clutil_get_file_status_map() -> dict[str, str]:
+def clutil_get_file_status_map(show_all: bool = False) -> dict[str, str]:
     """Get a mapping of files to their Git 2-letter status codes."""
     git_root = clutil_get_git_root()
     output = clutil_get_git_status(include_untracked=True)
 
     # Allowlist of known meaningful status codes
     INTERESTING_CODES = {
-        '??',  # untracked
-        ' M',  # modified (unstaged)
-        'M ',  # modified (staged)
-        'MM',  # modified both staged + unstaged
-        'A ',  # added (staged)
-        'AM',  # added + modified
-        ' D',  # deleted (unstaged)
-        'D ',  # deleted (staged)
-        'R ',  # renamed
-        'RM',  # renamed + modified
+        '??', ' M', 'M ', 'MM', 'A ', 'AM', ' D', 'D ', 'R ', 'RM'
     }
 
     status_map = {}
+    skipped = {}
 
     for line in output:
         if len(line) < 4:
@@ -358,11 +350,20 @@ def clutil_get_file_status_map() -> dict[str, str]:
             raw_path = raw_path.split('->')[-1].strip()
 
         abs_path = (git_root / raw_path).resolve()
-        rel_path = abs_path.relative_to(git_root).as_posix()
+        try:
+            rel_path = abs_path.relative_to(git_root).as_posix()
+        except ValueError:
+            rel_path = raw_path
 
-        if code in INTERESTING_CODES:
+        if show_all or code in INTERESTING_CODES:
             status_map[rel_path] = code
-        # else: ignore uninteresting or unknown status
+        else:
+            skipped.setdefault(code, []).append(rel_path)
+
+    if skipped and not show_all:
+        skipped_count = sum(len(v) for v in skipped.values())
+        print(f"Note: {skipped_count} file(s) with uncommon Git status codes "
+              "were not shown. Use 'git cl st --all' to include them.")
 
     return status_map
 
@@ -523,18 +524,14 @@ def cl_list(_args: argparse.Namespace) -> None:
             print(f"  {file}")
 
 
-def cl_status(_args: argparse.Namespace) -> None:
+def cl_status(args: argparse.Namespace) -> None:
     """
     Displays git status grouped by changelist membership.
-
-    Args:
-        args: argparse.Namespace (not used).
     """
     changelists = clutil_load()
     git_root = clutil_get_git_root()
-    status_map = clutil_get_file_status_map()
+    status_map = clutil_get_file_status_map(show_all=args.all)
 
-    # Show files grouped by changelist
     assigned_files = set()
     for cl_name, files in changelists.items():
         print(f"{cl_name}:")
@@ -542,7 +539,6 @@ def cl_status(_args: argparse.Namespace) -> None:
             print(clutil_format_file_status(file, status_map, git_root))
         assigned_files.update(files)
 
-    # Show unassigned files
     no_cl_files = [file for file in status_map if file not in assigned_files]
     if no_cl_files:
         print("No Changelist:")
@@ -734,8 +730,10 @@ def main() -> None:
         aliases=['st'],
         help='Show working tree changes grouped by changelist',
         description=("Displays all file changes grouped by changelist. "
-                     "Unassigned changes appear under 'No Changelist'.")
-    )
+                     "Unassigned changes appear under 'No Changelist'."))
+    status_parser.add_argument(
+        '--all', action='store_true',
+        help='Show all files, including those with uncommon Git status codes')
     status_parser.set_defaults(func=cl_status)
 
     # stage

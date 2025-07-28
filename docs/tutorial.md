@@ -172,9 +172,9 @@ git cl stage <changelist-name>
 ```
 
 - Stages all tracked files from the changelist.
-- Untracked files are skipped.
+- Only files already tracked by Git will be staged. Untracked files are ignored unless you add them with `git add` first.
 - Changelist is deleted after staging.
-
+  
 #### Example:
 
 ```
@@ -190,6 +190,7 @@ git cl commit <changelist-name> -F commit.txt
 ```
 
 - Commits tracked files and deletes the changelist.
+- Only files already tracked by Git will be commited. Untracked files are ignored unless you add them with `git add` first.
 - Use `-F <file>` to supply commit message from a file (like regular Git).
 
 #### Example:

@@ -292,12 +292,17 @@ git cl delete old-list
 | Task                           | Command                                        |
 | ------------------------------ | ---------------------------------------------- |
 | Add files to a changelist      | `git cl add <name> <files...>`                 |
-| List changelists               | `git cl list` or `git cl ls`                   |
-| View grouped status            | `git cl status` or `git cl st`                 |
+| List changelists               | `git cl list`                                  |
+| List changelists               | `git cl ls`                                    |
+| View grouped status            | `git cl status`                                |
+| View grouped status            | `git cl st`                                    |
 | Stage a changelist             | `git cl stage <name> [--keep]`                 |
 | Commit with inline message     | `git cl commit <name> -m "Message" [--keep]`   |
 | Commit using message from file | `git cl commit <name> -F message.txt [--keep]` |
+| Commit with inline message     | `git cl ci <name> -m "Message" [--keep]`       |
+| Commit using message from file | `git cl ci <name> -F message.txt [--keep]`     |
 | Remove files from changelists  | `git cl remove <file1> <file2> ...`            |
 | Delete a changelist            | `git cl delete <name>`                         |
+| Show help                      | `git cl help`                                  |
 
 [↑ Back to top](#git-cl-tutorial)

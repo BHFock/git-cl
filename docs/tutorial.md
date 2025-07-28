@@ -125,8 +125,20 @@ git cl st
 ```
 
 - Like `git status --porcelain`, but grouped by changelist.
+- Shows Git’s precise two-letter status codes.
 
-- Shows Git’s precise two-letter status codes, such as [M ] (staged), [ M] (unstaged), [A ] (added), or [??] (untracked).
+| Code	| Meaning                    	 | Description                                            |
+| ----- | ---------------------------- | ------------------------------------------------------ |
+| [??]  |	Untracked                    | File is new and not yet tracked by Git                 |
+| [M ] 	| Modified (staged)            | File changes are staged and ready to commit            |
+| [ M]  |	Modified (unstaged)          |	File has changes but is not yet staged                |
+| [MM]  |	Modified (staged + unstaged) |	File has staged changes and additional unstaged edits |
+| [A ]  |	Added (staged)	             | New file added and staged                              |
+| [AM]	| Added + Modified             | New file added and then modified before staging        |
+| [D ]  |	Deleted (staged)             | File was deleted and the deletion is staged            |
+| [ D]	| Deleted (unstaged)	         | File was deleted but not yet staged                    |
+| [R ]  |	Renamed	                     | File was renamed and the change is staged              |
+| [RM]  |	Renamed + Modified	         | File was renamed and then modified before staging      |
 
 #### Example Output:
 

@@ -23,7 +23,7 @@ Changelists are stored in a simple `cl.json` file inside your repository’s `.g
 
 ### Requirements
 
-- Python 3.10+
+- Python 3.9+
 - Git installed and available in your `$PATH`
 
 To use `git cl` as a Git subcommand, place the executable script named `git-cl` in a directory that’s part of your system’s `$PATH`, such as `~/bin`. For example:

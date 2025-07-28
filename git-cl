@@ -544,7 +544,7 @@ def cl_status(args: argparse.Namespace) -> None:
         print("No Changelist:")
         for file in sorted(no_cl_files):
             status = status_map[file]
-            tag = f"[{status}]" if status != " " else "[ ]"
+            tag = f"[{status}]" if status != "  " else "[  ]"
             print(f"  {tag} {file}")
 
 

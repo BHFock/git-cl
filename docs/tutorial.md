@@ -1,6 +1,6 @@
 # git-cl Tutorial
 
-`git-cl` lets you group files into named changelists before staging or committing — like sticky notes for your working directory. This helps you manage multiple ongoing changes efficiently before staging or committing them.
+[git-cl](https://github.com/BHFock/git-cl?tab=readme-ov-file) lets you group files into named changelists before staging or committing — like sticky notes for your working directory. This helps you manage multiple ongoing changes efficiently before staging or committing them.
 
 <details>
 <summary> Table of Contents</summary>

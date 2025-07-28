@@ -73,7 +73,7 @@ Use changelists to track what you're working on, even when it's not ready to com
 5. (Optional) Confirm it's working:
 
    ```
-   git cl -h
+   git cl help
    ```
 
 [↑ Back to top](#git-cl-tutorial)

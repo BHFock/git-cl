@@ -142,6 +142,14 @@ The following table explains the status codes shown in `git cl status`, which fo
 | [R ]  |	Renamed	                     | File was renamed and the change is staged              |
 | [RM]  |	Renamed + Modified	         | File was renamed and then modified before staging      |
 
+For a full list of Git status codes and their meanings, see the official [git documentation](https://git-scm.com/docs/git-status). 
+
+By default, `git cl status` shows only common Git status codes. To include files with uncommon or advanced status codes (like merge conflicts, type changes, or ignored files), use the `--all` flag:
+
+```
+git cl status --all
+```
+
 #### Example Output:
 
 ```
@@ -298,6 +306,18 @@ If things get messy, delete a stale changelist:
 ```
 git cl delete old-list
 ```
+
+### Why don’t I see all files in git cl status?
+
+By default, `git cl status` filters out files with uncommon Git status codes (e.g. merge conflicts, type changes, ignored files) to keep the output clean.
+
+If you want to include everything, use the --all flag:
+
+```
+git cl status --all
+```
+
+This will show all files, including those with status codes like [UU] (unmerged), [T ] (type change), or [! ] (ignored).
 
 [↑ Back to top](#git-cl-tutorial)
 

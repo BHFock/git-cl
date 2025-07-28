@@ -327,7 +327,23 @@ def clutil_get_tracked_files(files: list[str]) -> list[str]:
 
 
 def clutil_get_file_status_map(show_all: bool = False) -> dict[str, str]:
-    """Get a mapping of files to their Git 2-letter status codes."""
+    """
+    Get a mapping of files to their Git 2-letter status codes.
+
+    By default, only a predefined set of common status codes are included.
+    Files with uncommon status codes (e.g. merge conflicts, type changes)
+    are skipped and counted for a warning message — unless `--all` is used.
+
+    Ignored files (status code '! ') are silently excluded from both the
+    output and the warning, since `git status --porcelain` does not include
+    them unless explicitly requested with `--ignored`.
+
+    Args:
+        show_all (bool): If True, include all files regardless of status code.
+
+    Returns:
+        dict[str, str]: Mapping of relative file paths to their Git status codes.
+    """
     git_root = clutil_get_git_root()
     output = clutil_get_git_status(include_untracked=True)
 

@@ -124,8 +124,9 @@ git cl status
 git cl st
 ```
 
-- Like `git status`, but grouped by changelist.
-- Shows modified ([M]), added ([A]), untracked ([??]) files.
+- Like `git status --porcelain`, but grouped by changelist.
+
+- Shows Git’s precise two-letter status codes, such as [M ] (staged), [ M] (unstaged), [A ] (added), or [??] (untracked).
 
 #### Example Output:
 

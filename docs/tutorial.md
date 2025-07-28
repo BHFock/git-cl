@@ -130,15 +130,15 @@ git cl st
 #### Example Output:
 
 ```
-docs:
-  [M] README.md
-  [M] docs/index.md
+   docs:
+  [M ] README.md        # This change is staged
+  [ M] docs/index.md    # This change is not staged
 
 tests:
-  [A] tests/dev_env.sh
+  [A ] tests/dev_env.sh # This new file is staged
 
 No Changelist:
-  [M] main.py
+  [ M] main.py
   [??] scratch.txt
 ```
 

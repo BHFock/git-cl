@@ -695,7 +695,7 @@ def main() -> None:
         prog='git-cl',
         usage='git cl <command> [<args>]',
         description=(
-            "git-cl: A Git subcommand for managing named changelists \n\n"
+            "git-cl: A Git subcommand for managing named changelists \n"
             "        Group files into logical changelists before staging "
             "or committing.\n"),
         epilog=(

@@ -342,7 +342,8 @@ def clutil_get_file_status_map(show_all: bool = False) -> dict[str, str]:
         show_all (bool): If True, include all files regardless of status code.
 
     Returns:
-        dict[str, str]: Mapping of relative file paths to their Git status codes.
+        dict[str, str]: Mapping of relative file paths
+                        to their Git status codes.
     """
     git_root = clutil_get_git_root()
     output = clutil_get_git_status(include_untracked=True)
@@ -729,7 +730,7 @@ def main() -> None:
     # remove
     remove_parser = subparsers.add_parser(
         'remove',
-        aliases=['r','rm'],
+        aliases=['r', 'rm'],
         help='Remove one or more files from their changelists',
         description=("Detaches the specified files from any changelists "
                      "they belong to."))
@@ -745,10 +746,10 @@ def main() -> None:
         description=("Deletes the specified changelists."))
     delete_parser.add_argument(
         'names', metavar='CHANGELIST', nargs='*',
-        help='Changelist names to delete (required unless --all is used)')
+        help='Changelists to delete (required unless --all is used)')
     delete_parser.add_argument(
         '--all', action='store_true',
-        help='Delete all changelists (cannot be combined with named deletions)')
+        help='Delete all changelists')
     delete_parser.set_defaults(func=cl_delete)
 
     # list / ls

@@ -729,6 +729,7 @@ def main() -> None:
     # remove
     remove_parser = subparsers.add_parser(
         'remove',
+        aliases=['r','rm'],
         help='Remove one or more files from their changelists',
         description=("Detaches the specified files from any changelists "
                      "they belong to."))

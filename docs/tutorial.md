@@ -15,7 +15,7 @@
   - [2.4 Stage a changelist](#24-stage-a-changelist)
   - [2.5 Commit a changelist](#25-commit-a-changelist)
   - [2.6 Remove files from changelists](#26-remove-files-from-changelists)
-  - [2.7 Delete a changelist](#27-delete-a-changelist)
+  - [2.7 Delete changelists](#27-delete-changelists)
 - [3. Example Workflow: Changelists as Named Staging Areas](#3-example-workflow-changelists-as-named-staging-areas)
 - [4. FAQ & Common Pitfalls](#4-faq--common-pitfalls)
 - [5. Command Summary](#5-command-summary)
@@ -214,14 +214,32 @@ git cl remove <file1> <file2> ...
 git cl remove notes/debug.txt
 ```
 
-### 2.7 Delete a changelist
+### 2.7 Delete changelists
 
 ```
-git cl delete <changelist-name>
+git cl delete <changelist1> <changelist2> ...
 ```
 
-- Removes the changelist grouping.
+- Deletes one or more named changelists.
 - Files remain in the working directory and will appear under “No Changelist” next time you run `git cl st`.
+
+
+#### Example:
+
+```
+git cl delete docs tests
+```
+
+You can also delete all changelists at once with:
+
+```
+git cl delete --all
+```
+
+- This clears all changelists from your workspace, leaving files untouched.
+- Cannot be combined with named changelists.
+
+Only changelist metadata is deleted — no file content or Git history is lost.
 
 [↑ Back to top](#git-cl-tutorial)
 
@@ -337,7 +355,8 @@ This will show all files, including those with status codes like [UU] (unmerged)
 | Commit with inline message     | `git cl ci <name> -m "Message" [--keep]`       |
 | Commit using message from file | `git cl ci <name> -F message.txt [--keep]`     |
 | Remove files from changelists  | `git cl remove <file1> <file2> ...`            |
-| Delete a changelist            | `git cl delete <name>`                         |
+| Delete changelists             | `git cl delete <name1> <name2>` ...`           |
+| Delete all changelists         | `git cl delete --all`                          |
 | Show help                      | `git cl help`                                  |
 
 [↑ Back to top](#git-cl-tutorial)

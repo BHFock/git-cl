@@ -590,18 +590,39 @@ def cl_remove(args: argparse.Namespace) -> None:
 
 def cl_delete(args: argparse.Namespace) -> None:
     """
-    Deletes a changelist by name.
-
-    Args:
-        args: argparse.Namespace with 'name' attribute.
+    Deletes one or more changelists by name, or all with --all.
     """
     changelists = clutil_load()
-    if args.name in changelists:
-        del changelists[args.name]
+
+    if args.all and args.names:
+        print("Error: Cannot specify changelist names and --all together.")
+        return
+
+    if args.all:
+        if not changelists:
+            print("No changelists to delete.")
+            return
+        count = len(changelists)
+        changelists.clear()
         clutil_save(changelists)
-        print(f"Deleted changelist '{args.name}'")
-    else:
-        print(f"Changelist '{args.name}' not found.")
+        print(f"Deleted all {count} changelists.")
+        return
+
+    if not args.names:
+        print("Error: No changelist names provided.")
+        return
+
+    deleted = False
+    for name in args.names:
+        if name in changelists:
+            del changelists[name]
+            print(f"Deleted changelist '{name}'")
+            deleted = True
+        else:
+            print(f"Changelist '{name}' not found.")
+
+    if deleted:
+        clutil_save(changelists)
 
 
 def cl_commit(args: argparse.Namespace) -> None:
@@ -720,8 +741,12 @@ def main() -> None:
         help='Delete a changelist by name',
         description=("Deletes the specified changelist and removes its "
                      "file references."))
-    delete_parser.add_argument('name', metavar='CHANGELIST',
-                               help='Name of the changelist to delete')
+    delete_parser.add_argument(
+        'names', metavar='CHANGELIST', nargs='*',
+        help='One or more changelists to delete')
+    delete_parser.add_argument(
+        '--all', action='store_true',
+        help='Delete all changelists (cannot be combined with named deletions)')
     delete_parser.set_defaults(func=cl_delete)
 
     # list / ls

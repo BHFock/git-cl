@@ -694,7 +694,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         prog='git-cl',
         usage='git cl <command> [<args>]',
-        description=("git-cl: A Git subcommand for managing named changelists"),
+        description=(
+            "git-cl: A Git subcommand for managing named changelists"),
         epilog=(
             "Example usage:\n"
             "   git cl add my-feature file1.py file2.py\n"
@@ -721,11 +722,11 @@ def main() -> None:
         aliases=['a'],
         help='Add files to a named changelist',
         description='Add one or more files to a named changelist. '
-                    'If the changelist does not exist, it will be created.')
+        'If the changelist does not exist, it will be created automatically.')
     add_parser.add_argument('name', metavar='CHANGELIST',
-                            help='Name of the changelist')
+                            help='Name of the changelist to add files to')
     add_parser.add_argument('files', metavar='FILE', nargs='+',
-                            help='Files to add to the changelist')
+                            help='One or more files to include in the changelist')
     add_parser.set_defaults(func=cl_add)
 
     # remove
@@ -733,10 +734,10 @@ def main() -> None:
         'remove',
         aliases=['r', 'rm'],
         help='Remove files from any changelist',
-        description=("Detaches the specified files from any changelists "
+        description=("Removes files from any changelists "
                      "they belong to."))
     remove_parser.add_argument('files', metavar='FILE', nargs='+',
-                               help='Files to remove from any changelist')
+                               help='One or more files to remove from changelists')
     remove_parser.set_defaults(func=cl_remove)
 
     # delete
@@ -744,10 +745,10 @@ def main() -> None:
         'delete',
         aliases=['d', 'del'],
         help='Delete one or more changelists',
-        description=("Deletes the specified changelists."))
+        description=("Delete one or more changelists by name, or remove all with --all."))
     delete_parser.add_argument(
         'names', metavar='CHANGELIST', nargs='*',
-        help='Changelists to delete (required unless --all is used)')
+        help='One or more changelists to delete (required unless --all is used)')
     delete_parser.add_argument(
         '--all', action='store_true',
         help='Delete all changelists')
@@ -758,8 +759,7 @@ def main() -> None:
         'list',
         aliases=['ls'],
         help='List all changelists and their files',
-        description=("Displays all changelists and the files "
-                     "associated with each.")
+        description=("List all changelists and the files assigned to each.")
     )
     list_parser.set_defaults(func=cl_list)
 
@@ -768,11 +768,11 @@ def main() -> None:
         'status',
         aliases=['st'],
         help='Show file changes grouped by changelist',
-        description=("Show all file changes grouped by changelist. "
-                     "Unassigned changes appear under 'No Changelist'."))
+        description=("Show file changes grouped by changelist. "
+                     "Unassigned files appear under 'No Changelist'."))
     status_parser.add_argument(
         '--all', action='store_true',
-        help='Show all files, including those with uncommon Git status codes')
+        help='Include files with uncommon Git status codes')
     status_parser.set_defaults(func=cl_status)
 
     # stage
@@ -780,14 +780,13 @@ def main() -> None:
         'stage',
         help='Stage tracked files from a changelist',
         description=(
-            "Stages all **tracked** files from the changelist. "
-            "By default, deletes the changelist afterward unless "
-            "--keep is specified."))
+            "Stage all tracked files from the specified changelist. " 
+            "By default, the changelist is deleted after staging unless --keep is used." ))
     stage_parser.add_argument('name', metavar='CHANGELIST',
-                              help='Name of the changelist')
+                              help='Name of the changelist to stage')
     stage_parser.add_argument(
         '--keep', action='store_true',
-        help='Keep the changelist after staging (do not delete)')
+        help='Keep the changelist after staging')
     stage_parser.set_defaults(func=cl_stage)
 
     # commit / ci
@@ -796,12 +795,10 @@ def main() -> None:
         aliases=['ci'],
         help='Commit tracked files from a changelist',
         description=(
-            "Stages and commits all **tracked** files from the "
-            "changelist using the provided message. "
-            "By default, deletes the changelist afterward "
-            "unless --keep is specified."))
+            "Stage and commit all tracked files from the specified changelist using the provided message. " 
+            "By default, the changelist is deleted after committing unless --keep is used."))
     commit_parser.add_argument('name', metavar='CHANGELIST',
-                               help='Name of the changelist')
+                               help='Name of the changelist to commit')
 
     # Create mutually exclusive group for message options
     msg_group = commit_parser.add_mutually_exclusive_group(required=True)
@@ -812,7 +809,7 @@ def main() -> None:
 
     commit_parser.add_argument(
         '--keep', action='store_true',
-        help='Keep the changelist after committing (do not delete)')
+        help='Keep the changelist after committing')
     commit_parser.set_defaults(func=cl_commit)
 
     # help command

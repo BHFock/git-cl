@@ -698,12 +698,12 @@ def main() -> None:
             "git-cl: A Git subcommand for managing named changelists"),
         epilog=(
             "Example usage:\n"
-            "   git cl add my-feature file1.py file2.py\n"
-            "   git cl status\n"
-            "   git cl stage my-feature\n"
-            "   git cl commit my-feature -m 'Implement feature'\n"
-            "   git cl commit my-feature -F commit-msg.txt\n"
-            "   git cl delete my-feature\n\n"
+            "    git cl add my-feature file1.py file2.py\n"
+            "    git cl status\n"
+            "    git cl stage my-feature\n"
+            "    git cl commit my-feature -m 'Implement feature'\n"
+            "    git cl commit my-feature -F commit-msg.txt\n"
+            "    git cl delete my-feature\n\n"
             "See also: https://github.com/BHFock/git-cl"),
         formatter_class=argparse.RawTextHelpFormatter,
         add_help=False)

@@ -1,7 +1,7 @@
 
 # git-cl
 
-> A Git subcommand for managing named changelists — group files into changelists before staging or committing.
+> A Git subcommand for managing named changelists — group files into changelists before staging.
 
 [![Tutorial](https://img.shields.io/badge/Tutorial-View-blue)](https://github.com/BHFock/git-cl/blob/main/docs/tutorial.md)
 

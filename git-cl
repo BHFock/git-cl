@@ -702,7 +702,8 @@ def main() -> None:
             "   git cl stage my-feature\n"
             "   git cl commit my-feature -m 'Implement feature'\n"
             "   git cl commit my-feature -F commit-msg.txt\n"
-            "   git cl delete my-feature"),
+            "   git cl delete my-feature\n\n"
+            "See also: https://github.com/BHFock/git-cl"),
         formatter_class=argparse.RawTextHelpFormatter,
         add_help=False)
 

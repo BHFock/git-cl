@@ -1,6 +1,7 @@
+
 # git-cl
 
-> A Git subcommand for managing named changelists — organise, stage, and commit files by intent.
+> A Git subcommand for managing named changelists — group files into logical changelists before staging or committing.
 
 [![Tutorial](https://img.shields.io/badge/Tutorial-View-blue)](https://github.com/BHFock/git-cl/blob/main/docs/tutorial.md)
 

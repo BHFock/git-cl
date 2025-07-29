@@ -732,7 +732,7 @@ def main() -> None:
     remove_parser = subparsers.add_parser(
         'remove',
         aliases=['r', 'rm'],
-        help='Remove one or more files from their changelists',
+        help='Remove files from any changelist',
         description=("Detaches the specified files from any changelists "
                      "they belong to."))
     remove_parser.add_argument('files', metavar='FILE', nargs='+',
@@ -743,7 +743,7 @@ def main() -> None:
     delete_parser = subparsers.add_parser(
         'delete',
         aliases=['d', 'del'],
-        help='Delete a changelist by name',
+        help='Delete one or more changelists',
         description=("Deletes the specified changelists."))
     delete_parser.add_argument(
         'names', metavar='CHANGELIST', nargs='*',
@@ -767,8 +767,8 @@ def main() -> None:
     status_parser = subparsers.add_parser(
         'status',
         aliases=['st'],
-        help='Show working tree changes grouped by changelist',
-        description=("Displays all file changes grouped by changelist. "
+        help='Show file changes grouped by changelist',
+        description=("Show all file changes grouped by changelist. "
                      "Unassigned changes appear under 'No Changelist'."))
     status_parser.add_argument(
         '--all', action='store_true',
@@ -778,7 +778,7 @@ def main() -> None:
     # stage
     stage_parser = subparsers.add_parser(
         'stage',
-        help='Stage all tracked files in a changelist',
+        help='Stage tracked files from a changelist',
         description=(
             "Stages all **tracked** files from the changelist. "
             "By default, deletes the changelist afterward unless "
@@ -794,7 +794,7 @@ def main() -> None:
     commit_parser = subparsers.add_parser(
         'commit',
         aliases=['ci'],
-        help='Commit all tracked files in a changelist',
+        help='Commit tracked files from a changelist',
         description=(
             "Stages and commits all **tracked** files from the "
             "changelist using the provided message. "
@@ -818,7 +818,7 @@ def main() -> None:
     # help command
     help_parser = subparsers.add_parser(
         'help',
-        help='Show general help and command list',
+        help='Show this help message',
         description='Displays a summary of available git-cl commands.')
     help_parser.set_defaults(func=cl_help, parser=parser)
 

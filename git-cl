@@ -726,7 +726,8 @@ def main() -> None:
     add_parser.add_argument('name', metavar='CHANGELIST',
                             help='Name of the changelist to add files to')
     add_parser.add_argument('files', metavar='FILE', nargs='+',
-                            help='One or more files to include in the changelist')
+                            help=("One or more files to include "
+                                  "in the changelist"))
     add_parser.set_defaults(func=cl_add)
 
     # remove
@@ -737,7 +738,8 @@ def main() -> None:
         description=("Removes files from any changelists "
                      "they belong to."))
     remove_parser.add_argument('files', metavar='FILE', nargs='+',
-                               help='One or more files to remove from changelists')
+                               help=("One or more files to remove "
+                                     "from changelists"))
     remove_parser.set_defaults(func=cl_remove)
 
     # delete
@@ -745,10 +747,12 @@ def main() -> None:
         'delete',
         aliases=['d', 'del'],
         help='Delete one or more changelists',
-        description=("Delete one or more changelists by name, or remove all with --all."))
+        description=("Delete one or more changelists by name, "
+                     "or remove all with --all."))
     delete_parser.add_argument(
         'names', metavar='CHANGELIST', nargs='*',
-        help='One or more changelists to delete (required unless --all is used)')
+        help=("One or more changelists to delete "
+              "(required unless --all is used)"))
     delete_parser.add_argument(
         '--all', action='store_true',
         help='Delete all changelists')
@@ -780,8 +784,9 @@ def main() -> None:
         'stage',
         help='Stage tracked files from a changelist',
         description=(
-            "Stage all tracked files from the specified changelist. " 
-            "By default, the changelist is deleted after staging unless --keep is used." ))
+            "Stage all tracked files from the specified changelist. "
+            "By default, the changelist is deleted after staging "
+            "unless --keep is used."))
     stage_parser.add_argument('name', metavar='CHANGELIST',
                               help='Name of the changelist to stage')
     stage_parser.add_argument(
@@ -795,8 +800,9 @@ def main() -> None:
         aliases=['ci'],
         help='Commit tracked files from a changelist',
         description=(
-            "Stage and commit all tracked files from the specified changelist using the provided message. " 
-            "By default, the changelist is deleted after committing unless --keep is used."))
+            "Stage and commit all tracked files from the specified changelist "
+            "using the provided message. By default, the changelist is "
+            "deleted after committing unless --keep is used."))
     commit_parser.add_argument('name', metavar='CHANGELIST',
                                help='Name of the changelist to commit')
 

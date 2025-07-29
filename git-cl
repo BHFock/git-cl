@@ -770,7 +770,7 @@ def main() -> None:
     # status / st
     status_parser = subparsers.add_parser(
         'status',
-        aliases=['st'],
+        aliases=['s', 'st'],
         help='Show file changes grouped by changelist',
         description=("Show file changes grouped by changelist. "
                      "Unassigned files appear under 'No Changelist'."))

@@ -716,6 +716,7 @@ def main() -> None:
     # add
     add_parser = subparsers.add_parser(
         'add',
+        aliases=['a'],
         help='Add files to a named changelist',
         description='Add one or more files to a named changelist. '
                     'If the changelist does not exist, it will be created.')

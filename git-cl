@@ -739,11 +739,10 @@ def main() -> None:
     delete_parser = subparsers.add_parser(
         'delete',
         help='Delete a changelist by name',
-        description=("Deletes the specified changelist and removes its "
-                     "file references."))
+        description=("Deletes the specified changelists."))
     delete_parser.add_argument(
         'names', metavar='CHANGELIST', nargs='*',
-        help='One or more changelists to delete')
+        help='Changelist names to delete (required unless --all is used)')
     delete_parser.add_argument(
         '--all', action='store_true',
         help='Delete all changelists (cannot be combined with named deletions)')

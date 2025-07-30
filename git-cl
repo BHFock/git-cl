@@ -59,13 +59,30 @@ import argparse
 import json
 import sys
 import subprocess
+import fcntl
 from typing import Optional
 from pathlib import Path
-
+from contextlib import contextmanager
 
 # =============================================================================
 # INTERNAL UTILITIES
 # =============================================================================
+
+
+@contextmanager
+def file_lock(lock_path: Path):
+    """
+    Context manager to acquire an exclusive lock on a file.
+
+    Args:
+        lock_path (Path): Path to the lock file.
+    """
+    with open(lock_path, 'w', encoding='utf-8') as lock_file:
+        fcntl.flock(lock_file, fcntl.LOCK_EX)
+        try:
+            yield
+        finally:
+            fcntl.flock(lock_file, fcntl.LOCK_UN)
 
 
 def clutil_get_file() -> Path:
@@ -99,13 +116,15 @@ def clutil_load() -> dict[str, list[str]]:
         dict: A mapping of changelist names to lists of file paths.
     """
     cl_file = clutil_get_file()
+    lock_file = cl_file.with_suffix('.lock')
     if cl_file.exists():
-        try:
-            with open(cl_file, "r", encoding="utf-8") as file_handle:
-                return json.load(file_handle)
-        except (json.JSONDecodeError, OSError) as error:
-            print(f"Error reading changelists: {error}")
-            return {}
+        with file_lock(lock_file):
+            try:
+                with open(cl_file, "r", encoding="utf-8") as file_handle:
+                    return json.load(file_handle)
+            except (json.JSONDecodeError, OSError) as error:
+                print(f"Error reading changelists: {error}")
+                return {}
     return {}
 
 
@@ -117,12 +136,14 @@ def clutil_save(data: dict[str, list[str]]) -> None:
         data (dict): Mapping of changelist names to lists of files.
     """
     cl_file = clutil_get_file()
+    lock_file = cl_file.with_suffix('.lock')
     cleaned = {k: v for k, v in data.items() if v}
-    try:
-        with open(cl_file, "w", encoding="utf-8") as file_handle:
-            json.dump(cleaned, file_handle, indent=2)
-    except OSError as error:
-        print(f"Error saving changelists: {error}")
+    with file_lock(lock_file):
+        try:
+            with open(cl_file, "w", encoding="utf-8") as file_handle:
+                json.dump(cleaned, file_handle, indent=2)
+        except OSError as error:
+            print(f"Error saving changelists: {error}")
 
 
 def clutil_validate_files(files: list[str]) -> list[str]:

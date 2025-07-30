@@ -11,7 +11,11 @@
 - [2. Basic Commands](#2-basic-commands)
   - [2.1 Add files to a changelist](#21-add-files-to-a-changelist)
   - [2.2 List all changelists](#22-list-all-changelists)
-  - [2.3 View status by changelist](#23-view-status-by-changelist)
+  - [2.3 View status by changelist](#23-view-status-by-changelist) 
+    - [Filtering by changelist name](#filtering-by-changelist-name)
+    - [Showing all Git status codes](#showing-all-git-status-codes)
+    - [Status code reference](#status-code-reference)
+    - [Colorised output](#colorised-output)
   - [2.4 Stage a changelist](#24-stage-a-changelist)
   - [2.5 Commit a changelist](#25-commit-a-changelist)
   - [2.6 Remove files from changelists](#26-remove-files-from-changelists)
@@ -195,6 +199,30 @@ No Changelist:
   [UU] merge_conflict_file.py
 ```
 
+#### Colorised output
+
+By default, `git cl status` will use color to highlight file statuses:
+
+- Green: Staged changes (e.g. [A ], [M ])
+- Yellow: Unstaged changes (e.g. [ M])
+- Magenta: Staged and unstaged changes (e.g. [MM])
+- Cyan: Untracked files ([??])
+
+This helps visually scan the output and distinguish file states more easily.
+
+You can disable color using:
+
+- The `--no-color` flag:
+
+```
+git cl st --no-color
+```
+
+- Or by setting the `NO_COLOR` environment variable:
+
+```
+NO_COLOR=1 git cl st
+```
 
 ### 2.4 Stage a changelist
 
@@ -380,6 +408,7 @@ This will show all files, including those with status codes like [UU] (unmerged)
 | List changelists               | `git cl ls`                                    |
 | View grouped status            | `git cl status`                                |
 | View grouped status            | `git cl st`                                    |
+| View all statuses, no color    | `git cl st --all --no-color`                   |
 | Stage a changelist             | `git cl stage <name> [--keep]`                 |
 | Commit with inline message     | `git cl commit <name> -m "Message" [--keep]`   |
 | Commit using message from file | `git cl commit <name> -F message.txt [--keep]` |

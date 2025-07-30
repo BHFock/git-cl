@@ -410,29 +410,33 @@ def clutil_get_file_status_map(show_all: bool = False) -> dict[str, str]:
 
 
 def clutil_format_file_status(
-        file: str, status_map: dict[str, str], git_root: Path, use_color: bool = True) -> str:
+        file: str, status_map: dict[str, str], git_root: Path,
+        use_color: bool = True) -> str:
     """
     Format a file's Git status line with optional color-coded output.
 
     This function takes a file path and its associated Git status code,
-    and returns a string formatted with a status tag and optionally ANSI color codes
-    (using colorama) for visual clarity in terminal output.
+    and returns a string formatted with a status tag and optionally ANSI
+    color codes (using colorama) for visual clarity in terminal output.
 
     Color logic (when use_color=True):
     - Cyan     => Untracked files (`??`)
-    - Green    => Staged changes only (index), including additions (`A `, `M `, etc.)
+    - Green    => Staged changes only (index),
+                  including additions (`A `, `M `, etc.)
     - Yellow   => Unstaged changes only (working tree)
     - Magenta  => Both staged and unstaged changes (`MM`, `AM`, etc.)
     - Default  => Clean or unknown status
 
     Args:
         file (str): The path to the file (relative or absolute).
-        status_map (dict[str, str]): Mapping of relative file paths to Git status codes.
+        status_map (dict[str, str]): Mapping of relative file paths
+                                     to Git status codes.
         git_root (Path): Root path of the Git repository.
         use_color (bool): Whether to apply color formatting (default: True).
 
     Returns:
-        str: A string of the form '  [XY] filename' with optional color applied to the entire line.
+        str: A string of the form '  [XY] filename' with optional
+             color applied to the entire line.
     """
     abs_file = (Path.cwd() / file).resolve()
     try:
@@ -442,7 +446,7 @@ def clutil_format_file_status(
 
     status = status_map.get(rel_file, "  ")
     tag = f"[{status}]"
-    
+
     if not use_color:
         return f"  {tag} {file}"
 
@@ -651,7 +655,8 @@ def cl_status(args: argparse.Namespace) -> None:
         if no_cl_files:
             print("No Changelist:")
             for file in sorted(no_cl_files):
-                print(clutil_format_file_status(file, st_map, git_root, use_color))
+                print(clutil_format_file_status(file, st_map, git_root,
+                                                use_color))
 
 
 def cl_remove(args: argparse.Namespace) -> None:

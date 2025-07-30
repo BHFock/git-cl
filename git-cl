@@ -64,6 +64,25 @@ from typing import Optional
 from pathlib import Path
 from contextlib import contextmanager
 
+# Try to import colorama for colored output
+try:
+    from colorama import Fore, Style
+    COLORAMA_AVAILABLE = True
+except ImportError:
+    COLORAMA_AVAILABLE = False
+
+    # Define dummy objects to avoid NameError
+    # pylint: disable=too-few-public-methods
+    class _DummyColorama:
+        CYAN = ""
+        GREEN = ""
+        YELLOW = ""
+        MAGENTA = ""
+        RESET_ALL = ""
+
+    Fore = _DummyColorama()
+    Style = _DummyColorama()
+
 # =============================================================================
 # INTERNAL UTILITIES
 # =============================================================================
@@ -447,34 +466,27 @@ def clutil_format_file_status(
     status = status_map.get(rel_file, "  ")
     tag = f"[{status}]"
 
-    if not use_color:
+    if not use_color or not COLORAMA_AVAILABLE:
         return f"  {tag} {file}"
 
-    # Color logic (only when use_color=True)
-    try:
-        from colorama import Fore, Style
+    # Color logic (only when use_color=True and colorama is available)
+    staged, unstaged = status[0], status[1]
 
-        staged, unstaged = status[0], status[1]
+    # Determine color based on Git status codes
+    if status == "??":
+        color = Fore.CYAN
+    elif staged == 'A':
+        color = Fore.GREEN       # staged addition
+    elif staged != " " and unstaged == " ":
+        color = Fore.GREEN       # staged changes
+    elif staged == " " and unstaged != " ":
+        color = Fore.YELLOW      # unstaged changes
+    elif staged != " " and unstaged != " ":
+        color = Fore.MAGENTA     # both
+    else:
+        color = Style.RESET_ALL  # clean / unknown
 
-        # Determine color based on Git status codes
-        if status == "??":
-            color = Fore.CYAN
-        elif staged == 'A':
-            color = Fore.GREEN       # staged addition
-        elif staged != " " and unstaged == " ":
-            color = Fore.GREEN       # staged changes
-        elif staged == " " and unstaged != " ":
-            color = Fore.YELLOW      # unstaged changes
-        elif staged != " " and unstaged != " ":
-            color = Fore.MAGENTA     # both
-        else:
-            color = Style.RESET_ALL  # clean / unknown
-
-        return f"{color}  {tag} {file}{Style.RESET_ALL}"
-
-    except ImportError:
-        # Fallback if colorama is not available
-        return f"  {tag} {file}"
+    return f"{color}  {tag} {file}{Style.RESET_ALL}"
 
 
 def clutil_read_commit_message_file(file_path: str) -> str:

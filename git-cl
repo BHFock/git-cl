@@ -440,12 +440,11 @@ def clutil_format_file_status(
     color codes (using colorama) for visual clarity in terminal output.
 
     Color logic (when use_color=True):
-    - Cyan     => Untracked files (`??`)
-    - Green    => Staged changes only (index),
-                  including additions (`A `, `M `, etc.)
-    - Yellow   => Unstaged changes only (working tree)
-    - Magenta  => Both staged and unstaged changes (`MM`, `AM`, etc.)
-    - Default  => Clean or unknown status
+    - Blue      => Untracked files (`??`)
+    - Green     => Staged changes only (index), including additions (`A `, `M `, etc.)
+    - Red       => Unstaged changes only (working tree)
+    - Magenta   => Both staged and unstaged changes (`MM`, `AM`, etc.)
+    - Default   => Clean or unknown status
 
     Args:
         file (str): The path to the file (relative or absolute).
@@ -470,18 +469,17 @@ def clutil_format_file_status(
     if not use_color or not COLORAMA_AVAILABLE:
         return f"  {tag} {file}"
 
-    # Color logic (only when use_color=True and colorama is available)
     staged, unstaged = status[0], status[1]
 
     # Determine color based on Git status codes
     if status == "??":
-        color = Fore.CYAN
+        color = Fore.BLUE
     elif staged == 'A':
         color = Fore.GREEN       # staged addition
     elif staged != " " and unstaged == " ":
         color = Fore.GREEN       # staged changes
     elif staged == " " and unstaged != " ":
-        color = Fore.YELLOW      # unstaged changes
+        color = Fore.RED         # unstaged changes
     elif staged != " " and unstaged != " ":
         color = Fore.MAGENTA     # both
     else:

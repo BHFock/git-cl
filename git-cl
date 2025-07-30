@@ -652,6 +652,7 @@ def cl_status(args: argparse.Namespace) -> None:
     - The --no-color flag is used
     - The NO_COLOR environment variable is set (any non-empty value)
     - colorama is not available
+    - Output is not going to a terminal (TTY)
     """
     selected_names = set(args.names) if args.names else None
     changelists = clutil_load()
@@ -661,7 +662,9 @@ def cl_status(args: argparse.Namespace) -> None:
     # Check for color disabling conditions
     # NO_COLOR environment variable takes precedence over --no-color flag
     no_color_env = bool(os.environ.get('NO_COLOR'))
-    use_color = not (args.no_color or no_color_env) and COLORAMA_AVAILABLE
+    # Check if stdout is a TTY (terminal)
+    is_tty = sys.stdout.isatty()
+    use_color = not (args.no_color or no_color_env or not is_tty) and COLORAMA_AVAILABLE
 
     assigned_files = set()
     for cl_name, files in changelists.items():

@@ -545,24 +545,28 @@ def cl_status(args: argparse.Namespace) -> None:
     """
     Displays git status grouped by changelist membership.
     """
+    selected_names = set(args.names) if args.names else None
     changelists = clutil_load()
     git_root = clutil_get_git_root()
     status_map = clutil_get_file_status_map(show_all=args.all)
 
     assigned_files = set()
     for cl_name, files in changelists.items():
+        if selected_names is not None and cl_name not in selected_names:
+            continue
         print(f"{cl_name}:")
         for file in files:
             print(clutil_format_file_status(file, status_map, git_root))
         assigned_files.update(files)
 
-    no_cl_files = [file for file in status_map if file not in assigned_files]
-    if no_cl_files:
-        print("No Changelist:")
-        for file in sorted(no_cl_files):
-            status = status_map[file]
-            tag = f"[{status}]" if status != "  " else "[  ]"
-            print(f"  {tag} {file}")
+    if selected_names is None:
+        no_cl_files = [file for file in status_map if file not in assigned_files]
+        if no_cl_files:
+            print("No Changelist:")
+            for file in sorted(no_cl_files):
+                status = status_map[file]
+                tag = f"[{status}]" if status != "  " else "[  ]"
+                print(f"  {tag} {file}")
 
 
 def cl_remove(args: argparse.Namespace) -> None:
@@ -773,6 +777,9 @@ def main() -> None:
         help='Show file changes grouped by changelist',
         description=("Show file changes grouped by changelist. "
                      "Unassigned files appear under 'No Changelist'."))
+    status_parser.add_argument(
+        'names', metavar='CHANGELIST', nargs='*',
+        help='Optional list of changelists to show (default: all)')
     status_parser.add_argument(
         '--all', action='store_true',
         help='Include files with uncommon Git status codes')

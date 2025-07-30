@@ -794,8 +794,8 @@ def main() -> None:
         help='Optional list of changelists to show (default: all)')
     status_parser.add_argument(
         '--include-no-cl', action='store_true',
-        help=('Also show files not assigned to any changelist '
-              '("No Changelist")'))
+        help=('When filtering by changelist names, also show files '
+              'not assigned to any changelist'))
     status_parser.add_argument(
         '--all', action='store_true',
         help='Include files with uncommon Git status codes')

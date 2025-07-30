@@ -544,6 +544,18 @@ def cl_list(_args: argparse.Namespace) -> None:
 def cl_status(args: argparse.Namespace) -> None:
     """
     Displays git status grouped by changelist membership.
+
+    If no changelists are specified, shows all changelists plus files
+    not assigned to any changelist ("No Changelist").
+
+    If one or more changelist names are given as arguments, limits output
+    to those changelists only. By default, unassigned files are not shown
+    in this mode unless --include-no-cl is also specified.
+
+    By default, only files with 'interesting' status codes (e.g., modified,
+    added, deleted) are shown. Use --all to also include files with other
+    status codes such as merge conflicts, unmerged files, or other special
+    states reported by git status.
     """
     selected_names = set(args.names) if args.names else None
     changelists = clutil_load()

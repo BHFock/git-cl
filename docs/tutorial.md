@@ -125,7 +125,30 @@ git cl st
 ```
 
 - Like `git status --porcelain`, but grouped by changelist.
-- Shows Git’s precise two-letter status codes.
+- Shows Git’s precise two-letter status codes, grouped under each changelist.
+- Files not assigned to any changelist appear under No Changelist.
+
+##### Filtering by changelist name
+
+You can pass one or more changelist names to show only those specific groups:
+
+```
+git cl status docs tests
+# or
+git cl st frontend-refactor
+```
+
+This limits the output to the specified changelists. By default, unassigned files (those in “No Changelist”) are hidden in this mode.
+
+If you want to include unassigned files alongside named changelists, use the `--include-no-cl` flag:
+
+```
+git cl st docs --include-no-cl
+```
+
+#### Showing all Git status codes
+
+By default, git cl status shows only the most common status codes (like [M ], [??], [ D], etc.) for clarity.
 
 The following table explains the status codes shown in `git cl status`, which follow Git’s `--porcelain` format:
 

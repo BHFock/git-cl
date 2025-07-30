@@ -58,6 +58,7 @@ __version__ = "0.2.0"
 import argparse
 import json
 import sys
+import os
 import subprocess
 import fcntl
 from typing import Optional
@@ -646,12 +647,21 @@ def cl_status(args: argparse.Namespace) -> None:
     added, deleted) are shown. Use --all to also include files with other
     status codes such as merge conflicts, unmerged files, or other special
     states reported by git status.
+
+    Color output is disabled if:
+    - The --no-color flag is used
+    - The NO_COLOR environment variable is set (any non-empty value)
+    - colorama is not available
     """
     selected_names = set(args.names) if args.names else None
     changelists = clutil_load()
     git_root = clutil_get_git_root()
     st_map = clutil_get_file_status_map(show_all=args.all)
-    use_color = not args.no_color  # Invert the no_color flag
+
+    # Check for color disabling conditions
+    # NO_COLOR environment variable takes precedence over --no-color flag
+    no_color_env = bool(os.environ.get('NO_COLOR'))
+    use_color = not (args.no_color or no_color_env) and COLORAMA_AVAILABLE
 
     assigned_files = set()
     for cl_name, files in changelists.items():

@@ -70,12 +70,15 @@ from contextlib import contextmanager
 
 
 @contextmanager
-def file_lock(lock_path: Path):
+def clutil_file_lock(lock_path: Path):
     """
-    Context manager to acquire an exclusive lock on a file.
+    Acquires an exclusive lock on a file for safe concurrent access.
 
     Args:
         lock_path (Path): Path to the lock file.
+
+    Yields:
+        None
     """
     with open(lock_path, 'w', encoding='utf-8') as lock_file:
         fcntl.flock(lock_file, fcntl.LOCK_EX)
@@ -118,7 +121,7 @@ def clutil_load() -> dict[str, list[str]]:
     cl_file = clutil_get_file()
     lock_file = cl_file.with_suffix('.lock')
     if cl_file.exists():
-        with file_lock(lock_file):
+        with clutil_file_lock(lock_file):
             try:
                 with open(cl_file, "r", encoding="utf-8") as file_handle:
                     return json.load(file_handle)
@@ -138,7 +141,7 @@ def clutil_save(data: dict[str, list[str]]) -> None:
     cl_file = clutil_get_file()
     lock_file = cl_file.with_suffix('.lock')
     cleaned = {k: v for k, v in data.items() if v}
-    with file_lock(lock_file):
+    with clutil_file_lock(lock_file):
         try:
             with open(cl_file, "w", encoding="utf-8") as file_handle:
                 json.dump(cleaned, file_handle, indent=2)

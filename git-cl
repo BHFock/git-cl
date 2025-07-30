@@ -411,7 +411,30 @@ def clutil_get_file_status_map(show_all: bool = False) -> dict[str, str]:
 
 def clutil_format_file_status(
         file: str, status_map: dict[str, str], git_root: Path) -> str:
-    """Format a file with its status for display."""
+    """
+    Format a file's Git status line with color-coded output.
+
+    This function takes a file path and its associated Git status code,
+    and returns a string formatted with a status tag and ANSI color codes
+    (using colorama) for visual clarity in terminal output.
+
+    Color logic:
+    - Cyan     => Untracked files (`??`)
+    - Green    => Staged changes only (index), including additions (`A `, `M `, etc.)
+    - Yellow   => Unstaged changes only (working tree)
+    - Magenta  => Both staged and unstaged changes (`MM`, `AM`, etc.)
+    - Default  => Clean or unknown status
+
+    Args:
+        file (str): The path to the file (relative or absolute).
+        status_map (dict[str, str]): Mapping of relative file paths to Git status codes.
+        git_root (Path): Root path of the Git repository.
+
+    Returns:
+        str: A string of the form '  [XY] filename' with color applied to the entire line.
+    """
+    from colorama import Fore, Style
+
     abs_file = (Path.cwd() / file).resolve()
     try:
         rel_file = abs_file.relative_to(git_root).as_posix()
@@ -419,8 +442,24 @@ def clutil_format_file_status(
         rel_file = file
 
     status = status_map.get(rel_file, "  ")
-    tag = f"[{status}]" if status != " " else "[  ]"
-    return f"  {tag} {file}"
+    staged, unstaged = status[0], status[1]
+
+    # Determine color based on Git status codes
+    if status == "??":
+        color = Fore.CYAN
+    elif staged == 'A':
+        color = Fore.GREEN       # staged addition
+    elif staged != " " and unstaged == " ":
+        color = Fore.GREEN       # staged changes
+    elif staged == " " and unstaged != " ":
+        color = Fore.YELLOW      # unstaged changes
+    elif staged != " " and unstaged != " ":
+        color = Fore.MAGENTA     # both
+    else:
+        color = Style.RESET_ALL  # clean / unknown
+
+    tag = f"[{status}]"
+    return f"{color}  {tag} {file}{Style.RESET_ALL}"
 
 
 def clutil_read_commit_message_file(file_path: str) -> str:
@@ -600,9 +639,7 @@ def cl_status(args: argparse.Namespace) -> None:
         if no_cl_files:
             print("No Changelist:")
             for file in sorted(no_cl_files):
-                status = st_map[file]
-                tag = f"[{status}]" if status != "  " else "[  ]"
-                print(f"  {tag} {file}")
+                print(clutil_format_file_status(file, st_map, git_root))
 
 
 def cl_remove(args: argparse.Namespace) -> None:

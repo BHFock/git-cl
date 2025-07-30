@@ -58,11 +58,31 @@ __version__ = "0.2.1"
 import argparse
 import json
 import sys
+import os
 import subprocess
 import fcntl
 from typing import Optional
 from pathlib import Path
 from contextlib import contextmanager
+
+# Try to import colorama for colored output
+try:
+    from colorama import Fore, Style
+    COLORAMA_AVAILABLE = True
+except ImportError:
+    COLORAMA_AVAILABLE = False
+
+    # Define dummy objects to avoid NameError
+    # pylint: disable=too-few-public-methods
+    class _DummyColorama:
+        CYAN = ""
+        GREEN = ""
+        YELLOW = ""
+        MAGENTA = ""
+        RESET_ALL = ""
+
+    Fore = _DummyColorama()
+    Style = _DummyColorama()
 
 # =============================================================================
 # INTERNAL UTILITIES
@@ -410,8 +430,33 @@ def clutil_get_file_status_map(show_all: bool = False) -> dict[str, str]:
 
 
 def clutil_format_file_status(
-        file: str, status_map: dict[str, str], git_root: Path) -> str:
-    """Format a file with its status for display."""
+        file: str, status_map: dict[str, str], git_root: Path,
+        use_color: bool = True) -> str:
+    """
+    Format a file's Git status line with optional color-coded output.
+
+    This function takes a file path and its associated Git status code,
+    and returns a string formatted with a status tag and optionally ANSI
+    color codes (using colorama) for visual clarity in terminal output.
+
+    Color logic (when use_color=True):
+    - Blue      => Untracked files (`??`)
+    - Green     => Staged changes only (index), including additions (`A `, `M `, etc.)
+    - Red       => Unstaged changes only (working tree)
+    - Magenta   => Both staged and unstaged changes (`MM`, `AM`, etc.)
+    - Default   => Clean or unknown status
+
+    Args:
+        file (str): The path to the file (relative or absolute).
+        status_map (dict[str, str]): Mapping of relative file paths
+                                     to Git status codes.
+        git_root (Path): Root path of the Git repository.
+        use_color (bool): Whether to apply color formatting (default: True).
+
+    Returns:
+        str: A string of the form '  [XY] filename' with optional
+             color applied to the entire line.
+    """
     abs_file = (Path.cwd() / file).resolve()
     try:
         rel_file = abs_file.relative_to(git_root).as_posix()
@@ -419,8 +464,28 @@ def clutil_format_file_status(
         rel_file = file
 
     status = status_map.get(rel_file, "  ")
-    tag = f"[{status}]" if status != " " else "[  ]"
-    return f"  {tag} {file}"
+    tag = f"[{status}]"
+
+    if not use_color or not COLORAMA_AVAILABLE:
+        return f"  {tag} {file}"
+
+    staged, unstaged = status[0], status[1]
+
+    # Determine color based on Git status codes
+    if status == "??":
+        color = Fore.BLUE
+    elif staged == 'A':
+        color = Fore.GREEN       # staged addition
+    elif staged != " " and unstaged == " ":
+        color = Fore.GREEN       # staged changes
+    elif staged == " " and unstaged != " ":
+        color = Fore.RED         # unstaged changes
+    elif staged != " " and unstaged != " ":
+        color = Fore.MAGENTA     # both
+    else:
+        color = Style.RESET_ALL  # clean / unknown
+
+    return f"{color}  {tag} {file}{Style.RESET_ALL}"
 
 
 def clutil_read_commit_message_file(file_path: str) -> str:
@@ -580,11 +645,25 @@ def cl_status(args: argparse.Namespace) -> None:
     added, deleted) are shown. Use --all to also include files with other
     status codes such as merge conflicts, unmerged files, or other special
     states reported by git status.
+
+    Color output is disabled if:
+    - The --no-color flag is used
+    - The NO_COLOR environment variable is set (any non-empty value)
+    - colorama is not available
+    - Output is not going to a terminal (TTY)
     """
     selected_names = set(args.names) if args.names else None
     changelists = clutil_load()
     git_root = clutil_get_git_root()
     st_map = clutil_get_file_status_map(show_all=args.all)
+
+    # Check for color disabling conditions
+    # NO_COLOR environment variable takes precedence over --no-color flag
+    no_color_env = bool(os.environ.get('NO_COLOR'))
+    # Check if stdout is a TTY (terminal)
+    is_tty = sys.stdout.isatty()
+    use_color = (not (args.no_color or no_color_env or not is_tty) and
+                 COLORAMA_AVAILABLE)
 
     assigned_files = set()
     for cl_name, files in changelists.items():
@@ -592,7 +671,7 @@ def cl_status(args: argparse.Namespace) -> None:
             continue
         print(f"{cl_name}:")
         for file in files:
-            print(clutil_format_file_status(file, st_map, git_root))
+            print(clutil_format_file_status(file, st_map, git_root, use_color))
         assigned_files.update(files)
 
     if selected_names is None or args.include_no_cl:
@@ -600,9 +679,8 @@ def cl_status(args: argparse.Namespace) -> None:
         if no_cl_files:
             print("No Changelist:")
             for file in sorted(no_cl_files):
-                status = st_map[file]
-                tag = f"[{status}]" if status != "  " else "[  ]"
-                print(f"  {tag} {file}")
+                print(clutil_format_file_status(file, st_map, git_root,
+                                                use_color))
 
 
 def cl_remove(args: argparse.Namespace) -> None:
@@ -823,6 +901,9 @@ def main() -> None:
     status_parser.add_argument(
         '--all', action='store_true',
         help='Include files with uncommon Git status codes')
+    status_parser.add_argument(
+        '--no-color', action='store_true',
+        help='Disable colored output')
     status_parser.set_defaults(func=cl_status)
 
     # stage

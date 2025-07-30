@@ -559,7 +559,7 @@ def cl_status(args: argparse.Namespace) -> None:
             print(clutil_format_file_status(file, status_map, git_root))
         assigned_files.update(files)
 
-    if selected_names is None:
+    if selected_names is None or args.include_no_cl:
         no_cl_files = [file for file in status_map if file not in assigned_files]
         if no_cl_files:
             print("No Changelist:")
@@ -780,6 +780,9 @@ def main() -> None:
     status_parser.add_argument(
         'names', metavar='CHANGELIST', nargs='*',
         help='Optional list of changelists to show (default: all)')
+    status_parser.add_argument(
+        '--include-no-cl', action='store_true',
+        help='Also show files not assigned to any changelist ("No Changelist")')    
     status_parser.add_argument(
         '--all', action='store_true',
         help='Include files with uncommon Git status codes')

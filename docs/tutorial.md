@@ -150,7 +150,20 @@ git cl st docs --include-no-cl
 
 By default, git cl status shows only the most common status codes (like [M ], [??], [ D], etc.) for clarity.
 
-The following table explains the status codes shown in `git cl status`, which follow Git’s `--porcelain` format:
+To include all Git status codes — including merge conflicts, type changes, or ignored files — use the `--all` flag:
+
+```
+git cl st --all
+```
+
+This reveals additional cases like
+
+| Code  | Description             |
+| ----- | ----------------------- |
+| \[UU] | Unmerged (conflict)     |
+| \[T ] | Type change             |
+
+#### Status code reference
 
 | Code	| Meaning                    	 | Description                                            |
 | ----- | ---------------------------- | ------------------------------------------------------ |
@@ -165,28 +178,23 @@ The following table explains the status codes shown in `git cl status`, which fo
 | [R ]  |	Renamed	                     | File was renamed and the change is staged              |
 | [RM]  |	Renamed + Modified	         | File was renamed and then modified before staging      |
 
-For a full list of Git status codes and their meanings, see the official [git documentation](https://git-scm.com/docs/git-status). 
 
-By default, `git cl status` shows only common Git status codes. To include files with uncommon or advanced status codes (like merge conflicts, type changes, or ignored files), use the `--all` flag:
+See the full list of codes in the [Git documentation](https://git-scm.com/docs/git-status). 
 
-```
-git cl status --all
-```
-
-#### Example Output:
+#### Example
 
 ```
-   docs:
-  [M ] README.md        # This change is staged
-  [ M] docs/index.md    # This change is not staged
+$ git cl st docs --include-no-cl --all
 
-tests:
-  [A ] tests/dev_env.sh # This new file is staged
+docs:
+  [ M] docs/index.md
+  [A ] docs/new_section.md
 
 No Changelist:
-  [ M] main.py
   [??] scratch.txt
+  [UU] merge_conflict_file.py
 ```
+
 
 ### 2.4 Stage a changelist
 
@@ -378,7 +386,7 @@ This will show all files, including those with status codes like [UU] (unmerged)
 | Commit with inline message     | `git cl ci <name> -m "Message" [--keep]`       |
 | Commit using message from file | `git cl ci <name> -F message.txt [--keep]`     |
 | Remove files from changelists  | `git cl remove <file1> <file2> ...`            |
-| Delete changelists             | `git cl delete <name1> <name2>` ...`           |
+| Delete changelists             | `git cl delete <name1> <name2> ...`            |
 | Delete all changelists         | `git cl delete --all`                          |
 | Show help                      | `git cl help`                                  |
 

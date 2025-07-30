@@ -664,7 +664,8 @@ def cl_status(args: argparse.Namespace) -> None:
     no_color_env = bool(os.environ.get('NO_COLOR'))
     # Check if stdout is a TTY (terminal)
     is_tty = sys.stdout.isatty()
-    use_color = not (args.no_color or no_color_env or not is_tty) and COLORAMA_AVAILABLE
+    use_color = (not (args.no_color or no_color_env or not is_tty) and
+                 COLORAMA_AVAILABLE)
 
     assigned_files = set()
     for cl_name, files in changelists.items():

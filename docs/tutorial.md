@@ -204,9 +204,9 @@ No Changelist:
 By default, `git cl status` will use color to highlight file statuses:
 
 - Green: Staged changes (e.g. [A ], [M ])
-- Yellow: Unstaged changes (e.g. [ M])
+- Red: Unstaged changes (e.g. [ M])
 - Magenta: Staged and unstaged changes (e.g. [MM])
-- Cyan: Untracked files ([??])
+- Blue: Untracked files ([??])
 
 This helps visually scan the output and distinguish file states more easily.
 

@@ -787,7 +787,15 @@ def cl_commit(args: argparse.Namespace) -> None:
         print(f"Changelist '{name}' not found.")
         return
 
-    to_commit = clutil_get_tracked_files(changelists[name])
+    git_root = clutil_get_git_root()
+    to_commit = []
+
+    for file in changelists[name]:
+        abs_path = (git_root / file).resolve()
+        if abs_path.exists():
+            to_commit.append(str(abs_path))
+        else:
+            print(f"Warning: '{file}' does not exist at {abs_path}")
 
     if not to_commit:
         print(f"No tracked files to commit in changelist '{name}'.")
@@ -810,11 +818,13 @@ def cl_commit(args: argparse.Namespace) -> None:
     try:
         subprocess.run(["git", "commit", "-m", commit_message, "--"]
                        + to_commit, check=True)
+        print(f"Committed tracked files from changelist '{name}':")
+        for file in to_commit:
+            print(f"  {file}")
     except subprocess.CalledProcessError as error:
         print(f"Error committing changelist '{name}': {error}")
         return
 
-    # Only delete if --keep flag is not set
     if not args.keep:
         del changelists[name]
         clutil_save(changelists)

@@ -669,14 +669,19 @@ def cl_status(args: argparse.Namespace) -> None:
                  COLORAMA_AVAILABLE)
 
     assigned_files = set()
+
     for cl_name, files in changelists.items():
         if selected_names is not None and cl_name not in selected_names:
             continue
         print(f"{cl_name}:")
         for file in files:
             print(clutil_format_file_status(file, st_map, git_root, use_color))
-        assigned_files.update(files)
-
+        #assigned_files.update(files)
+        assigned_files.update(
+            (git_root / f).resolve().relative_to(git_root).as_posix()
+            for f in files
+        )
+        
     if selected_names is None or args.include_no_cl:
         no_cl_files = [file for file in st_map if file not in assigned_files]
         if no_cl_files:

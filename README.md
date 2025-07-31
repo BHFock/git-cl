@@ -7,6 +7,10 @@
 
 `git-cl` is a command-line tool for Git that introduces Subversion-style changelists. It allows users to assign working directory files to named changelists, helping organise work by intent and manage partial commits more easily.
 
+
+![Changelist Screenshot](docs/img/git-cl.png)
+
+
 ## Features
 
 - Create and manage named changelists to group related file changes

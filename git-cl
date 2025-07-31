@@ -132,6 +132,29 @@ def clutil_should_use_color(args) -> bool:
     return (not (args.no_color or no_color_env or not is_tty) and COLORAMA_AVAILABLE)
 
 
+def clutil_resolve_commit_message(args: argparse.Namespace) -> Optional[str]:
+    """
+    Resolves the commit message from CLI arguments.
+
+    Args:
+        args (argparse.Namespace): Parsed arguments with 'message' or 'file'.
+
+    Returns:
+        Optional[str]: The commit message, or None if resolution fails.
+    """
+    if args.message:
+        return args.message
+    elif args.file:
+        try:
+            return clutil_read_commit_message_file(args.file)
+        except (OSError, ValueError) as error:
+            print(f"Error reading commit message file '{args.file}': {error}")
+            return None
+    else:
+        print("Error: No commit message provided.")
+        return None
+
+
 def clutil_get_file() -> Path:
     """
     Returns the path to the changelist file inside the Git directory.
@@ -816,18 +839,8 @@ def cl_commit(args: argparse.Namespace) -> None:
         print(f"No tracked files to commit in changelist '{name}'.")
         return
 
-    # Handle commit message - either from -m or -F
-    if args.message:
-        commit_message = args.message
-    elif args.file:
-        try:
-            commit_message = clutil_read_commit_message_file(args.file)
-        except (OSError, ValueError) as error:
-            print(f"Error reading commit message file '{args.file}': {error}")
-            return
-    else:
-        # This shouldn't happen due to mutually_exclusive_group(required=True)
-        print("Error: No commit message provided.")
+    commit_message = clutil_resolve_commit_message(args)
+    if not commit_message:
         return
 
     try:

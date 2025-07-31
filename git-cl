@@ -192,9 +192,8 @@ def clutil_validate_files(files: list[str]) -> list[str]:
             continue
 
         # Check if the sanitized path exists
-        #full_path = git_root / sanitized
         full_path = (git_root / sanitized).resolve()
-        
+
         if full_path.exists():
             valid.append(sanitized)  # Use sanitized path instead of original
         else:
@@ -333,7 +332,6 @@ def clutil_sanitize_path(file_path: str, git_root: Path) -> Optional[str]:
     except (OSError, ValueError, RuntimeError):
         # Any path resolution errors
         return None
-
 
 
 def clutil_get_tracked_files(files: list[str]) -> list[str]:

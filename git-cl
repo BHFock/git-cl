@@ -109,6 +109,29 @@ def clutil_file_lock(lock_path: Path):
             fcntl.flock(lock_file, fcntl.LOCK_UN)
 
 
+def clutil_should_use_color(args) -> bool:
+    """
+    Determines whether coloured output should be used in CLI display.
+
+    This function checks multiple conditions to decide if colour formatting
+    is appropriate:
+    - The --no-color flag is not set.
+    - The NO_COLOR environment variable is not set.
+    - The output is being sent to a terminal (TTY).
+    - The 'colorama' module is available.
+
+    Args:
+        args (argparse.Namespace): Parsed command-line arguments, expected to
+                                   include the 'no_color' attribute.
+
+    Returns:
+        bool: True if coloured output should be enabled, False otherwise.
+    """
+    no_color_env = bool(os.environ.get('NO_COLOR'))
+    is_tty = sys.stdout.isatty()
+    return (not (args.no_color or no_color_env or not is_tty) and COLORAMA_AVAILABLE)
+
+
 def clutil_get_file() -> Path:
     """
     Returns the path to the changelist file inside the Git directory.
@@ -667,13 +690,7 @@ def cl_status(args: argparse.Namespace) -> None:
     git_root = clutil_get_git_root()
     st_map = clutil_get_file_status_map(show_all=args.all)
 
-    # Check for color disabling conditions
-    # NO_COLOR environment variable takes precedence over --no-color flag
-    no_color_env = bool(os.environ.get('NO_COLOR'))
-    # Check if stdout is a TTY (terminal)
-    is_tty = sys.stdout.isatty()
-    use_color = (not (args.no_color or no_color_env or not is_tty) and
-                 COLORAMA_AVAILABLE)
+    use_color = clutil_should_use_color(args)
 
     assigned_files = set()
 

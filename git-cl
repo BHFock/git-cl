@@ -499,7 +499,7 @@ def clutil_read_commit_message_file(file_path: str) -> str:
     return processed_content
 
 
-def _is_file_untracked(file_path_rel_to_git_root: str, git_root: Path) -> bool:
+def clutil_is_file_untracked(file_path_rel_to_git_root: str, git_root: Path) -> bool:
     """
     Check if a file (specified relative to git root) is untracked.
 
@@ -603,7 +603,7 @@ def cl_stage(args: argparse.Namespace) -> None:
         rel_to_cwd = os.path.relpath(abs_path, Path.cwd())
 
         # Check if this file is tracked (not untracked)
-        if not _is_file_untracked(stored_path, git_root):
+        if not clutil_is_file_untracked(stored_path, git_root):
             to_stage.append(rel_to_cwd)
 
     if not to_stage:
@@ -782,7 +782,7 @@ def cl_commit(args: argparse.Namespace) -> None:
         rel_to_cwd = os.path.relpath(abs_path, Path.cwd())
 
         # Check if this file is tracked (not untracked)
-        if not _is_file_untracked(stored_path, git_root):
+        if not clutil_is_file_untracked(stored_path, git_root):
             to_commit.append(rel_to_cwd)
 
     if not to_commit:

@@ -429,7 +429,6 @@ def clutil_get_file_status_map(show_all: bool = False) -> dict[str, str]:
 
     return status_map
 
-
 def clutil_format_file_status(
         file: str, status_map: dict[str, str], git_root: Path,
         use_color: bool = True) -> str:
@@ -438,13 +437,20 @@ def clutil_format_file_status(
     Paths are shown relative to the current working directory.
     """
     abs_file = (git_root / file).resolve()
+
+    # Show path relative to current working directory
     try:
         rel_to_cwd = abs_file.relative_to(Path.cwd()).as_posix()
     except ValueError:
-        # fallback to Git-root-relative if not under cwd
-        rel_to_cwd = abs_file.relative_to(git_root).as_posix()
+        rel_to_cwd = abs_file.as_posix()
 
-    status = status_map.get(file, "  ")
+    # Lookup status using Git-root-relative path
+    try:
+        rel_to_git_root = abs_file.relative_to(git_root).as_posix()
+    except ValueError:
+        rel_to_git_root = abs_file.as_posix()
+
+    status = status_map.get(rel_to_git_root, "  ")
     tag = f"[{status}]"
 
     if not use_color or not COLORAMA_AVAILABLE:

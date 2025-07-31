@@ -302,10 +302,11 @@ def clutil_sanitize_path(file_path: str, git_root: Path) -> Optional[str]:
     try:
         # Convert to Path object and resolve any relative components
         path = Path(file_path)
+        git_root = clutil_get_git_root()
 
         # If it's relative, make it relative to current working directory
         if not path.is_absolute():
-            path = Path.cwd() / path
+            path =  git_root / path
 
         # Resolve any .. or . components and get absolute path
         path = path.resolve()
@@ -340,7 +341,7 @@ def clutil_get_tracked_files(files: list[str]) -> list[str]:
     # Build valid paths mapping
     valid_paths = {}
     for file in valid_files:
-        abs_path = (Path.cwd() / file).resolve()
+        abs_path = (git_root / file).resolve()
         valid_paths[abs_path] = file
 
     # Get untracked files and directories
@@ -457,7 +458,9 @@ def clutil_format_file_status(
         str: A string of the form '  [XY] filename' with optional
              color applied to the entire line.
     """
-    abs_file = (Path.cwd() / file).resolve()
+
+    git_root = clutil_get_git_root()
+    abs_file = (git_root / file).resolve()
     try:
         rel_file = abs_file.relative_to(git_root).as_posix()
     except ValueError:

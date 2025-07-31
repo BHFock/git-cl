@@ -663,7 +663,7 @@ def cl_status(args: argparse.Namespace) -> None:
                 # fallback: add raw path if resolution fails
                 assigned_files.add(f)
 
-        
+
     if selected_names is None or args.include_no_cl:
         no_cl_files = [file for file in st_map if file not in assigned_files]
         if no_cl_files:
@@ -706,9 +706,6 @@ def cl_remove(args: argparse.Namespace) -> None:
     if removed:
         clutil_save(changelists)
 
-
-
-        
 
 def cl_delete(args: argparse.Namespace) -> None:
     """

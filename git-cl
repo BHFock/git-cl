@@ -592,7 +592,15 @@ def cl_stage(args: argparse.Namespace) -> None:
         print(f"Changelist '{name}' not found.")
         return
 
-    to_stage = clutil_get_tracked_files(changelists[name])
+    git_root = clutil_get_git_root()
+    to_stage = []
+
+    for file in changelists[name]:
+        abs_path = (git_root / file).resolve()
+        if abs_path.exists():
+            to_stage.append(str(abs_path))
+        else:
+            print(f"Warning: '{file}' does not exist at {abs_path}")
 
     if not to_stage:
         print(f"No tracked files to stage in changelist '{name}'.")

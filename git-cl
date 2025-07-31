@@ -705,9 +705,8 @@ def cl_status(args: argparse.Namespace) -> None:
                 abs_path = (git_root / f).resolve()
                 rel_path = abs_path.relative_to(git_root).as_posix()
                 assigned_files.add(rel_path)
-            except Exception:
-                # fallback: add raw path if resolution fails
-                assigned_files.add(f)
+            except (ValueError, OSError) as error:
+                print(f"Error resolving path: {error}")
 
     if selected_names is None or args.include_no_cl:
         no_cl_files = [file for file in st_map if file not in assigned_files]

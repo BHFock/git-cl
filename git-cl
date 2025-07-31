@@ -703,23 +703,6 @@ def cl_stage(args: argparse.Namespace) -> None:
         print(f"Kept changelist '{name}' (use --keep flag to preserve)")
 
 
-def cl_list(_args: argparse.Namespace) -> None:
-    """
-    Lists all changelists and their associated files.
-
-    Args:
-        args: argparse.Namespace (not used).
-    """
-    changelists = clutil_load()
-    if not changelists:
-        print("No changelists found.")
-        return
-    for name, files in changelists.items():
-        print(f"{name}:")
-        for file in files:
-            print(f"  {file}")
-
-
 def cl_status(args: argparse.Namespace) -> None:
     """
     Displays git status grouped by changelist membership.
@@ -982,15 +965,6 @@ def main() -> None:
         '--all', action='store_true',
         help='Delete all changelists')
     delete_parser.set_defaults(func=cl_delete)
-
-    # list / ls
-    list_parser = subparsers.add_parser(
-        'list',
-        aliases=['ls'],
-        help='List all changelists and their files',
-        description=("List all changelists and the files assigned to each.")
-    )
-    list_parser.set_defaults(func=cl_list)
 
     # status / st
     status_parser = subparsers.add_parser(

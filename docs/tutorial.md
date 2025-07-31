@@ -232,6 +232,7 @@ git cl commit <changelist-name> -F commit.txt
 - Commits tracked files and deletes the changelist.
 - Only files already tracked by Git will be commited. Untracked files are ignored unless you add them with `git add` first.
 - Use `-F <file>` to supply commit message from a file (like regular Git).
+- You can also use `ci` as an alias for commit, like `git cl ci <changelist-name> -m "message"`
 
 #### Example:
 

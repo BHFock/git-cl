@@ -58,9 +58,6 @@ Below are common `git cl` commands for typical changelist workflows:
 # Create a changelist implicitly by adding files to it
 git cl add docs-fix README.md docs/index.md
 
-# List all changelists and their assigned files
-git cl list
-
 # View modified files grouped by changelist
 git cl status
 

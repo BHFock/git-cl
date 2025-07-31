@@ -306,7 +306,7 @@ def clutil_sanitize_path(file_path: str, git_root: Path) -> Optional[str]:
 
         # If it's relative, make it relative to current working directory
         if not path.is_absolute():
-            path =  Path.cwd() / path
+            path = Path.cwd() / path
 
         # Resolve any .. or . components and get absolute path
         path = path.resolve()
@@ -428,6 +428,7 @@ def clutil_get_file_status_map(show_all: bool = False) -> dict[str, str]:
               "were not shown. Use 'git cl st --all' to include them.")
 
     return status_map
+
 
 def clutil_format_file_status(
         file: str, status_map: dict[str, str], git_root: Path,
@@ -649,11 +650,6 @@ def cl_status(args: argparse.Namespace) -> None:
         print(f"{cl_name}:")
         for file in files:
             print(clutil_format_file_status(file, st_map, git_root, use_color))
-        ##assigned_files.update(files)
-        #assigned_files.update(
-        #    (git_root / f).resolve().relative_to(git_root).as_posix()
-        #    for f in files
-        #)
         for f in files:
             try:
                 abs_path = (git_root / f).resolve()
@@ -663,7 +659,6 @@ def cl_status(args: argparse.Namespace) -> None:
                 # fallback: add raw path if resolution fails
                 assigned_files.add(f)
 
-
     if selected_names is None or args.include_no_cl:
         no_cl_files = [file for file in st_map if file not in assigned_files]
         if no_cl_files:
@@ -671,7 +666,6 @@ def cl_status(args: argparse.Namespace) -> None:
             for file in sorted(no_cl_files):
                 print(clutil_format_file_status(file, st_map, git_root,
                                                 use_color))
-
 
 
 def cl_remove(args: argparse.Namespace) -> None:

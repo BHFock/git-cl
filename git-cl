@@ -54,7 +54,7 @@ Features:
 This tool is intended for use within Git repositories.
 """
 
-__version__ = "0.2.2"
+__version__ = "0.2.3"
 
 import argparse
 import json

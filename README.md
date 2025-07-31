@@ -87,8 +87,10 @@ See the [git-cl Tutorial](docs/tutorial.md) for detailed usage, examples, and ti
 
 ## Visual Example
 
+Sample Output of `git cl`:
+
 <p align="left">
-  <img src="docs/git-cl.png" alt="Changelist Screenshot" width="250"/>
+  <img src="docs/git-cl.png" alt="Screenshot git cl status" width="200"/>
 </p>
 
 ## Maintenance Disclaimer

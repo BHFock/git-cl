@@ -435,60 +435,38 @@ def clutil_format_file_status(
         use_color: bool = True) -> str:
     """
     Format a file's Git status line with optional color-coded output.
-
-    This function takes a file path and its associated Git status code,
-    and returns a string formatted with a status tag and optionally ANSI
-    color codes (using colorama) for visual clarity in terminal output.
-
-    Color logic (when use_color=True):
-    - Blue      => Untracked files (`??`)
-    - Green     => Staged changes only (index), including additions (`A `, `M `, etc.)
-    - Red       => Unstaged changes only (working tree)
-    - Magenta   => Both staged and unstaged changes (`MM`, `AM`, etc.)
-    - Default   => Clean or unknown status
-
-    Args:
-        file (str): The path to the file (relative or absolute).
-        status_map (dict[str, str]): Mapping of relative file paths
-                                     to Git status codes.
-        git_root (Path): Root path of the Git repository.
-        use_color (bool): Whether to apply color formatting (default: True).
-
-    Returns:
-        str: A string of the form '  [XY] filename' with optional
-             color applied to the entire line.
+    Paths are shown relative to the current working directory.
     """
-
-    git_root = clutil_get_git_root()
     abs_file = (git_root / file).resolve()
     try:
-        rel_file = abs_file.relative_to(git_root).as_posix()
+        rel_to_cwd = abs_file.relative_to(Path.cwd()).as_posix()
     except ValueError:
-        rel_file = file
+        # fallback to Git-root-relative if not under cwd
+        rel_to_cwd = abs_file.relative_to(git_root).as_posix()
 
-    status = status_map.get(rel_file, "  ")
+    status = status_map.get(file, "  ")
     tag = f"[{status}]"
 
     if not use_color or not COLORAMA_AVAILABLE:
-        return f"  {tag} {file}"
+        return f"  {tag} {rel_to_cwd}"
 
     staged, unstaged = status[0], status[1]
 
-    # Determine color based on Git status codes
     if status == "??":
         color = Fore.BLUE
     elif staged == 'A':
-        color = Fore.GREEN       # staged addition
+        color = Fore.GREEN
     elif staged != " " and unstaged == " ":
-        color = Fore.GREEN       # staged changes
+        color = Fore.GREEN
     elif staged == " " and unstaged != " ":
-        color = Fore.RED         # unstaged changes
+        color = Fore.RED
     elif staged != " " and unstaged != " ":
-        color = Fore.MAGENTA     # both
+        color = Fore.MAGENTA
     else:
-        color = Style.RESET_ALL  # clean / unknown
+        color = Style.RESET_ALL
 
-    return f"{color}  {tag} {file}{Style.RESET_ALL}"
+    return f"{color}  {tag} {rel_to_cwd}{Style.RESET_ALL}"
+
 
 
 def clutil_read_commit_message_file(file_path: str) -> str:
@@ -676,11 +654,20 @@ def cl_status(args: argparse.Namespace) -> None:
         print(f"{cl_name}:")
         for file in files:
             print(clutil_format_file_status(file, st_map, git_root, use_color))
-        #assigned_files.update(files)
-        assigned_files.update(
-            (git_root / f).resolve().relative_to(git_root).as_posix()
-            for f in files
-        )
+        ##assigned_files.update(files)
+        #assigned_files.update(
+        #    (git_root / f).resolve().relative_to(git_root).as_posix()
+        #    for f in files
+        #)
+        for f in files:
+            try:
+                abs_path = (git_root / f).resolve()
+                rel_path = abs_path.relative_to(git_root).as_posix()
+                assigned_files.add(rel_path)
+            except Exception:
+                # fallback: add raw path if resolution fails
+                assigned_files.add(f)
+
         
     if selected_names is None or args.include_no_cl:
         no_cl_files = [file for file in st_map if file not in assigned_files]

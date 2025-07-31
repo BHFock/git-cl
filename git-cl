@@ -383,7 +383,6 @@ def clutil_sanitize_path(file_path: str, git_root: Path) -> Optional[str]:
 def clutil_get_tracked_files(files: list[str]) -> list[str]:
     """
     Extract tracked files from a list, excluding untracked files/dirs.
-    Includes debug output to trace path resolution and filtering.
     """
     git_root = clutil_get_git_root()
     valid_files = clutil_validate_files(files)
@@ -393,7 +392,6 @@ def clutil_get_tracked_files(files: list[str]) -> list[str]:
     for file in valid_files:
         abs_path = (git_root / file).resolve()
         valid_paths[abs_path] = file
-        print(f"[DEBUG] Validated file: {file} -> {abs_path}")
 
     # Get untracked files and directories
     output = clutil_get_git_status()
@@ -406,10 +404,8 @@ def clutil_get_tracked_files(files: list[str]) -> list[str]:
             abs_path = (git_root / raw_path).resolve()
             if abs_path.is_dir():
                 untracked_dirs.add(abs_path)
-                print(f"[DEBUG] Untracked dir: {abs_path}")
             else:
                 untracked_files.add(abs_path)
-                print(f"[DEBUG] Untracked file: {abs_path}")
 
     def is_under_untracked_dirs(path: Path) -> bool:
         return any(path.is_relative_to(d) for d in untracked_dirs)
@@ -417,14 +413,10 @@ def clutil_get_tracked_files(files: list[str]) -> list[str]:
     # Filter out untracked files
     tracked_files = []
     for abs_path, orig_path in valid_paths.items():
-        print(f"[DEBUG] Checking: {abs_path} (exists: {abs_path.exists()})")
         if abs_path in untracked_files:
-            print(f"[DEBUG] Skipping untracked file: {abs_path}")
             continue
         if is_under_untracked_dirs(abs_path):
-            print(f"[DEBUG] Skipping file under untracked dir: {abs_path}")
             continue
-        print(f"[DEBUG] Tracked file: {orig_path}")
         tracked_files.append(orig_path)
 
     return tracked_files
@@ -580,6 +572,40 @@ def clutil_read_commit_message_file(file_path: str) -> str:
     return processed_content
 
 
+def _is_file_untracked(file_path_rel_to_git_root: str, git_root: Path) -> bool:
+    """
+    Check if a file (specified relative to git root) is untracked.
+    
+    Args:
+        file_path_rel_to_git_root: File path relative to git repository root
+        git_root: Absolute path to git repository root
+    
+    Returns:
+        True if the file is untracked, False if it's tracked
+    """
+    # Get git status output
+    output = clutil_get_git_status(include_untracked=True)
+    
+    # Get absolute path of the file we're checking
+    abs_file_path = (git_root / file_path_rel_to_git_root).resolve()
+    
+    # Check untracked files and directories
+    for line in output:
+        if line.startswith("??"):
+            raw_path = line[3:].strip()
+            abs_untracked = (git_root / raw_path).resolve()
+            
+            # Direct match for files
+            if abs_file_path == abs_untracked:
+                return True
+                
+            # Check if file is under an untracked directory
+            if abs_untracked.is_dir() and abs_file_path.is_relative_to(abs_untracked):
+                return True
+    
+    return False
+
+
 # =============================================================================
 # CLI COMMANDS
 # =============================================================================
@@ -639,12 +665,20 @@ def cl_stage(args: argparse.Namespace) -> None:
     git_root = clutil_get_git_root()
     to_stage = []
 
-    for file in changelists[name]:
-        abs_path = (git_root / file).resolve()
-        if abs_path.exists():
-            to_stage.append(str(abs_path))
-        else:
-            print(f"Warning: '{file}' does not exist at {abs_path}")
+    for stored_path in changelists[name]:
+        # Convert stored path (relative to git root) to absolute path
+        abs_path = (git_root / stored_path).resolve()
+        
+        if not abs_path.exists():
+            print(f"Warning: '{stored_path}' does not exist.")
+            continue
+            
+        # Convert to path relative to current working directory for Git command
+        rel_to_cwd = os.path.relpath(abs_path, Path.cwd())
+        
+        # Check if this file is tracked (not untracked)
+        if not _is_file_untracked(stored_path, git_root):
+            to_stage.append(rel_to_cwd)
 
     if not to_stage:
         print(f"No tracked files to stage in changelist '{name}'.")
@@ -827,12 +861,20 @@ def cl_commit(args: argparse.Namespace) -> None:
     git_root = clutil_get_git_root()
     to_commit = []
 
-    for file in changelists[name]:
-        abs_path = (git_root / file).resolve()
-        if abs_path.exists():
-            to_commit.append(str(abs_path))
-        else:
-            print(f"Warning: '{file}' does not exist at {abs_path}")
+    for stored_path in changelists[name]:
+        # Convert stored path (relative to git root) to absolute path
+        abs_path = (git_root / stored_path).resolve()
+        
+        if not abs_path.exists():
+            print(f"Warning: '{stored_path}' does not exist.")
+            continue
+            
+        # Convert to path relative to current working directory for Git command
+        rel_to_cwd = os.path.relpath(abs_path, Path.cwd())
+        
+        # Check if this file is tracked (not untracked)
+        if not _is_file_untracked(stored_path, git_root):
+            to_commit.append(rel_to_cwd)
 
     if not to_commit:
         print(f"No tracked files to commit in changelist '{name}'.")

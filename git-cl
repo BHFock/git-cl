@@ -673,6 +673,7 @@ def cl_status(args: argparse.Namespace) -> None:
                                                 use_color))
 
 
+
 def cl_remove(args: argparse.Namespace) -> None:
     """
     Removes one or more files from any changelists they are part of.
@@ -683,19 +684,30 @@ def cl_remove(args: argparse.Namespace) -> None:
     changelists = clutil_load()
     removed = []
 
-    for file in args.files:
-        for name, files in changelists.items():
-            if file in files:
-                files.remove(file)
-                removed.append(file)
-                print(f"Removed '{file}' from changelist '{name}'")
-                break
-        else:
-            print(f"'{file}' was not found in any changelist.")
-
     if removed:
         clutil_save(changelists)
 
+    git_root = clutil_get_git_root()
+    for file in args.files:
+        sanitized = clutil_sanitize_path(file, git_root)
+        if sanitized is None:
+            print(f"Warning: Skipping invalid or unsafe path: '{file}'")
+            continue
+
+        found = False
+        for name, files in changelists.items():
+            if sanitized in files:
+                files.remove(sanitized)
+                removed.append(sanitized)
+                print(f"Removed '{sanitized}' from changelist '{name}'")
+                found = True
+                break
+            if not found:
+                print(f"'{file}' was not found in any changelist.")
+
+
+
+        
 
 def cl_delete(args: argparse.Namespace) -> None:
     """

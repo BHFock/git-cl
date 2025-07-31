@@ -437,19 +437,9 @@ def clutil_format_file_status(
     Paths are shown relative to the current working directory.
     """
     abs_file = (git_root / file).resolve()
+    rel_to_cwd = os.path.relpath(abs_file, Path.cwd())
 
-    # Show path relative to current working directory
-    try:
-        rel_to_cwd = abs_file.relative_to(Path.cwd()).as_posix()
-    except ValueError:
-        rel_to_cwd = abs_file.as_posix()
-
-    # Lookup status using Git-root-relative path
-    try:
-        rel_to_git_root = abs_file.relative_to(git_root).as_posix()
-    except ValueError:
-        rel_to_git_root = abs_file.as_posix()
-
+    rel_to_git_root = abs_file.relative_to(git_root).as_posix()
     status = status_map.get(rel_to_git_root, "  ")
     tag = f"[{status}]"
 
@@ -472,7 +462,6 @@ def clutil_format_file_status(
         color = Style.RESET_ALL
 
     return f"{color}  {tag} {rel_to_cwd}{Style.RESET_ALL}"
-
 
 
 def clutil_read_commit_message_file(file_path: str) -> str:

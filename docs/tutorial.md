@@ -10,16 +10,15 @@
 - [1. Installation](#1-installation)
 - [2. Basic Commands](#2-basic-commands)
   - [2.1 Add files to a changelist](#21-add-files-to-a-changelist)
-  - [2.2 List all changelists](#22-list-all-changelists)
-  - [2.3 View status by changelist](#23-view-status-by-changelist) 
+  - [2.2 View status by changelist](#23-view-status-by-changelist) 
     - [Filtering by changelist name](#filtering-by-changelist-name)
     - [Showing all Git status codes](#showing-all-git-status-codes)
     - [Status code reference](#status-code-reference)
     - [Colorised output](#colorised-output)
-  - [2.4 Stage a changelist](#24-stage-a-changelist)
-  - [2.5 Commit a changelist](#25-commit-a-changelist)
-  - [2.6 Remove files from changelists](#26-remove-files-from-changelists)
-  - [2.7 Delete changelists](#27-delete-changelists)
+  - [2.3 Stage a changelist](#24-stage-a-changelist)
+  - [2.4 Commit a changelist](#25-commit-a-changelist)
+  - [2.5 Remove files from changelists](#26-remove-files-from-changelists)
+  - [2.6 Delete changelists](#27-delete-changelists)
 - [3. Example Workflow: Changelists as Named Staging Areas](#3-example-workflow-changelists-as-named-staging-areas)
 - [4. FAQ & Common Pitfalls](#4-faq--common-pitfalls)
 - [5. Command Summary](#5-command-summary)
@@ -102,25 +101,7 @@ git cl add <changelist-name> <file1> <file2> ...
 git cl add docs README.md docs/index.md
 ```
 
-### 2.2 List all changelists
-
-```
-git cl list
-# or
-git cl ls
-```
-
-#### Example Output:
-
-```
-docs:
-  README.md
-  docs/index.md
-tests:
-  tests/dev_env.sh
-```
-
-### 2.3 View status by changelist
+### 2.2 View status by changelist
 
 ```
 git cl status
@@ -224,7 +205,7 @@ git cl st --no-color
 NO_COLOR=1 git cl st
 ```
 
-### 2.4 Stage a changelist
+### 2.3 Stage a changelist
 
 ```
 git cl stage <changelist-name>
@@ -241,7 +222,7 @@ git cl stage docs
 git commit -m "Refactor docs"
 ```
 
-### 2.5 Commit a changelist
+### 2.4 Commit a changelist
 
 ```
 git cl commit <changelist-name> -m "Message"
@@ -258,7 +239,7 @@ git cl commit <changelist-name> -F commit.txt
 git cl commit tests -m "Add test environment"
 ```
 
-### 2.6 Remove files from changelists
+### 2.5 Remove files from changelists
 
 ```
 git cl remove <file1> <file2> ...
@@ -273,7 +254,7 @@ git cl remove <file1> <file2> ...
 git cl remove notes/debug.txt
 ```
 
-### 2.7 Delete changelists
+### 2.6 Delete changelists
 
 ```
 git cl delete <changelist1> <changelist2> ...
@@ -404,8 +385,6 @@ This will show all files, including those with status codes like [UU] (unmerged)
 | Task                           | Command                                        |
 | ------------------------------ | ---------------------------------------------- |
 | Add files to a changelist      | `git cl add <name> <files...>`                 |
-| List changelists               | `git cl list`                                  |
-| List changelists               | `git cl ls`                                    |
 | View grouped status            | `git cl status`                                |
 | View grouped status            | `git cl st`                                    |
 | View all statuses, no color    | `git cl st --all --no-color`                   |

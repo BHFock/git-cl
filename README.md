@@ -28,13 +28,28 @@ Changelists are stored in a simple `cl.json` file inside your repository’s `.g
 
 ## Installation
 
-To use `git cl` as a Git subcommand, place the executable script named `git-cl` in a directory that’s part of your system’s `$PATH`, such as `~/bin`. For example:
+To install `git-cl`, download the script and place it in your `$PATH`.
+
+### Quick Install
 
 ```
+mkdir -p ~/bin
+curl -sLo ~/bin/git-cl https://raw.githubusercontent.com/BHFock/git-cl/main/git-cl
+chmod +x ~/bin/git-cl
+```
+
+### Manual Install 
+
+```
+git clone https://github.com/BHFock/git-cl.git
+cd git-cl
 chmod +x git-cl
 mkdir -p ~/bin
 mv git-cl ~/bin/
+
 ```
+
+### Verify Installation
 
 Make sure `~/bin` is listed in your `$PATH`. You’ll then be able to run:
 

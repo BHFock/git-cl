@@ -684,9 +684,6 @@ def cl_remove(args: argparse.Namespace) -> None:
     changelists = clutil_load()
     removed = []
 
-    if removed:
-        clutil_save(changelists)
-
     git_root = clutil_get_git_root()
     for file in args.files:
         sanitized = clutil_sanitize_path(file, git_root)
@@ -701,9 +698,13 @@ def cl_remove(args: argparse.Namespace) -> None:
                 removed.append(sanitized)
                 print(f"Removed '{sanitized}' from changelist '{name}'")
                 found = True
-                break
-            if not found:
-                print(f"'{file}' was not found in any changelist.")
+                break  # Stop after first match
+
+        if not found:
+            print(f"'{file}' was not found in any changelist.")
+
+    if removed:
+        clutil_save(changelists)
 
 
 

@@ -217,38 +217,6 @@ def clutil_save(data: dict[str, list[str]]) -> None:
             print(f"Error saving changelists: {error}")
 
 
-def clutil_validate_files(files: list[str]) -> list[str]:
-    """
-    Validates that file paths are safe, exist on disk, and are within the
-    repository. Note: This does not check if the file is tracked by Git.
-
-    Args:
-        files (list): List of file paths to validate.
-
-    Returns:
-        list: List of existing and valid file paths.
-    """
-    git_root = clutil_get_git_root()  # Add this line
-    valid = []
-
-    for file in files:
-        # Sanitize the path first
-        sanitized = clutil_sanitize_path(file, git_root)
-
-        if sanitized is None:
-            print(f"Warning: Skipping invalid or unsafe path: '{file}'")
-            continue
-
-        # Check if the sanitized path exists
-        full_path = (git_root / sanitized).resolve()
-
-        if full_path.exists():
-            valid.append(sanitized)  # Use sanitized path instead of original
-        else:
-            print(f"Warning: '{sanitized}' does not exist.")
-    return valid
-
-
 def clutil_validate_name(name: str) -> bool:
     """
     Validates that a changelist name is safe to use.
@@ -379,48 +347,6 @@ def clutil_sanitize_path(file_path: str, git_root: Path) -> Optional[str]:
     except (OSError, ValueError, RuntimeError):
         # Any path resolution errors
         return None
-
-
-def clutil_get_tracked_files(files: list[str]) -> list[str]:
-    """
-    Extract tracked files from a list, excluding untracked files/dirs.
-    """
-    git_root = clutil_get_git_root()
-    valid_files = clutil_validate_files(files)
-
-    # Build valid paths mapping
-    valid_paths = {}
-    for file in valid_files:
-        abs_path = (git_root / file).resolve()
-        valid_paths[abs_path] = file
-
-    # Get untracked files and directories
-    output = clutil_get_git_status()
-    untracked_files = set()
-    untracked_dirs = set()
-
-    for line in output:
-        if line.startswith("??"):
-            raw_path = line[3:].strip()
-            abs_path = (git_root / raw_path).resolve()
-            if abs_path.is_dir():
-                untracked_dirs.add(abs_path)
-            else:
-                untracked_files.add(abs_path)
-
-    def is_under_untracked_dirs(path: Path) -> bool:
-        return any(path.is_relative_to(d) for d in untracked_dirs)
-
-    # Filter out untracked files
-    tracked_files = []
-    for abs_path, orig_path in valid_paths.items():
-        if abs_path in untracked_files:
-            continue
-        if is_under_untracked_dirs(abs_path):
-            continue
-        tracked_files.append(orig_path)
-
-    return tracked_files
 
 
 def clutil_get_file_status_map(show_all: bool = False) -> dict[str, str]:
@@ -625,7 +551,6 @@ def cl_add(args: argparse.Namespace) -> None:
             "contain special characters or be Git reserved words.")
         return
     changelists = clutil_load()
-    #  files = clutil_validate_files(args.files)
 
     # Always store paths relative to the Git root
     git_root = clutil_get_git_root()

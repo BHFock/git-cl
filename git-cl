@@ -306,7 +306,7 @@ def clutil_sanitize_path(file_path: str, git_root: Path) -> Optional[str]:
 
         # If it's relative, make it relative to current working directory
         if not path.is_absolute():
-            path =  git_root / path
+            path =  Path.cwd() / path
 
         # Resolve any .. or . components and get absolute path
         path = path.resolve()

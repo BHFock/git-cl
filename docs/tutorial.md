@@ -19,6 +19,7 @@
   - [2.4 Commit a changelist](#24-commit-a-changelist)
   - [2.5 Remove files from changelists](#25-remove-files-from-changelists)
   - [2.6 Delete changelists](#27-delete-changelists)
+  - [2.7 Diff a changelist](#27-diff-a-changelist) 
 - [3. Example Workflow: Changelists as Named Staging Areas](#3-example-workflow-changelists-as-named-staging-areas)
 - [4. FAQ & Common Pitfalls](#4-faq--common-pitfalls)
 - [5. Command Summary](#5-command-summary)
@@ -291,6 +292,20 @@ git cl delete --all
 
 Only changelist metadata is deleted — no file content or Git history is lost.
 
+
+### 2.7 Diff a changelist
+
+```
+git cl diff <changelist-name>
+git cl diff <changelist1> <changelist2>
+git cl diff <changelist-name> --staged
+```
+
+- Shows a unified diff (`git diff`) of the files in the changelist(s).
+- Uses `git diff --cached` when `--staged` is provided.
+- You can pass multiple changelists to review their combined diffs.
+
+
 [↑ Back to top](#git-cl-tutorial)
 
 
@@ -397,6 +412,7 @@ This will show all files, including those with status codes like [UU] (unmerged)
 | Add files to a changelist                | `git cl add <name> <files...>`                 |
 | View grouped status (alias: `st`)        | `git cl status` / `git cl st`                  |
 | View all statuses, no color              | `git cl st --all --no-color`                   |
+| Show diff for changelist(s)              | git cl diff <name1> [<name2> ...] [--staged]   |
 | Stage a changelist                       | `git cl stage <name> [--keep]`                 |
 | Commit with inline message (alias: `ci`) | `git cl commit <name> -m "Message" [--keep]`   |
 | Commit using message from file           | `git cl commit <name> -F message.txt [--keep]` |

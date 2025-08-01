@@ -145,15 +145,16 @@ def clutil_resolve_commit_message(args: argparse.Namespace) -> Optional[str]:
     """
     if args.message:
         return args.message
-    elif args.file:
+
+    if args.file:
         try:
             return clutil_read_commit_message_file(args.file)
         except (OSError, ValueError) as error:
             print(f"Error reading commit message file '{args.file}': {error}")
             return None
-    else:
-        print("Error: No commit message provided.")
-        return None
+
+    print("Error: No commit message provided.")
+    return None
 
 
 def clutil_get_file() -> Path:
@@ -499,7 +500,8 @@ def clutil_read_commit_message_file(file_path: str) -> str:
     return processed_content
 
 
-def clutil_is_file_untracked(file_path_rel_to_git_root: str, git_root: Path) -> bool:
+def clutil_is_file_untracked(
+        file_path_rel_to_git_root: str, git_root: Path) -> bool:
     """
     Check if a file (specified relative to git root) is untracked.
 
@@ -527,7 +529,10 @@ def clutil_is_file_untracked(file_path_rel_to_git_root: str, git_root: Path) -> 
                 return True
 
             # Check if file is under an untracked directory
-            if abs_untracked.is_dir() and abs_file_path.is_relative_to(abs_untracked):
+            if (
+                abs_untracked.is_dir()
+                and abs_file_path.is_relative_to(abs_untracked)
+            ):
                 return True
 
     return False
@@ -680,6 +685,56 @@ def cl_status(args: argparse.Namespace) -> None:
             for file in sorted(no_cl_files):
                 print(clutil_format_file_status(file, st_map, git_root,
                                                 use_color))
+
+
+def cl_diff(args: argparse.Namespace) -> None:
+    """
+    Show git diff for one or more changelists.
+
+    By default, shows unstaged changes (like `git diff`).
+    Use --staged for staged changes, or --both to show both.
+
+    Args:
+        args: argparse.Namespace with 'names' list of changelists,
+              and optional 'staged' and 'both' flags
+    """
+    changelists = clutil_load()
+    git_root = clutil_get_git_root()
+    diff_files = set()
+
+    for name in args.names:
+        if name not in changelists:
+            print(f"Changelist '{name}' not found.")
+            continue
+        for path in changelists[name]:
+            abs_path = (git_root / path).resolve()
+            if abs_path.exists():
+                rel_to_cwd = os.path.relpath(abs_path, Path.cwd())
+                diff_files.add(rel_to_cwd)
+            else:
+                print(f"Warning: File '{path}' from '{name}' does not exist.")
+
+    if not diff_files:
+        print("No valid files to diff.")
+        return
+
+    sorted_files = sorted(diff_files)
+
+    try:
+        if args.both:
+            # Show both unstaged and staged diffs
+            print("=== Unstaged changes (working tree vs index) ===")
+            subprocess.run(["git", "diff", "--"] + sorted_files, check=False)
+            print("\n=== Staged changes (index vs HEAD) ===")
+            subprocess.run(["git", "diff", "--staged", "--"] + sorted_files, check=False)
+        elif args.staged:
+            # Show only staged changes
+            subprocess.run(["git", "diff", "--staged", "--"] + sorted_files, check=False)
+        else:
+            # Default: show unstaged changes
+            subprocess.run(["git", "diff", "--"] + sorted_files, check=False)
+    except subprocess.CalledProcessError as error:
+        print(f"Error running git diff: {error}")
 
 
 def cl_remove(args: argparse.Namespace) -> None:
@@ -912,6 +967,25 @@ def main() -> None:
         '--no-color', action='store_true',
         help='Disable colored output')
     status_parser.set_defaults(func=cl_status)
+
+    # diff
+    diff_parser = subparsers.add_parser(
+        'diff',
+        help='Show git diff for one or more changelists',
+        description=(
+            "Show unified diff for the files in one or more changelists.\n\n"
+            "By default, shows unstaged changes (like `git diff`).\n"
+            "Use --staged for staged changes, or --both to show both."))
+    diff_parser.add_argument(
+        'names', metavar='CHANGELIST', nargs='+',
+        help='One or more changelists to diff')
+    diff_parser.add_argument(
+        '--staged', action='store_true',
+        help='Show staged changes (index vs HEAD)')
+    diff_parser.add_argument(
+        '--both', action='store_true',
+        help='Show both unstaged and staged diffs')
+    diff_parser.set_defaults(func=cl_diff)
 
     # stage
     stage_parser = subparsers.add_parser(

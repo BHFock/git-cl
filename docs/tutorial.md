@@ -291,6 +291,20 @@ git cl delete --all
 
 Only changelist metadata is deleted — no file content or Git history is lost.
 
+
+### 2.7 Diff a changelist
+
+```
+git cl diff <changelist-name>
+git cl diff <changelist1> <changelist2>
+git cl diff <changelist-name> --staged
+```
+
+- Shows a unified diff (`git diff`) of the files in the changelist(s).
+- Uses `git diff --cached` when `--staged` is provided.
+- You can pass multiple changelists to review their combined diffs.
+
+
 [↑ Back to top](#git-cl-tutorial)
 
 

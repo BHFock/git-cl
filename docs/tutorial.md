@@ -19,6 +19,7 @@
   - [2.4 Commit a changelist](#24-commit-a-changelist)
   - [2.5 Remove files from changelists](#25-remove-files-from-changelists)
   - [2.6 Delete changelists](#27-delete-changelists)
+  - [2.7 Diff a changelist](#27-diff-a-changelist) 
 - [3. Example Workflow: Changelists as Named Staging Areas](#3-example-workflow-changelists-as-named-staging-areas)
 - [4. FAQ & Common Pitfalls](#4-faq--common-pitfalls)
 - [5. Command Summary](#5-command-summary)

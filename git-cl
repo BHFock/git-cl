@@ -499,7 +499,8 @@ def clutil_read_commit_message_file(file_path: str) -> str:
     return processed_content
 
 
-def clutil_is_file_untracked(file_path_rel_to_git_root: str, git_root: Path) -> bool:
+def clutil_is_file_untracked(
+        file_path_rel_to_git_root: str, git_root: Path) -> bool:
     """
     Check if a file (specified relative to git root) is untracked.
 
@@ -527,7 +528,10 @@ def clutil_is_file_untracked(file_path_rel_to_git_root: str, git_root: Path) -> 
                 return True
 
             # Check if file is under an untracked directory
-            if abs_untracked.is_dir() and abs_file_path.is_relative_to(abs_untracked):
+            if (
+                abs_untracked.is_dir()
+                and abs_file_path.is_relative_to(abs_untracked)
+            ):
                 return True
 
     return False
@@ -946,11 +950,12 @@ def main() -> None:
         help='Disable colored output')
     status_parser.set_defaults(func=cl_status)
 
-  # diff
+    # diff
     diff_parser = subparsers.add_parser(
         'diff',
         help='Show git diff for one or more changelists',
-        description="Show unified diff for the files in one or more changelists.")
+        description=(
+            "Show unified diff for the files in one or more changelists."))
     diff_parser.add_argument('names', metavar='CHANGELIST', nargs='+',
                              help='One or more changelists to diff')
     diff_parser.set_defaults(func=cl_diff)

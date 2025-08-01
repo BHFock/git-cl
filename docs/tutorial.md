@@ -411,6 +411,7 @@ This will show all files, including those with status codes like [UU] (unmerged)
 | Add files to a changelist                | `git cl add <name> <files...>`                 |
 | View grouped status (alias: `st`)        | `git cl status` / `git cl st`                  |
 | View all statuses, no color              | `git cl st --all --no-color`                   |
+| Show diff for changelist(s)              | git cl diff <name1> [<name2> ...] [--staged]   |
 | Stage a changelist                       | `git cl stage <name> [--keep]`                 |
 | Commit with inline message (alias: `ci`) | `git cl commit <name> -m "Message" [--keep]`   |
 | Commit using message from file           | `git cl commit <name> -F message.txt [--keep]` |

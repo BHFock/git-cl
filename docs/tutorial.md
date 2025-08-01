@@ -370,20 +370,17 @@ This will show all files, including those with status codes like [UU] (unmerged)
 
 ## 5. Command Summary
 
-| Task                           | Command                                        |
-| ------------------------------ | ---------------------------------------------- |
-| Add files to a changelist      | `git cl add <name> <files...>`                 |
-| View grouped status            | `git cl status`                                |
-| View grouped status            | `git cl st`                                    |
-| View all statuses, no color    | `git cl st --all --no-color`                   |
-| Stage a changelist             | `git cl stage <name> [--keep]`                 |
-| Commit with inline message     | `git cl commit <name> -m "Message" [--keep]`   |
-| Commit using message from file | `git cl commit <name> -F message.txt [--keep]` |
-| Commit with inline message     | `git cl ci <name> -m "Message" [--keep]`       |
-| Commit using message from file | `git cl ci <name> -F message.txt [--keep]`     |
-| Remove files from changelists  | `git cl remove <file1> <file2> ...`            |
-| Delete changelists             | `git cl delete <name1> <name2> ...`            |
-| Delete all changelists         | `git cl delete --all`                          |
-| Show help                      | `git cl help`                                  |
+| Task                                     | Command                                        |
+| ---------------------------------------- | ---------------------------------------------- |
+| Add files to a changelist                | `git cl add <name> <files...>`                 |
+| View grouped status (alias: `st`)        | `git cl status` / `git cl st`                  |
+| View all statuses, no color              | `git cl st --all --no-color`                   |
+| Stage a changelist                       | `git cl stage <name> [--keep]`                 |
+| Commit with inline message (alias: `ci`) | `git cl commit <name> -m "Message" [--keep]`   |
+| Commit using message from file           | `git cl commit <name> -F message.txt [--keep]` |
+| Remove files from changelists            | `git cl remove <file1> <file2> ...`            |
+| Delete changelists                       | `git cl delete <name1> <name2> ...`            |
+| Delete all changelists                   | `git cl delete --all`                          |
+| Show help                                | `git cl help`                                  |
 
 [↑ Back to top](#git-cl-tutorial)

@@ -145,15 +145,16 @@ def clutil_resolve_commit_message(args: argparse.Namespace) -> Optional[str]:
     """
     if args.message:
         return args.message
-    elif args.file:
+
+    if args.file:
         try:
             return clutil_read_commit_message_file(args.file)
         except (OSError, ValueError) as error:
             print(f"Error reading commit message file '{args.file}': {error}")
             return None
-    else:
-        print("Error: No commit message provided.")
-        return None
+
+    print("Error: No commit message provided.")
+    return None
 
 
 def clutil_get_file() -> Path:

@@ -7,88 +7,46 @@
 
 `git-cl` is a command-line tool for Git that introduces Subversion-style changelists. It allows users to assign working directory files to named changelists, helping organise work by intent and manage partial commits more easily.
 
-## Features
+## Why git-cl?
 
-- Create and manage named changelists to group related file changes
-- View changes grouped by changelist in a `git status`-like view
-- Stage and commit changelist contents selectively, by name
-- Read commit messages from files using `-F` (like `git commit`)
-- Simple JSON-based local tracking (no changes to Git internals)
-- Seamless integration via `git cl` subcommand interface
+- Group files logically before staging
+- Work on multiple features on a single branch
+- Stage/commit changes by intent, not path
+- Local-only metadata (`.git/cl.json`)
+- Simple CLI: `git cl <command>`
 
-## How It Works
-
-Changelists are stored in a simple `cl.json` file inside your repository’s `.git` directory. This keeps all metadata local and avoids polluting your working directory or history.
-
-## Why Use git-cl?
-
-- **Organise before staging**: Group related changes logically before committing
-- **Parallel development**: Work on multiple features simultaneously on the same branch  
-- **Selective commits**: Stage and commit by intent, not by file location
-- **No Git pollution**: Metadata stays local, no impact on repository history
-
-## Requirements
-
-- Python 3.9+
-- Git installed and available in your `$PATH`
-- Unix-like OS (Linux, macOS)
-
-## Installation
-
-To install `git-cl`, download the script and place it in your `$PATH`.
-
-### Quick Install
+## Quick Start
 
 ```
+# Install
 mkdir -p ~/bin
 curl -sLo ~/bin/git-cl https://raw.githubusercontent.com/BHFock/git-cl/main/git-cl
 chmod +x ~/bin/git-cl
-```
 
-### Manual Install 
-
-```
-git clone https://github.com/BHFock/git-cl.git
-cd git-cl
-chmod +x git-cl
-mkdir -p ~/bin
-mv git-cl ~/bin/
-
-```
-
-### Verify Installation
-
-Make sure `~/bin` is listed in your `$PATH`. You’ll then be able to run:
-
-```
+# Verify Installation
 git cl --version
 git cl help
+
+# Create & use changelist
+git cl add fixup file1.py
+git cl status
+git cl commit fixup -m "Fix file1"
 ```
 
-Git will recognise `git-cl` as the handler for `git cl`, just like its built-in commands.
+Make sure `~/bin` is listed in your `$PATH`. 
 
-## Quick Reference
-
-Below are common `git cl` commands for typical changelist workflows:
+## Common Commands
 
 ```bash
-# Create a changelist implicitly by adding files to it
+# Add files to a changelist
 git cl add docs-fix README.md docs/index.md
 
-# View modified files grouped by changelist
+# See changes grouped by changelist
 git cl status
 
-# Stage all files in a changelist and delete it
+# Stage or commit changelists
 git cl stage docs-fix
-
-# Keep the changelist after staging
-git cl stage docs-fix --keep
-
-# Commit all changes in a changelist
 git cl commit docs-fix -m "Update documentation layout and intro"
-
-# Commit with message from file
-git cl commit docs-fix -F commit-message.txt
 
 # Keep the changelist after committing
 git cl commit docs-fix -m "Fix bug" --keep
@@ -96,26 +54,25 @@ git cl commit docs-fix -m "Fix bug" --keep
 # Remove a file from its changelist
 git cl remove README.md
 
-# Delete a changelist manually (even if it still contains files)
+# Delete a changelist
 git cl delete docs-fix
 ```
 
-See the [git-cl Tutorial](docs/tutorial.md) for detailed usage, examples, and tips.
-
-## Visual Example
-
-Here's how `git cl status` organises your changes:
+## Example Output
 
 <p align="left">
   <img src="docs/git-cl.png" alt="Screenshot git cl status" width="225"/>
 </p>
 
-*Files are grouped by changelist with color-coded Git status indicators*
+## Notes
 
+- Requires Python 3.9+, Git, and a Unix-like OS
+- Changelists are local and not version-controlled
+- See the [tutorial](docs/tutorial.md) for full details
+  
 ## Maintenance Disclaimer
 
 This is a personal tool, built to support my own Git workflow. It’s shared as-is for reference. No active maintenance or collaboration is planned — but forks are welcome.
-
 
 ## License
 

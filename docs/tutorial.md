@@ -52,32 +52,54 @@ Use changelists to track what you're working on, even when it's not ready to com
 
 ## 1. Installation
 
-1. Download or copy the `git-cl` script.
+To install `git-cl`, download the script and place it in your `$PATH`.
 
-2. Make it executable:
+### Quick Install
 
-   ```
-   chmod +x git-cl
-   ```
-   
-3. Move it into a directory in your system `PATH`:
+```
+mkdir -p ~/bin
+curl -sLo ~/bin/git-cl https://raw.githubusercontent.com/BHFock/git-cl/main/git-cl
+chmod +x ~/bin/git-cl
+```
 
-   ```
-   mkdir -p ~/bin
-   mv git-cl ~/bin/
-   ```
-   
-4. Add this to your shell config file (`.bashrc`, `.zshrc`, etc.) if needed:
+### Manual Install
 
-   ```
-   export PATH="$HOME/bin:$PATH"
-   ```
+Download or clone the repository:
 
-5. (Optional) Confirm it's working:
+```
+git clone https://github.com/BHFock/git-cl.git
+cd git-cl
+```
 
-   ```
-   git cl help
-   ```
+Make it executable:
+
+```
+chmod +x git-cl
+```
+
+Move it into a directory in your system PATH:
+
+```
+mkdir -p ~/bin
+mv git-cl ~/bin
+```
+
+### Verify Installation
+
+Make sure `~/bin` is listed in your `$PATH`. Add this to your shell config file (`.bashrc`, `.zshrc`, etc.) if needed:
+
+```
+export PATH="$HOME/bin:$PATH"
+```
+
+Then confirm it's working:
+
+```
+git cl --version
+git cl help
+```
+
+Git will recognise `git-cl` as the handler for `git cl`, just like its built-in commands.
 
 [↑ Back to top](#git-cl-tutorial)
 

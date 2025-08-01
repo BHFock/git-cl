@@ -682,6 +682,39 @@ def cl_status(args: argparse.Namespace) -> None:
                                                 use_color))
 
 
+def cl_diff(args: argparse.Namespace) -> None:
+    """
+    Show git diff for one or more changelists.
+
+    Args:
+        args: argparse.Namespace with 'names' list of changelists
+    """
+    changelists = clutil_load()
+    git_root = clutil_get_git_root()
+    diff_files = set()
+
+    for name in args.names:
+        if name not in changelists:
+            print(f"Changelist '{name}' not found.")
+            continue
+        for path in changelists[name]:
+            abs_path = (git_root / path).resolve()
+            if abs_path.exists():
+                rel_to_cwd = os.path.relpath(abs_path, Path.cwd())
+                diff_files.add(rel_to_cwd)
+            else:
+                print(f"Warning: File '{path}' from '{name}' does not exist.")
+
+    if not diff_files:
+        print("No valid files to diff.")
+        return
+
+    try:
+        subprocess.run(["git", "diff", "--"] + sorted(diff_files), check=False)
+    except subprocess.CalledProcessError as error:
+        print(f"Error running git diff: {error}")
+
+
 def cl_remove(args: argparse.Namespace) -> None:
     """
     Removes one or more files from any changelists they are part of.
@@ -912,6 +945,15 @@ def main() -> None:
         '--no-color', action='store_true',
         help='Disable colored output')
     status_parser.set_defaults(func=cl_status)
+
+  # diff
+    diff_parser = subparsers.add_parser(
+        'diff',
+        help='Show git diff for one or more changelists',
+        description="Show unified diff for the files in one or more changelists.")
+    diff_parser.add_argument('names', metavar='CHANGELIST', nargs='+',
+                             help='One or more changelists to diff')
+    diff_parser.set_defaults(func=cl_diff)
 
     # stage
     stage_parser = subparsers.add_parser(

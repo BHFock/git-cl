@@ -10,14 +10,14 @@
 - [1. Installation](#1-installation)
 - [2. Basic Commands](#2-basic-commands)
   - [2.1 Add files to a changelist](#21-add-files-to-a-changelist)
-  - [2.2 View status by changelist](#23-view-status-by-changelist) 
+  - [2.2 View status by changelist](#22-view-status-by-changelist) 
     - [Filtering by changelist name](#filtering-by-changelist-name)
     - [Showing all Git status codes](#showing-all-git-status-codes)
     - [Status code reference](#status-code-reference)
     - [Colorised output](#colorised-output)
-  - [2.3 Stage a changelist](#24-stage-a-changelist)
-  - [2.4 Commit a changelist](#25-commit-a-changelist)
-  - [2.5 Remove files from changelists](#26-remove-files-from-changelists)
+  - [2.3 Stage a changelist](#23-stage-a-changelist)
+  - [2.4 Commit a changelist](#24-commit-a-changelist)
+  - [2.5 Remove files from changelists](#25-remove-files-from-changelists)
   - [2.6 Delete changelists](#27-delete-changelists)
 - [3. Example Workflow: Changelists as Named Staging Areas](#3-example-workflow-changelists-as-named-staging-areas)
 - [4. FAQ & Common Pitfalls](#4-faq--common-pitfalls)
@@ -150,19 +150,18 @@ This reveals additional cases like
 
 #### Git Status Codes
 
-
-| Code      | Meaning             | Description                                         |
-| --------- | ------------------- | --------------------------------------------------- |
-| 🟦 `[??]` | Untracked           | New file, not yet tracked by Git                    |
-| 🟢 `[M ]` | Staged              | Change staged and ready to commit                   |
-| 🔴 `[ M]` | Unstaged            | Change present but not staged                       |
-| 🟣 `[MM]` | Mixed               | Staged change with additional unstaged modification |
-| 🟢 `[A ]` | Added               | New file staged for commit                          |
-| 🟣 `[AM]` | Added + Modified    | Staged new file, then modified it                   |
-| 🟢 `[D ]` | Deletion (staged)   | File deletion staged for commit                     |
-| 🔴 `[ D]` | Deletion (unstaged) | File deleted but not staged                         |
-| 🟢 `[R ]` | Renamed             | Rename staged for commit                            |
-| 🟣 `[RM]` | Renamed + Modified  | Renamed file, then modified it                      |
+| Code   | Status                 | Description                                         |
+|--------|------------------------|-----------------------------------------------------|
+| `[??]` | Untracked              | New file, not yet tracked by Git                   |
+| `[M ]` | Staged                 | Change staged and ready to commit                  |
+| `[ M]` | Unstaged               | Change made but not yet staged                     |
+| `[MM]` | Mixed                  | Staged change with additional unstaged modification|
+| `[A ]` | Added                  | New file added and staged                          |
+| `[AM]` | Added + Modified       | File added and then further modified               |
+| `[D ]` | Deletion (staged)      | File deletion staged                               |
+| `[ D]` | Deletion (unstaged)    | File deleted but not yet staged                    |
+| `[R ]` | Renamed                | File renamed and staged                            |
+| `[RM]` | Renamed + Modified     | Renamed and then modified before staging           |
 
 See the full list of codes in the [Git documentation](https://git-scm.com/docs/git-status). 
 
@@ -180,30 +179,18 @@ No Changelist:
   [UU] merge_conflict_file.py
 ```
 
-#### Colorised output
+#### Color Key
 
-By default, `git cl status` will use color to highlight file statuses:
+By default, `git cl status` uses colors to highlight file states:
 
-- Green: Staged changes (e.g. [A ], [M ])
-- Red: Unstaged changes (e.g. [ M])
-- Magenta: Staged and unstaged changes (e.g. [MM])
-- Blue: Untracked files ([??])
+| Color   | Meaning                       |
+|---------|-------------------------------|
+| Green   | Staged changes (`[M ]`, `[A ]`)|
+| Red     | Unstaged changes (`[ M]`, `[ D]`)|
+| Magenta | Both staged and unstaged (`[MM]`, `[AM]`)|
+| Blue    | Untracked (`[??]`)            |
 
-This helps visually scan the output and distinguish file states more easily.
-
-You can disable color using:
-
-- The `--no-color` flag:
-
-```
-git cl st --no-color
-```
-
-- Or by setting the `NO_COLOR` environment variable:
-
-```
-NO_COLOR=1 git cl st
-```
+You can disable color with the `--no-color` flag or `NO_COLOR=1` environment variable.
 
 ### 2.3 Stage a changelist
 

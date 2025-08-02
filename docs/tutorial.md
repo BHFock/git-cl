@@ -1,3 +1,8 @@
+<!--
+git-cl: A Git subcommand to manage changelists in Git. Group files by intent, manage partial commits cleanly, and improve your Git workflow.
+-->
+
+
 # git-cl: A Git Subcommand for Changelist Management
 
 [git-cl](https://github.com/BHFock/git-cl?tab=readme-ov-file) lets you group files into named changelists before staging or committing — like sticky notes for your working directory. This helps you manage multiple ongoing changes efficiently before staging or committing them.
@@ -13,7 +18,7 @@
   - [2.2 View status by changelist](#22-view-status-by-changelist) 
     - [Filtering by changelist name](#filtering-by-changelist-name)
     - [Showing all Git status codes](#showing-all-git-status-codes)
-    - [Status code reference](#status-code-reference)
+    - [Git Status codes](#git-status-codes)
     - [Colorised output](#colorised-output)
   - [2.3 Diff a changelist](#23-diff-a-changelist) 
   - [2.4 Stage a changelist](#24-stage-a-changelist)

@@ -42,7 +42,7 @@ This helps when:
 - Wanting to break down a messy working directory into logical units
 - Staging or committing changes by intent rather than file
 
-Changelists are saved locally in `.git/cl.json`. They’re private to your workspace — not shared or committed.
+Changelists are saved locally in `.git/cl.json`. They’re private to your workspace and not shared or committed.
 
 ## How changelists fit into Git workflows
 

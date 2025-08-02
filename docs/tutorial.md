@@ -397,13 +397,13 @@ git cl delete old-list
 
 By default, `git cl status` filters out files with uncommon Git status codes (e.g. merge conflicts or type changes) to keep the output clean.
 
-If you want to include everything, use the --all flag:
+If you want to include everything, use the `--all` flag:
 
 ```
 git cl status --all
 ```
 
-This will show all files, including those with status codes like [UU] (unmerged) or [T ] (type change).
+This will show all files, including those with status codes like `[UU]` (unmerged) or `[T ]` (type change).
 
 [↑ Back to top](#git-cl-tutorial)
 

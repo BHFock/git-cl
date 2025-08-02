@@ -46,7 +46,7 @@ Changelists are saved locally in `.git/cl.json`. They’re private to your works
 
 ## How changelists fit into Git workflows
 
-Changelists help you manage changes before they’re staged or committed. They complement Git’s existing concepts rather than replacing them:
+Changelists act as a layer above Git’s staging area — helping you group related edits before deciding what to stage or commit. They work alongside Git’s core concepts, not in place of them:
 
 | Concept          | Description                                 | Role in Workflow                    |
 |------------------|---------------------------------------------|-------------------------------------|
@@ -54,7 +54,7 @@ Changelists help you manage changes before they’re staged or committed. They c
 | **Staging Area** | Selects what goes into the next commit      | Prepare commit content              |
 | **Branch**       | A line of development with commit history   | Isolate long-running or shared work |
 
-Use changelists to track what you're working on, even when it's not ready to commit — especially useful when tasks overlap on the same branch.
+Use changelists to track your intent, keep unrelated edits separate, or manage overlapping work — all without affecting Git history.
 
 ## 1. Installation
 

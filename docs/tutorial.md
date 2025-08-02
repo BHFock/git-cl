@@ -367,7 +367,7 @@ git cl commit my-list -m "WIP" --keep
 
 Because `git cl` only stages or commits files already tracked by Git.
 
-If a file is untracked (`[??]`), it will show up in git cl st, but won’t be included when staging or committing.
+If a file is untracked (`[??]`), it will show up in `git cl st`, but won’t be included when staging or committing.
 
 To include it:
 
@@ -403,7 +403,7 @@ If you want to include everything, use the --all flag:
 git cl status --all
 ```
 
-This will show all files, including those with status codes like [UU] (unmerged), [T ] (type change), or [! ] (ignored).
+This will show all files, including those with status codes like [UU] (unmerged) or [T ] (type change).
 
 [↑ Back to top](#git-cl-tutorial)
 

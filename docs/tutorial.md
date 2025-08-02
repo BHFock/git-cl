@@ -280,12 +280,6 @@ git cl remove <file1> <file2> ...
 - Removes the given files from any changelist.
 - Files remain unchanged in your working directory.
 
-#### Example
-
-```
-git cl remove notes/debug.txt
-```
-
 ### 2.7 Delete changelists
 
 ```

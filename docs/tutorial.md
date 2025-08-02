@@ -312,9 +312,7 @@ git cl delete --all
 
 Only changelist metadata is deleted — no file content or Git history is lost.
 
-
-[↑ Back to top](#git-cl-tutorial)
-
+[↑ Back to top](#git-cl-a-git-subcommand-for-changelist-management)
 
 ## 3. Example Workflow: Changelists as Named Staging Areas
 
@@ -343,7 +341,7 @@ git commit -m "Implement core feature"
 
 The other changelists remain untouched, keeping your workspace organised and uncommitted changes visible.
 
-[↑ Back to top](#git-cl-tutorial)
+[↑ Back to top](#git-cl-a-git-subcommand-for-changelist-management)
 
 ## 4. FAQ & Common Pitfalls
 
@@ -410,7 +408,7 @@ git cl status --all
 
 This will show all files, including those with status codes like `[UU]` (unmerged) or `[T ]` (type change).
 
-[↑ Back to top](#git-cl-tutorial)
+[↑ Back to top](#git-cl-a-git-subcommand-for-changelist-management)
 
 ## 5. Command Summary
 
@@ -428,4 +426,4 @@ This will show all files, including those with status codes like `[UU]` (unmerge
 | Delete all changelists         | `git cl delete --all`                          |              |
 | Show help                      | `git cl help`                                  |              |
 
-[↑ Back to top](#git-cl-tutorial)
+[↑ Back to top](#git-cl-a-git-subcommand-for-changelist-management)

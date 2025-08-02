@@ -61,7 +61,7 @@ git cl delete docs-fix
 ## Example Output
 
 <p align="left">
-  <img src="docs/git-cl.png" alt="Screenshot git cl status" width="225"/>
+  <img src="docs/git-cl.png" alt="git-cl status changelist screenshot in terminal" width="225"/>
 </p>
 
 ## Notes

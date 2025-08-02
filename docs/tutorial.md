@@ -118,7 +118,7 @@ git cl add <changelist-name> <file1> <file2> ...
 
 - A file can only belong to one changelist at a time; it will be moved if already assigned elsewhere.
 
-#### Example:
+#### Example
 
 ```
 git cl add docs README.md docs/index.md
@@ -223,7 +223,7 @@ git cl stage <changelist-name>
 - Only files already tracked by Git will be staged. Untracked files are ignored unless you add them with `git add` first.
 - Changelist is deleted after staging.
   
-#### Example:
+#### Example
 
 ```
 git cl stage docs
@@ -243,7 +243,7 @@ git cl commit <changelist-name> -F commit.txt
 
 This allows you to commit grouped changes directly, without touching the Git staging area manually.
 
-#### Example:
+#### Example
 
 ```
 git cl commit tests -m "Add test environment"
@@ -267,7 +267,7 @@ git cl remove <file1> <file2> ...
 - Removes the given files from any changelist.
 - Files remain unchanged in your working directory.
 
-#### Example:
+#### Example
 
 ```
 git cl remove notes/debug.txt
@@ -283,7 +283,7 @@ git cl delete <changelist1> <changelist2> ...
 - Files remain in the working directory and will appear under “No Changelist” next time you run `git cl st`.
 
 
-#### Example:
+#### Example
 
 ```
 git cl delete docs tests

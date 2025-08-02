@@ -72,7 +72,7 @@ git cl delete docs-fix
   
 ## Maintenance Disclaimer
 
-This is a personal tool, built to support my own Git workflow. It’s shared as-is for reference. No active maintenance or collaboration is planned — but forks are welcome.
+This is a personal tool, built to support my own Git workflow. No active maintenance or collaboration is planned. ´git-cl` is considered feature-complete. It remains available for use, fork, or adaptation under the license terms. Further changes are not planned.
 
 ## License
 

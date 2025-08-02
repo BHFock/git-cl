@@ -155,7 +155,7 @@ git cl st docs --include-no-cl
 
 By default, git cl status shows only the most common status codes (like [M ], [??], [ D], etc.) for clarity.
 
-To include all Git status codes — including merge conflicts, type changes, or ignored files — use the `--all` flag:
+To include all Git status codes — including merge conflicts and type changes — use the `--all` flag:
 
 ```
 git cl st --all
@@ -387,7 +387,7 @@ git cl delete old-list
 
 ### Why don’t I see all files in git cl status?
 
-By default, `git cl status` filters out files with uncommon Git status codes (e.g. merge conflicts, type changes, ignored files) to keep the output clean.
+By default, `git cl status` filters out files with uncommon Git status codes (e.g. merge conflicts or type changes) to keep the output clean.
 
 If you want to include everything, use the --all flag:
 

@@ -365,7 +365,7 @@ git cl commit my-list -m "WIP" --keep
 
 ### Why aren’t untracked files included when I stage or commit a changelist?
 
-Because git cl only stages or commits files already tracked by Git.
+Because `git cl` only stages or commits files already tracked by Git.
 
 If a file is untracked (`[??]`), it will show up in git cl st, but won’t be included when staging or committing.
 

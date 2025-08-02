@@ -80,7 +80,3 @@ git cl delete docs-fix
 
 BSD 3-Clause License — see [LICENSE](./LICENSE) for details.
 
-<!--
-#git-changelists #git-workflow-tools #svn-style-git #git-cli #partial-commits #git-subcommand
--->
-

@@ -15,11 +15,11 @@
     - [Showing all Git status codes](#showing-all-git-status-codes)
     - [Status code reference](#status-code-reference)
     - [Colorised output](#colorised-output)
-  - [2.3 Stage a changelist](#23-stage-a-changelist)
-  - [2.4 Commit a changelist](#24-commit-a-changelist)
-  - [2.5 Remove files from changelists](#25-remove-files-from-changelists)
-  - [2.6 Delete changelists](#27-delete-changelists)
-  - [2.7 Diff a changelist](#27-diff-a-changelist) 
+  - [2.3 Diff a changelist](#23-diff-a-changelist) 
+  - [2.4 Stage a changelist](#24-stage-a-changelist)
+  - [2.5 Commit a changelist](#25-commit-a-changelist)
+  - [2.6 Remove files from changelists](#26-remove-files-from-changelists)
+  - [2.7 Delete changelists](#27-delete-changelists)
 - [3. Example Workflow: Changelists as Named Staging Areas](#3-example-workflow-changelists-as-named-staging-areas)
 - [4. FAQ & Common Pitfalls](#4-faq--common-pitfalls)
 - [5. Command Summary](#5-command-summary)
@@ -213,7 +213,19 @@ By default, `git cl status` uses colors to highlight file states:
 
 You can disable color with the `--no-color` flag or `NO_COLOR=1` environment variable.
 
-### 2.3 Stage a changelist
+### 2.3 Diff a changelist
+
+```
+git cl diff <changelist-name>
+git cl diff <changelist1> <changelist2>
+git cl diff <changelist-name> --staged
+```
+
+- Shows a unified diff (`git diff`) of the files in the changelist(s).
+- Uses `git diff --cached` when `--staged` is provided.
+- You can pass multiple changelists to review their combined diffs.
+
+### 2.4 Stage a changelist
 
 ```
 git cl stage <changelist-name>
@@ -230,7 +242,7 @@ git cl stage docs
 git commit -m "Refactor docs"
 ```
 
-### 2.4 Commit a changelist
+### 2.5 Commit a changelist
 
 ```
 git cl commit <changelist-name> -m "Message"
@@ -258,7 +270,7 @@ If you want to reuse the changelist (e.g. for further edits), use:
 git cl commit tests -m "Partial commit" --keep
 ```
 
-### 2.5 Remove files from changelists
+### 2.6 Remove files from changelists
 
 ```
 git cl remove <file1> <file2> ...
@@ -273,7 +285,7 @@ git cl remove <file1> <file2> ...
 git cl remove notes/debug.txt
 ```
 
-### 2.6 Delete changelists
+### 2.7 Delete changelists
 
 ```
 git cl delete <changelist1> <changelist2> ...
@@ -292,19 +304,6 @@ git cl delete --all
 - Cannot be combined with named changelists.
 
 Only changelist metadata is deleted — no file content or Git history is lost.
-
-
-### 2.7 Diff a changelist
-
-```
-git cl diff <changelist-name>
-git cl diff <changelist1> <changelist2>
-git cl diff <changelist-name> --staged
-```
-
-- Shows a unified diff (`git diff`) of the files in the changelist(s).
-- Uses `git diff --cached` when `--staged` is provided.
-- You can pass multiple changelists to review their combined diffs.
 
 
 [↑ Back to top](#git-cl-tutorial)

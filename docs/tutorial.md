@@ -282,13 +282,6 @@ git cl delete <changelist1> <changelist2> ...
 - Deletes one or more named changelists.
 - Files remain in the working directory and will appear under “No Changelist” next time you run `git cl st`.
 
-
-#### Example
-
-```
-git cl delete docs tests
-```
-
 You can also delete all changelists at once with:
 
 ```

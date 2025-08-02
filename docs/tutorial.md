@@ -409,18 +409,18 @@ This will show all files, including those with status codes like `[UU]` (unmerge
 
 ## 5. Command Summary
 
-| Task                                     | Command                                        |
-| ---------------------------------------- | ---------------------------------------------- |
-| Add files to a changelist                | `git cl add <name> <files...>`                 |
-| View grouped status (alias: `st`)        | `git cl status` / `git cl st`                  |
-| View all statuses, no color              | `git cl st --all --no-color`                   |
-| Show diff for changelist(s)              | git cl diff <name1> [<name2> ...] [--staged]   |
-| Stage a changelist                       | `git cl stage <name> [--keep]`                 |
-| Commit with inline message (alias: `ci`) | `git cl commit <name> -m "Message" [--keep]`   |
-| Commit using message from file           | `git cl commit <name> -F message.txt [--keep]` |
-| Remove files from changelists            | `git cl remove <file1> <file2> ...`            |
-| Delete changelists (alias: `del`)        | `git cl delete <name1> <name2> ...`            |
-| Delete all changelists                   | `git cl delete --all`                          |
-| Show help                                | `git cl help`                                  |
+| Task                                     | Command                              | Alias        | 
+| ---------------------------------------- | ------------------------------------ | ------------ |
+| Add files to a changelist      | `git cl add <name> <files...>`                 | `git cl a`   |
+| View grouped status            | `git cl status` / `git cl st`                  | `git cl st`  | 
+| View all statuses, no color    | `git cl st --all --no-color`                   |              |
+| Show diff for changelist(s)    | `git cl diff <name1> [<name2> ...] [--staged]` |              |
+| Stage a changelist             | `git cl stage <name> [--keep]`                 |              |
+| Commit with inline message     | `git cl commit <name> -m "Message" [--keep]`   | `git cl ci`  |
+| Commit using message from file | `git cl commit <name> -F message.txt [--keep]` |              |
+| Remove files from changelists  | `git cl remove <file1> <file2> ...`            | `git cl rm`  |
+| Delete changelists             | `git cl delete <name1> <name2> ...`            | `git cl del` | 
+| Delete all changelists         | `git cl delete --all`                          |              |
+| Show help                      | `git cl help`                                  |              |
 
 [↑ Back to top](#git-cl-tutorial)

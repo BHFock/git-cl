@@ -83,3 +83,7 @@ git cl delete docs-fix
 
 BSD 3-Clause License — see [LICENSE](./LICENSE) for details.
 
+<!--
+Keywords: git changelist, svn changelist, partial commit, group files, perforce, git extension, organize changes, subversion
+-->
+

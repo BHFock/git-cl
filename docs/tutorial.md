@@ -419,7 +419,7 @@ This will show all files, including those with status codes like [UU] (unmerged)
 | Commit with inline message (alias: `ci`) | `git cl commit <name> -m "Message" [--keep]`   |
 | Commit using message from file           | `git cl commit <name> -F message.txt [--keep]` |
 | Remove files from changelists            | `git cl remove <file1> <file2> ...`            |
-| Delete changelists                       | `git cl delete <name1> <name2> ...`            |
+| Delete changelists (alias: `del`)        | `git cl delete <name1> <name2> ...`            |
 | Delete all changelists                   | `git cl delete --all`                          |
 | Show help                                | `git cl help`                                  |
 

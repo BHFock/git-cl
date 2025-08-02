@@ -933,7 +933,7 @@ def main() -> None:
     # delete
     delete_parser = subparsers.add_parser(
         'delete',
-        aliases=['d', 'del'],
+        aliases=['del'],
         help='Delete one or more changelists',
         description=("Delete one or more changelists by name, "
                      "or remove all with --all."))

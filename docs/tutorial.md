@@ -296,7 +296,6 @@ git cl delete --all
 ```
 
 - This clears all changelists from your workspace, leaving files untouched.
-- Cannot be combined with named changelists.
 
 Only changelist metadata is deleted — no file content or Git history is lost.
 

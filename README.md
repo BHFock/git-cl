@@ -72,9 +72,9 @@ git cl delete docs-fix
 - Changelists are local and not version-controlled
 - See the [tutorial](docs/tutorial.md) for full details
   
-## Maintenance Disclaimer
+## Project status
 
-This is a personal tool, built to support my own Git workflow. No active maintenance or collaboration is planned. `git-cl` is considered feature-complete. It remains available for use, fork, or adaptation under the license terms. Further changes are not planned.
+`git-cl` is considered feature-complete. It remains available for use, fork, or adaptation under the license terms. Further changes are not planned.
 
 ## License
 

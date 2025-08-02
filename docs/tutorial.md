@@ -105,7 +105,8 @@ git cl --version
 git cl help
 ```
 
-Git will recognise `git-cl` as the handler for `git cl`, just like its built-in commands.
+Git will recognise `git-cl` as a subcommand: you can now run `git cl` just like `git commit` or `git status`.
+
 
 [↑ Back to top](#git-cl-a-git-subcommand-for-changelist-management)
 

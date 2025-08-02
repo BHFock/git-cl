@@ -5,7 +5,7 @@
 <details>
 <summary> Table of Contents</summary>
 
-- [What is `git-cl`](#what-is-git-cl)
+- [What is git-cl](#what-is-git-cl)
 - [How changelists fit into Git workflows](#how-changelists-fit-into-git-workflows)
 - [1. Installation](#1-installation)
 - [2. Basic Commands](#2-basic-commands)

@@ -36,13 +36,13 @@ git-cl: A Git subcommand to manage changelists in Git. Group files by intent, ma
 
 `git-cl` is a Git subcommand that lets you group related file changes under a named changelist — similar to changelists in Subversion, but tailored for Git workflows.
 
-Use it when:
+This helps when:
 
 - Working on several features or fixes in parallel
 - Wanting to break down a messy working directory into logical units
 - Staging or committing changes by intent rather than file
 
-Changelists are stored in a local metadata file (`.git/cl.json`) inside your repo. They're not versioned or shared.
+Changelists are saved locally in `.git/cl.json`. They’re private to your workspace — not shared or committed.
 
 ## How changelists fit into Git workflows
 

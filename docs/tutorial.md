@@ -19,7 +19,7 @@ git-cl: A Git subcommand to manage changelists in Git. Group files by intent, ma
     - [Filtering by changelist name](#filtering-by-changelist-name)
     - [Showing all Git status codes](#showing-all-git-status-codes)
     - [Git Status codes](#git-status-codes)
-    - [Colorised output](#colorised-output)
+    - [Color Key](#color-key)
   - [2.3 Diff a changelist](#23-diff-a-changelist) 
   - [2.4 Stage a changelist](#24-stage-a-changelist)
   - [2.5 Commit a changelist](#25-commit-a-changelist)

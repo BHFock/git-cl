@@ -16,7 +16,7 @@ Perfect for developers who prefer to organise their work logically from the star
 
 - Group files logically before staging using Git changelists
 - Work on multiple features on a single branch
-- Stage/commit changes by intent
+- Stage and commit changes by intent
 - Local-only metadata (`.git/cl.json`)
 - Simple CLI: `git cl <command>`
 

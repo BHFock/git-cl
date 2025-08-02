@@ -115,7 +115,6 @@ git cl add <changelist-name> <file1> <file2> ...
 ```
 
 - Groups files under a named changelist.
-
 - A file can only belong to one changelist at a time; it will be moved if already assigned elsewhere.
 
 #### Example
@@ -241,6 +240,8 @@ git cl stage <changelist-name>
 git cl stage docs
 git commit -m "Refactor docs"
 ```
+
+Tip: Run `git cl diff` first if you want to review the changes before staging.
 
 ### 2.5 Commit a changelist
 

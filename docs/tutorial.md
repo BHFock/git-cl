@@ -237,15 +237,25 @@ git cl commit <changelist-name> -m "Message"
 git cl commit <changelist-name> -F commit.txt
 ```
 
-- Commits tracked files and deletes the changelist.
-- Only files already tracked by Git will be commited. Untracked files are ignored unless you add them with `git add` first.
-- Use `-F <file>` to supply commit message from a file (like regular Git).
-- You can also use `ci` as an alias for commit, like `git cl ci <changelist-name> -m "message"`
+- Automatically stages and commits all tracked files in the changelist — no need to `run git cl stage` or `git add` first.
+- Untracked files ([??]) are ignored unless you add them first with `git add`.
+- The changelist is deleted after commit, unless you use `--keep`.
+
+This allows you to commit grouped changes directly, without touching the Git staging area manually.
 
 #### Example:
 
 ```
 git cl commit tests -m "Add test environment"
+# or
+git cl commit tests -F message.txt
+```
+
+If you want to reuse the changelist (e.g. for further edits), use:
+
+
+```
+git cl commit tests -m "Partial commit" --keep
 ```
 
 ### 2.5 Remove files from changelists

@@ -413,7 +413,7 @@ This will show all files, including those with status codes like `[UU]` (unmerge
 | ---------------------------------------- | ------------------------------------ | ------------ |
 | Add files to a changelist      | `git cl add <name> <files...>`                 | `git cl a`   |
 | View grouped status            | `git cl status` / `git cl st`                  | `git cl st`  | 
-| View all statuses, no color    | `git cl st --all --no-color`                   |              |
+| View all statuses, no color    | `git cl status --all --no-color`               |              |
 | Show diff for changelist(s)    | `git cl diff <name1> [<name2> ...] [--staged]` |              |
 | Stage a changelist             | `git cl stage <name> [--keep]`                 |              |
 | Commit with inline message     | `git cl commit <name> -m "Message" [--keep]`   | `git cl ci`  |

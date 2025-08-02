@@ -107,7 +107,7 @@ git cl help
 
 Git will recognise `git-cl` as the handler for `git cl`, just like its built-in commands.
 
-[↑ Back to top](#git-cl:-a-git-subcommand-for-changelist-management)
+[↑ Back to top](#git-cl-a-git-subcommand-for-changelist-management)
 
 ## 2. Basic Commands
 

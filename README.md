@@ -5,13 +5,14 @@
 
 [![Tutorial](https://img.shields.io/badge/Tutorial-View-blue)](https://github.com/BHFock/git-cl/blob/main/docs/tutorial.md)
 
-`git-cl` is a command-line tool for Git that introduces Subversion-style changelists. It allows users to assign working directory files to named changelists, helping organise work by intent and manage partial commits more easily.
+
+`git-cl` is a command-line tool for Git that introduces changelist support similar to Subversion. It allows users to assign working directory files to named changelists, helping organise work by intent and manage partial commits more easily.
 
 Perfect for developers who prefer to organise their work logically from the start, rather than managing complex commit history afterward.
 
 ## Why git-cl?
 
-- Group files logically before staging
+- Group files logically before staging (Git changelists)
 - Work on multiple features on a single branch
 - Stage/commit changes by intent, not path
 - Local-only metadata (`.git/cl.json`)

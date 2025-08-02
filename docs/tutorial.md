@@ -220,9 +220,17 @@ git cl diff <changelist1> <changelist2>
 git cl diff <changelist-name> --staged
 ```
 
-- Shows a unified diff (`git diff`) of the files in the changelist(s).
+- Shows a unified diff (`git diff`) of the files in the changelist.
+- When you specify multiple changelists, shows a combined diff of all files from those changelists.
 - Uses `git diff --cached` when `--staged` is provided.
-- You can pass multiple changelists to review their combined diffs.
+
+#### Example
+
+```bash
+git cl diff docs          # Show diff for 'docs' changelist only
+git cl diff docs tests    # Show combined diff for both 'docs' and 'tests'
+git cl diff docs --staged # Show staged changes for 'docs' changelist
+```
 
 ### 2.4 Stage a changelist
 

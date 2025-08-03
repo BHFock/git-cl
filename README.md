@@ -84,6 +84,11 @@ The tool is intentionally minimal and developed as a personal side project. Futu
 
 Use, fork, or adapt freely under the BSD license.
 
+
+## Future Ideas
+
+`git-cl` is designed to support changelist-centric workflows. Some potential features—like changelist stashing, branching, or joining—are outlined in [`docs/FUTURE.md`](docs/FUTURE.md). These ideas are not actively planned or supported. The document is a design sketch, not a roadmap.
+
 ## License
 
 BSD 3-Clause License — see [LICENSE](./LICENSE) for details.

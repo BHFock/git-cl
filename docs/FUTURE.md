@@ -14,5 +14,5 @@ Temporarily shelve changes in a changelist. Preserve the namelist, track stash r
 ### `git cl mv list_old list_new`
 Rename a changelist without altering its contents.
 
-### `git cl merge list_1 list_2 list_new`
+### `git cl join list_1 list_2 [...] list_new`
 Combine two or more changelists into a new one.

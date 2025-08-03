@@ -1,0 +1,18 @@
+# Future Ideas for `git-cl`
+
+This document outlines potential features that may be added to `git-cl` in the future. These features are aligned with the long-term vision of `git-cl` as a changelist-centric workflow tool. They reflect the tool’s philosophy of clarity, context, and composable workflows.
+
+> Disclaimer: These ideas are not actively planned or under development.  
+> I currently don't have time to work on them or to support community-driven development.  
+> Please treat this as a design sketch, not a roadmap.
+
+## Proposed Features
+
+### `git cl stash`
+Temporarily shelve changes in a changelist. Preserve the namelist, track stash reference, and show stashed state in `git cl st`.
+
+### `git cl mv list_old list_new`
+Rename a changelist without altering its contents.
+
+### `git cl merge list_1 list_2 list_new`
+Combine two changelists into a new one. Supports `--delete` and `--dry-run`.

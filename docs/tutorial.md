@@ -64,7 +64,7 @@ To install `git-cl`, download the script and place it in your `$PATH`.
 
 ```
 mkdir -p ~/bin
-curl -sLo ~/bin/git-cl https://raw.githubusercontent.com/BHFock/git-cl/main/git-cl
+wget https://raw.githubusercontent.com/BHFock/git-cl/main/git-cl -O ~/bin/git-cl
 chmod +x ~/bin/git-cl
 ```
 

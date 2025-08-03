@@ -77,7 +77,9 @@ git cl delete docs-fix
   
 ## Project status
 
-`git-cl` is considered feature-complete. It remains available for use, fork, or adaptation under the license terms. Further changes are not planned.
+`git-cl` is feature-complete and stable, with core functionality tested locally. While it's not yet been used extensively in real-world, long-term workflows, it’s ready for practical use.
+
+Further development is not planned. The project is shared as-is for anyone who finds it useful, or wishes to fork or adapt it under the license terms.
 
 ## License
 

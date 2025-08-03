@@ -1,6 +1,6 @@
 # Future Ideas for `git-cl`
 
-This document outlines potential features that may be added to `git-cl` in the future. These features are aligned with the long-term vision of `git-cl` as a changelist-centric workflow tool. They reflect the tool’s philosophy of clarity, context, and composable workflows.
+This document outlines potential features that may be added to `git-cl` in the future. These features are aligned with the long-term vision of `git-cl` as a changelist-centric workflow tool. They reflect the tool's philosophy of clarity, context, and composable workflows.
 
 > Disclaimer: These ideas are not actively planned or under development.  
 > I currently don't have time to work on them or to support community-driven development.  
@@ -8,19 +8,20 @@ This document outlines potential features that may be added to `git-cl` in the f
 
 ## Proposed Features
 
-### `git cl stash`
-Temporarily shelve changes in a changelist. Preserve the namelist, track stash reference, and show stashed state in `git cl st`.
-
 ### `git cl mv list_old list_new`
 Rename a changelist without altering its contents.
 
 ### `git cl join list_1 list_2 [...] list_new`
 Combine two or more changelists into a new one.
 
-### `git cl unstage list`
+### `git cl unstage list_name`
 Unstages all files from a changelist.
 
+### `git cl stash list_name`
+Temporarily shelve changes in a changelist. Preserve the changelist metadata, track stash reference, and show stashed state in `git cl st`.
+
+### `git cl unstash list_name`
+Restore a previously stashed changelist to the working directory.
+
 ### `git cl br list_name [branch_name]`
-Create a new Git branch for a changelist, handling file conflicts automatically. This would enable workflows where logical units of work (changelists) can be moved to dedicated branches for focused development or feature isolation.
-
-
+Create a new Git branch for a changelist, automatically stashing all other changelists and keeping the target changelist active on the new branch. This enables seamless workflows where logical units of work can be moved to dedicated branches while preserving other ongoing work through automatic stash management.

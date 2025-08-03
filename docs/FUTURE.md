@@ -16,3 +16,8 @@ Rename a changelist without altering its contents.
 
 ### `git cl join list_1 list_2 [...] list_new`
 Combine two or more changelists into a new one.
+
+### `git cl unstage list`
+Unstages all files from a changelist.
+
+

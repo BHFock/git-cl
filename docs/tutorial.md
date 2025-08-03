@@ -58,9 +58,7 @@ Use changelists to track your intent, keep unrelated edits separate, or manage o
 
 ## 1. Installation
 
-To install `git-cl`, download the script and place it in your `$PATH`.
-
-### Quick Install
+### Method 1: Download the script
 
 ```
 mkdir -p ~/bin
@@ -68,35 +66,28 @@ wget https://raw.githubusercontent.com/BHFock/git-cl/main/git-cl -O ~/bin/git-cl
 chmod +x ~/bin/git-cl
 ```
 
-### Manual Install
-
-Download or clone the repository:
-
-```
-git clone https://github.com/BHFock/git-cl.git
-cd git-cl
-```
-
-Make it executable:
-
-```
-chmod +x git-cl
-```
-
-Move it into a directory in your system PATH:
-
-```
-mkdir -p ~/bin
-mv git-cl ~/bin
-```
-
-### Verify Installation
-
-Make sure `~/bin` is listed in your `$PATH`. Add this to your shell config file (`.bashrc`, `.zshrc`, etc.) if needed:
+Make sure `~/bin` is in your `$PATH`. You can add this line to your shell config file if needed:
 
 ```
 export PATH="$HOME/bin:$PATH"
 ```
+
+### Method 2: Clone the repository
+
+```
+git clone https://github.com/BHFock/git-cl.git ~/opt/git-cl
+```
+
+Add the cloned directory to your `$PATH`:
+
+```
+export PATH="$HOME/opt/git-cl:$PATH"
+```
+
+You can add this line to your shell profile (`~/.bashrc`, `~/.zshrc`, etc.) to make it permanent.
+
+
+### Verify Installation
 
 Then confirm it's working:
 

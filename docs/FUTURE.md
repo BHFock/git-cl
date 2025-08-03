@@ -20,4 +20,7 @@ Combine two or more changelists into a new one.
 ### `git cl unstage list`
 Unstages all files from a changelist.
 
+### `git cl br list_name [branch_name]`
+Create a new Git branch for a changelist, handling file conflicts automatically. This would enable workflows where logical units of work (changelists) can be moved to dedicated branches for focused development or feature isolation.
+
 

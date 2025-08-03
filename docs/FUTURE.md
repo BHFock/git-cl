@@ -15,4 +15,4 @@ Temporarily shelve changes in a changelist. Preserve the namelist, track stash r
 Rename a changelist without altering its contents.
 
 ### `git cl merge list_1 list_2 list_new`
-Combine two changelists into a new one. Supports `--delete` and `--dry-run`.
+Combine two or more changelists into a new one.

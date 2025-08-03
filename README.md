@@ -22,23 +22,42 @@ Perfect for developers who prefer to organise their work logically from the star
 
 ## Quick Start
 
+### Install
+
+Download the script:
+
 ```
-# Install
 mkdir -p ~/bin
 curl -sLo ~/bin/git-cl https://raw.githubusercontent.com/BHFock/git-cl/main/git-cl
 chmod +x ~/bin/git-cl
+```
 
-# Verify Installation
+Or clone the repository:
+
+```
+git clone https://github.com/BHFock/git-cl.git
+cd git-cl
+chmod +x git-cl
+mkdir -p ~/bin
+mv git-cl ~/bin/
+```
+
+Make sure `~/bin` is listed in your `$PATH`. 
+
+### Verify Installation
+
+```
 git cl --version
 git cl help
+```
 
-# Create & use changelist
+### Create & use changelists inside a Git repository
+
+```
 git cl add fixup file1.py
 git cl status
 git cl commit fixup -m "Fix file1"
 ```
-
-Make sure `~/bin` is listed in your `$PATH`. 
 
 ## Common Commands
 

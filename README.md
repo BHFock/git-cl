@@ -24,22 +24,10 @@ Perfect for developers who prefer to organise their work logically from the star
 
 ### Install
 
-Download the script:
-
 ```
 mkdir -p ~/bin
-curl -sLo ~/bin/git-cl https://raw.githubusercontent.com/BHFock/git-cl/main/git-cl
+wget https://raw.githubusercontent.com/BHFock/git-cl/main/git-cl -O ~/bin/git-cl
 chmod +x ~/bin/git-cl
-```
-
-Or clone the repository:
-
-```
-git clone https://github.com/BHFock/git-cl.git
-cd git-cl
-chmod +x git-cl
-mkdir -p ~/bin
-mv git-cl ~/bin/
 ```
 
 Make sure `~/bin` is listed in your `$PATH`. 

@@ -137,7 +137,7 @@ git cl st
 You can pass one or more changelist names to show only those specific groups:
 
 ```
-git cl status docs tests
+git cl st docs tests
 ```
 
 This limits the output to the specified changelists. By default, unassigned files (those in “No Changelist”) are hidden in this mode.

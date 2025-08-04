@@ -87,7 +87,7 @@ Use, fork, or adapt freely under the BSD license.
 
 ## Future Ideas
 
-`git-cl` is designed to support changelist-centric workflows. Some potential features—like changelist stashing, branching, or joining—are outlined in [`docs/FUTURE.md`](docs/FUTURE.md). These ideas are not actively planned or supported. The document is a design sketch, not a roadmap.
+Some ideas for features are outlined in [`docs/FUTURE.md`](docs/FUTURE.md).
 
 ## License
 

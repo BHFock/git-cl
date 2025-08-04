@@ -907,12 +907,13 @@ def main() -> None:
     subparsers = parser.add_subparsers(dest='command', title='Commands')
 
     # add
-    add_parser = subparsers.add_parser(
-        'add',
-        aliases=['a'],
-        help='Add files to a named changelist',
-        description='Add one or more files to a named changelist. '
-        'If the changelist does not exist, it will be created automatically.')
+    add_parser = subparsers.add_parser('add', aliases=['a'],
+                                       help='Add files to a named changelist',
+                                       description=(
+                                           "Add one or more files to a named "
+                                           "changelist. If the changelist "
+                                           "does not exist, it will be "
+                                           "created automatically."))
     add_parser.add_argument('name', metavar='CHANGELIST',
                             help='Name of the changelist to add files to')
     add_parser.add_argument('files', metavar='FILE', nargs='+',
@@ -921,118 +922,118 @@ def main() -> None:
     add_parser.set_defaults(func=cl_add)
 
     # remove
-    remove_parser = subparsers.add_parser(
-        'remove',
-        aliases=['r', 'rm'],
-        help='Remove files from any changelist',
-        description=("Removes files from any changelists "
-                     "they belong to."))
+    remove_parser = subparsers.add_parser('remove', aliases=['r', 'rm'],
+                                          help=("Remove files from any "
+                                                "changelist"),
+                                          description=("Removes files from "
+                                                       "any changelists they "
+                                                       "belong to."))
     remove_parser.add_argument('files', metavar='FILE', nargs='+',
                                help=("One or more files to remove "
                                      "from changelists"))
     remove_parser.set_defaults(func=cl_remove)
 
     # delete
-    delete_parser = subparsers.add_parser(
-        'delete',
-        aliases=['del'],
-        help='Delete one or more changelists',
-        description=("Delete one or more changelists by name, "
-                     "or remove all with --all."))
-    delete_parser.add_argument(
-        'names', metavar='CHANGELIST', nargs='*',
-        help=("One or more changelists to delete "
-              "(required unless --all is used)"))
-    delete_parser.add_argument(
-        '--all', action='store_true',
-        help='Delete all changelists')
+    delete_parser = subparsers.add_parser('delete', aliases=['del'],
+                                          help=("Delete one or more "
+                                                "changelists"),
+                                          description=(
+                                              "Delete one or more changelists "
+                                              "by name, or remove all with "
+                                              "--all."))
+    delete_parser.add_argument('names', metavar='CHANGELIST', nargs='*',
+                               help=("One or more changelists to delete "
+                                     "(required unless --all is used)"))
+    delete_parser.add_argument('--all', action='store_true',
+                               help='Delete all changelists')
     delete_parser.set_defaults(func=cl_delete)
 
     # status / st
-    status_parser = subparsers.add_parser(
-        'status',
-        aliases=['s', 'st'],
-        help='Show file changes grouped by changelist',
-        description=("Show file changes grouped by changelist. "
-                     "Unassigned files appear under 'No Changelist'."))
-    status_parser.add_argument(
-        'names', metavar='CHANGELIST', nargs='*',
-        help='Optional list of changelists to show (default: all)')
-    status_parser.add_argument(
-        '--include-no-cl', action='store_true',
-        help=('When filtering by changelist names, also show files '
-              'not assigned to any changelist'))
-    status_parser.add_argument(
-        '--all', action='store_true',
-        help='Include files with uncommon Git status codes')
-    status_parser.add_argument(
-        '--no-color', action='store_true',
-        help='Disable colored output')
+    status_parser = subparsers.add_parser('status', aliases=['s', 'st'],
+                                          help=("Show file changes grouped by "
+                                                "changelist"),
+                                          description=(
+                                              "Show file changes grouped by "
+                                              "changelist. Unassigned files "
+                                              "appear under 'No Changelist'."))
+    status_parser.add_argument('names', metavar='CHANGELIST', nargs='*',
+                               help=("Optional list of changelists to show "
+                                     "(default: all)"))
+    status_parser.add_argument('--include-no-cl', action='store_true',
+                               help=("When filtering by changelist names, "
+                                     "also show files not assigned to any "
+                                     "changelist"))
+    status_parser.add_argument('--all', action='store_true',
+                               help=("Include files with uncommon Git "
+                                     "status codes"))
+    status_parser.add_argument('--no-color', action='store_true',
+                               help='Disable colored output')
     status_parser.set_defaults(func=cl_status)
 
     # diff
-    diff_parser = subparsers.add_parser(
-        'diff',
-        help='Show git diff for one or more changelists',
-        description=(
-            "Show unified diff for the files in one or more changelists.\n\n"
-            "By default, shows unstaged changes (like `git diff`).\n"
-            "Use --staged for staged changes, or --both to show both."))
-    diff_parser.add_argument(
-        'names', metavar='CHANGELIST', nargs='+',
-        help='One or more changelists to diff')
-    diff_parser.add_argument(
-        '--staged', action='store_true',
-        help='Show staged changes (index vs HEAD)')
-    diff_parser.add_argument(
-        '--both', action='store_true',
-        help='Show both unstaged and staged diffs')
+    diff_parser = subparsers.add_parser('diff',
+                                        help=("Show git diff for one or more "
+                                              "changelists"),
+                                        description=(
+                                            "Show unified diff for the files "
+                                            "in one or more changelists. "
+                                            "By default, shows unstaged "
+                                            "changes (like `git diff`). "
+                                            "Use --staged for staged changes, "
+                                            "or --both to show both."))
+    diff_parser.add_argument('names', metavar='CHANGELIST', nargs='+',
+                             help='One or more changelists to diff')
+    diff_parser.add_argument('--staged', action='store_true',
+                             help='Show staged changes (index vs HEAD)')
+    diff_parser.add_argument('--both', action='store_true',
+                             help='Show both unstaged and staged diffs')
     diff_parser.set_defaults(func=cl_diff)
 
     # stage
-    stage_parser = subparsers.add_parser(
-        'stage',
-        help='Stage tracked files from a changelist',
-        description=(
-            "Stage all tracked files from the specified changelist. "
-            "By default, the changelist is deleted after staging "
-            "unless --keep is used."))
+    stage_parser = subparsers.add_parser('stage',
+                                         help=("Stage tracked files from a "
+                                               "changelist"),
+                                         description=(
+                                             "Stage all tracked files from "
+                                             "the specified changelist. By "
+                                             "default, the changelist is "
+                                             "deleted after staging unless "
+                                             "--keep is used."))
     stage_parser.add_argument('name', metavar='CHANGELIST',
                               help='Name of the changelist to stage')
-    stage_parser.add_argument(
-        '--keep', action='store_true',
-        help='Keep the changelist after staging')
+    stage_parser.add_argument('--keep', action='store_true',
+                              help='Keep the changelist after staging')
     stage_parser.set_defaults(func=cl_stage)
 
     # commit / ci
-    commit_parser = subparsers.add_parser(
-        'commit',
-        aliases=['ci'],
-        help='Commit tracked files from a changelist',
-        description=(
-            "Stage and commit all tracked files from the specified changelist "
-            "using the provided message. By default, the changelist is "
-            "deleted after committing unless --keep is used."))
+    commit_parser = subparsers.add_parser('commit', aliases=['ci'],
+                                          help=("Commit tracked files from a "
+                                                "changelist"),
+                                          description=(
+                                              "Stage and commit all tracked "
+                                              "files from the specified "
+                                              "changelist using the provided "
+                                              "message. By default, the "
+                                              "changelist is deleted after "
+                                              "committing unless --keep "
+                                              "is used."))
     commit_parser.add_argument('name', metavar='CHANGELIST',
                                help='Name of the changelist to commit')
-
-    # Create mutually exclusive group for message options
     msg_group = commit_parser.add_mutually_exclusive_group(required=True)
     msg_group.add_argument('-m', '--message',
                            help='Commit message')
     msg_group.add_argument('-F', '--file',
                            help='Read commit message from file')
-
-    commit_parser.add_argument(
-        '--keep', action='store_true',
-        help='Keep the changelist after committing')
+    commit_parser.add_argument('--keep', action='store_true',
+                               help='Keep the changelist after committing')
     commit_parser.set_defaults(func=cl_commit)
 
     # help command
-    help_parser = subparsers.add_parser(
-        'help',
-        help='Show this help message',
-        description='Displays a summary of available git-cl commands.')
+    help_parser = subparsers.add_parser('help',
+                                        help='Show this help message',
+                                        description=(
+                                            "Displays a summary of "
+                                            "available git-cl commands."))
     help_parser.set_defaults(func=cl_help, parser=parser)
 
     args = parser.parse_args()

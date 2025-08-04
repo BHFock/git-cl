@@ -726,10 +726,12 @@ def cl_diff(args: argparse.Namespace) -> None:
             print("=== Unstaged changes (working tree vs index) ===")
             subprocess.run(["git", "diff", "--"] + sorted_files, check=False)
             print("\n=== Staged changes (index vs HEAD) ===")
-            subprocess.run(["git", "diff", "--staged", "--"] + sorted_files, check=False)
+            subprocess.run(["git", "diff", "--staged", "--"] + sorted_files,
+                           check=False)
         elif args.staged:
             # Show only staged changes
-            subprocess.run(["git", "diff", "--staged", "--"] + sorted_files, check=False)
+            subprocess.run(["git", "diff", "--staged", "--"] + sorted_files,
+                           check=False)
         else:
             # Default: show unstaged changes
             subprocess.run(["git", "diff", "--"] + sorted_files, check=False)

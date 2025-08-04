@@ -888,7 +888,9 @@ def main() -> None:
         description=(
             "git-cl: A Git subcommand for managing named changelists \n"
             "        Group files into logical changelists before staging "
-            "or committing.\n"),
+            "or committing.\n\n"
+            "        NOTE: Commit/stage commands only operate on tracked files;\n"
+            "              untracked files in changelists are safely ignored."),
         epilog=(
             "Example usage:\n"
             "    git cl add my-feature file1.py file2.py\n"
@@ -991,14 +993,12 @@ def main() -> None:
 
     # stage
     stage_parser = subparsers.add_parser('stage',
-                                         help=("Stage tracked files from a "
-                                               "changelist"),
+                                         help="Stage tracked files from a changelist (ignores untracked)",
                                          description=(
-                                             "Stage all tracked files from "
-                                             "the specified changelist. By "
-                                             "default, the changelist is "
-                                             "deleted after staging unless "
-                                             "--keep is used."))
+                                             "Stage all tracked files from the specified changelist. "
+                                             "Untracked files in the changelist are ignored and remain "
+                                             "untracked. By default, the changelist is deleted after "
+                                             "staging unless --keep is used."))
     stage_parser.add_argument('name', metavar='CHANGELIST',
                               help='Name of the changelist to stage')
     stage_parser.add_argument('--keep', action='store_true',
@@ -1007,16 +1007,13 @@ def main() -> None:
 
     # commit / ci
     commit_parser = subparsers.add_parser('commit', aliases=['ci'],
-                                          help=("Commit tracked files from a "
-                                                "changelist"),
+                                          help="Commit tracked files from a changelist (auto-stages, ignores untracked)",
                                           description=(
-                                              "Stage and commit all tracked "
-                                              "files from the specified "
-                                              "changelist using the provided "
-                                              "message. By default, the "
-                                              "changelist is deleted after "
-                                              "committing unless --keep "
-                                              "is used."))
+                                              "Stage and commit all tracked files from the specified "
+                                              "changelist using the provided message. Untracked files "
+                                              "in the changelist are ignored and remain untracked. "
+                                              "By default, the changelist is deleted after "
+                                              "committing unless --keep is used."))
     commit_parser.add_argument('name', metavar='CHANGELIST',
                                help='Name of the changelist to commit')
     msg_group = commit_parser.add_mutually_exclusive_group(required=True)

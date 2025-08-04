@@ -1,6 +1,6 @@
 # Future Ideas for `git-cl`
 
-This document outlines potential features that may be added to `git-cl` in the future.  
+This document outlines potential features that may be added to [git-cl](https://github.com/BHFock/git-cl?tab=readme-ov-file) in the future.  
 These features are aligned with the long-term vision of `git-cl` as a changelist-centric workflow tool.  
 They reflect the tool's philosophy of clarity, context, and composable workflows.
 

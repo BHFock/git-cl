@@ -78,9 +78,7 @@ git cl delete docs-fix
   
 ## Project status
 
-`git-cl` is feature-complete and stable, with core functionality tested locally. While it hasn’t seen long-term, real-world use yet, it’s ready for practical work.
-
-The tool is intentionally minimal and developed as a personal side project. Future updates may happen as time and interest allow, but no ongoing development or community involvement is planned.
+`git-cl` is developed as a personal side project. Future updates may happen as time and interest allow, but no ongoing development or community involvement is planned.
 
 Use, fork, or adapt freely under the BSD license.
 

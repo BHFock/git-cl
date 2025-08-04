@@ -22,12 +22,6 @@ Combine two or more changelists into a new one.
 - Merges file assignments from multiple lists
 - Ideal for consolidating related work
 
-### `git cl unstage list_name`
-Unstages all files from a changelist.
-
-- Reverts staged files to working state
-- Preserves changelist membership
-
 ### `git cl stash list_name`
 Temporarily shelve changes in a changelist.
 

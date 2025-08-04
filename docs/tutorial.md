@@ -21,7 +21,7 @@ git-cl: A Git subcommand to manage changelists in Git. Group files by intent, ma
     - [Git Status codes](#git-status-codes)
     - [Color Key](#color-key)
   - [2.3 Diff a changelist](#23-diff-a-changelist) 
-  - [2.4 Stage a changelist](#24-stage-a-changelist)
+  - [2.4 Stage and unstage a changelist](#24-stage-and-unstage-a-changelist)
   - [2.5 Commit a changelist](#25-commit-a-changelist)
   - [2.6 Remove files from changelists](#26-remove-files-from-changelists)
   - [2.7 Delete changelists](#27-delete-changelists)
@@ -229,15 +229,17 @@ git cl diff docs tests    # Show combined diff for both 'docs' and 'tests'
 git cl diff docs --staged # Show staged changes for 'docs' changelist
 ```
 
-### 2.4 Stage a changelist
+### 2.4 Stage and Unstage a Changelist
+
+#### Stage a changelist
 
 ```
 git cl stage <changelist-name>
 ```
 
-- Stages all tracked files from the changelist.
-- Only files already tracked by Git will be staged. Untracked files ([??]) in the changelist are safely ignored and remain untracked unless you add them with `git add` first.
-- Changelist is deleted after staging.
+- Stages all tracked files in the changelist.
+- Untracked files ([??]) are ignored unless added with git add.
+- The changelist is deleted after staging, unless --keep is used.
   
 #### Example
 
@@ -247,6 +249,24 @@ git commit -m "Refactor docs"
 ```
 
 Tip: Run `git cl diff` first if you want to review the changes before staging.
+
+#### Unstage a changelist
+
+```
+git cl unstage <changelist-name>
+```
+
+- Unstages files from the changelist (i.e. removes them from the index).
+- Only applies to staged files — unchanged or unstaged files are ignored.
+- Files remain in the changelist and your working directory.
+
+#### Example
+
+```
+git cl unstage docs
+```
+
+This is useful when you've staged something too early and want to pull it back without losing the changelist group.
 
 ### 2.5 Commit a changelist
 
@@ -412,7 +432,8 @@ This will show all files, including those with status codes like `[UU]` (unmerge
 | View grouped status            | `git cl status` / `git cl st`                  | `git cl st`  | 
 | View all statuses, no color    | `git cl status --all --no-color`               |              |
 | Show diff for changelist(s)    | `git cl diff <name1> [<name2> ...] [--staged]` |              |
-| Stage a changelist             | `git cl stage <name> [--keep]`                 |              |
+| Stage a changelist             | `git cl stage <name> [--delete]`               |              |
+| Unstage a changelist           | `git cl unstage <name> [--delete]`             |              |
 | Commit with inline message     | `git cl commit <name> -m "Message" [--keep]`   | `git cl ci`  |
 | Commit using message from file | `git cl commit <name> -F message.txt [--keep]` |              |
 | Remove files from changelists  | `git cl remove <file1> <file2> ...`            | `git cl rm`  |

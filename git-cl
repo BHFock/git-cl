@@ -633,6 +633,66 @@ def cl_stage(args: argparse.Namespace) -> None:
         print(f"Kept changelist '{name}' (use --keep flag to preserve)")
 
 
+def cl_unstage(args: argparse.Namespace) -> None:
+    """
+    Unstages all staged files in the specified changelist, moving them back
+    to the working directory as unstaged changes.
+
+    Args:
+        args: argparse.Namespace with 'name' and 'keep' attributes.
+    """
+    changelists = clutil_load()
+    name = args.name
+    if name not in changelists:
+        print(f"Changelist '{name}' not found.")
+        return
+
+    git_root = clutil_get_git_root()
+    to_unstage = []
+
+    # Get current status to identify staged files
+    status_map = clutil_get_file_status_map(show_all=True)
+
+    for stored_path in changelists[name]:
+        # Convert stored path (relative to git root) to absolute path
+        abs_path = (git_root / stored_path).resolve()
+
+        if not abs_path.exists():
+            print(f"Warning: '{stored_path}' does not exist.")
+            continue
+
+        # Convert to path relative to current working directory for Git command
+        rel_to_cwd = os.path.relpath(abs_path, Path.cwd())
+
+        # Check if this file has staged changes
+        rel_to_git_root = abs_path.relative_to(git_root).as_posix()
+        status = status_map.get(rel_to_git_root, "  ")
+        
+        # File has staged changes if first character is not space
+        if status[0] != " ":
+            to_unstage.append(rel_to_cwd)
+
+    if not to_unstage:
+        print(f"No staged files to unstage in changelist '{name}'.")
+        return
+
+    try:
+        # Use git reset HEAD to unstage files
+        subprocess.run(["git", "reset", "HEAD", "--"] + to_unstage, check=True)
+        print(f"Unstaged files from changelist '{name}':")
+        for file in to_unstage:
+            print(f"  {file}")
+    except subprocess.CalledProcessError as error:
+        print(f"Error unstaging files: {error}")
+        return
+
+    # Only delete if --delete flag is set
+    if args.delete:
+        del changelists[name]
+        clutil_save(changelists)
+        print(f"Deleted changelist '{name}'")
+
+        
 def cl_status(args: argparse.Namespace) -> None:
     """
     Displays git status grouped by changelist membership.
@@ -1011,6 +1071,23 @@ def main() -> None:
                               help='Keep the changelist after staging')
     stage_parser.set_defaults(func=cl_stage)
 
+    # unstage
+    unstage_parser = subparsers.add_parser('unstage',
+                                           help=("Unstage tracked files from a "
+                                                 "changelist"),
+                                           description=(
+                                               "Unstage all staged files from "
+                                               "the specified changelist, moving "
+                                               "them back to unstaged state in "
+                                               "the working directory. By "
+                                               "default, the changelist is "
+                                               "kept unless --delete is used."))
+    unstage_parser.add_argument('name', metavar='CHANGELIST',
+                                help='Name of the changelist to unstage')
+    unstage_parser.add_argument('--delete', action='store_true',
+                                help='Delete the changelist after unstaging')
+    unstage_parser.set_defaults(func=cl_unstage)
+    
     # commit / ci
     commit_parser = subparsers.add_parser('commit', aliases=['ci'],
                                           help=("Commit tracked files from a "

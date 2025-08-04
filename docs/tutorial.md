@@ -236,7 +236,7 @@ git cl stage <changelist-name>
 ```
 
 - Stages all tracked files from the changelist.
-- Only files already tracked by Git will be staged. Untracked files are ignored unless you add them with `git add` first.
+- Only files already tracked by Git will be staged. Untracked files ([??]) in the changelist are safely ignored and remain untracked unless you add them with `git add` first.
 - Changelist is deleted after staging.
   
 #### Example
@@ -258,6 +258,8 @@ git cl commit <changelist-name> -F commit.txt
 - Automatically stages and commits all tracked files in the changelist — no need to `run git cl stage` or `git add` first.
 - Untracked files ([??]) are ignored unless you add them first with `git add`.
 - The changelist is deleted after commit, unless you use `--keep`.
+
+Important: This command automatically stages tracked files before committing them, so you don't need to `run git add` or `git cl stage` first. However, untracked files ([??]) in the changelists are safely ignored and will remain untracked.
 
 This allows you to commit grouped changes directly, without touching the Git staging area manually.
 

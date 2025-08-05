@@ -62,6 +62,7 @@ import sys
 import os
 import subprocess
 import fcntl
+import datetime
 from typing import Optional
 from pathlib import Path
 from contextlib import contextmanager
@@ -656,6 +657,26 @@ def clutil_check_unstash_conflicts(files: list[str], git_root: Path) -> list[str
     return modified_files
 
 
+def clutil_find_stash_by_message(message: str) -> Optional[str]:
+    """
+    Find a stash reference by its commit message.
+    
+    Args:
+        message: The stash message to search for
+        
+    Returns:
+        The stash reference (e.g. "stash@{0}") or None if not found
+    """
+    try:
+        stash_list = subprocess.check_output(["git", "stash", "list"], text=True)
+        for line in stash_list.strip().split('\n'):
+            if line and message in line:
+                return line.split(':')[0]
+    except subprocess.CalledProcessError:
+        pass
+    return None
+
+
 # =============================================================================
 # CLI COMMANDS
 # =============================================================================
@@ -1123,16 +1144,29 @@ def cl_stash(args: argparse.Namespace) -> None:
         cmd = ["git", "stash", "push", "-m", stash_message, "--"] + files_for_git
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         
-        # Get the stash reference (should be stash@{0} after creation)
-        stash_ref = "stash@{0}"
+        # Check if anything was actually stashed
+        if "No local changes to save" in result.stderr:
+            print(f"No changes to stash in changelist '{name}'.")
+            return
+        
+        # Get the actual stash reference from git stash list
+        try:
+            stash_list = subprocess.check_output(["git", "stash", "list"], text=True)
+            lines = stash_list.strip().split('\n')
+            if lines and lines[0]:
+                stash_ref = lines[0].split(':')[0]  # Extract "stash@{0}" part
+            else:
+                print("Error: Could not find created stash.")
+                return
+        except subprocess.CalledProcessError:
+            print("Error: Could not list stashes.")
+            return
         
         # Save stash metadata
         stashes[name] = {
             "stash_ref": stash_ref,
             "files": files.copy(),
-            "timestamp": subprocess.check_output(
-                ["date", "-Iseconds"], text=True
-            ).strip()
+            "timestamp": datetime.datetime.now().isoformat()
         }
         clutil_save_stashes(stashes)
         
@@ -1164,13 +1198,15 @@ def cl_unstash(args: argparse.Namespace) -> None:
     name = args.name
     
     # Handle both "name" and "name_stashed" formats
-    stash_key = name
-    if name not in stashes and f"{name}_stashed" in stashes:
-        stash_key = f"{name}_stashed"
-        name = name.rstrip("_stashed")  # Remove suffix for restored changelist
+    if name.endswith("_stashed"):
+        base_name = name[:-8]  # Remove "_stashed" suffix
+        stash_key = base_name
+    else:
+        base_name = name
+        stash_key = name
     
     if stash_key not in stashes:
-        print(f"No stashed changelist found for '{name}'.")
+        print(f"No stashed changelist found for '{base_name}'.")
         available = list(stashes.keys())
         if available:
             print("Available stashed changelists:")
@@ -1183,8 +1219,8 @@ def cl_unstash(args: argparse.Namespace) -> None:
     files = stash_data["files"]
     
     # Check if target changelist name already exists
-    if name in changelists and changelists[name]:
-        print(f"Error: Changelist '{name}' already exists with files.")
+    if base_name in changelists and changelists[base_name]:
+        print(f"Error: Changelist '{base_name}' already exists with files.")
         print("Please delete or rename the existing changelist first.")
         return
     
@@ -1197,7 +1233,7 @@ def cl_unstash(args: argparse.Namespace) -> None:
             print(f"Error: These files have been modified since stashing:")
             for file_path in modified_files:
                 print(f"  {file_path}")
-            print(f"\nUse 'git cl unstash {name} --force' to attempt merge anyway.")
+            print(f"\nUse 'git cl unstash {base_name} --force' to attempt merge anyway.")
             return
     
     # Apply the stash
@@ -1206,10 +1242,10 @@ def cl_unstash(args: argparse.Namespace) -> None:
         subprocess.run(["git", "stash", "pop", stash_ref], check=True)
         
         # Restore the changelist
-        changelists[name] = files.copy()
+        changelists[base_name] = files.copy()
         
         # Remove stashed version if it exists
-        stashed_name = f"{name}_stashed"
+        stashed_name = f"{base_name}_stashed"
         if stashed_name in changelists:
             del changelists[stashed_name]
         
@@ -1219,7 +1255,7 @@ def cl_unstash(args: argparse.Namespace) -> None:
         del stashes[stash_key]
         clutil_save_stashes(stashes)
         
-        print(f"Restored changelist '{name}' from stash")
+        print(f"Restored changelist '{base_name}' from stash")
         print(f"Restored {len(files)} file(s):")
         for file_path in files:
             print(f"  {file_path}")

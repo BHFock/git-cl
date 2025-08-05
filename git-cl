@@ -736,6 +736,29 @@ def clutil_find_stash_by_message_substring(message_substring: str) -> Optional[s
     return None
 
 
+def clutil_rollback_stash(stash_ref: str, changelist_name: str) -> bool:
+    """
+    Attempt to rollback a stash creation by dropping the stash.
+    
+    Args:
+        stash_ref: The stash reference to drop (e.g. "stash@{0}")
+        changelist_name: Name of changelist for error reporting
+        
+    Returns:
+        True if rollback succeeded, False otherwise
+    """
+    try:
+        # Attempt to drop the stash
+        subprocess.run(["git", "stash", "drop", stash_ref], 
+                      check=True, capture_output=True, text=True)
+        print(f"Rolled back stash {stash_ref} due to metadata save failure.")
+        return True
+    except subprocess.CalledProcessError as error:
+        print(f"Warning: Could not rollback stash {stash_ref}: {error}")
+        print(f"You may need to manually clean up stash for changelist '{changelist_name}'")
+        return False
+
+
 # =============================================================================
 # CLI COMMANDS
 # =============================================================================
@@ -1179,6 +1202,7 @@ def cl_stash(args: argparse.Namespace) -> None:
     """
     Stash all unstaged changes for files in the specified changelist.
     Only allows stashing if all files in the changelist are unstaged.
+    Uses atomic operations with rollback on failure.
     
     Args:
         args: argparse.Namespace with 'name' attribute.
@@ -1282,11 +1306,11 @@ def cl_stash(args: argparse.Namespace) -> None:
         rel_to_cwd = os.path.relpath(abs_path, Path.cwd())
         files_for_git.append(rel_to_cwd)
     
-    # Create the stash
+    # Create unique stash message
     stash_message = clutil_create_unique_stash_message(name)
     
+    # ATOMIC OPERATION PHASE 1: Create the git stash
     try:
-        # Use git stash push to stash only specific files
         cmd = ["git", "stash", "push", "-m", stash_message, "--"] + files_for_git
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         
@@ -1294,45 +1318,90 @@ def cl_stash(args: argparse.Namespace) -> None:
         if "No local changes to save" in result.stderr:
             print(f"Unexpected: No changes were stashed for changelist '{name}'.")
             return
-        
+            
     except subprocess.CalledProcessError as error:
         print(f"Error creating stash: {error}")
         if error.stderr:
             print(f"Git error: {error.stderr}")
         return
     
-    # Find our stash by searching for our unique message
+    # ATOMIC OPERATION PHASE 2: Find the created stash
     stash_ref = clutil_find_stash_by_message_substring(f"git-cl-stash:{name}:")
     if not stash_ref:
         print("Error: Could not locate the created stash.")
         print(f"Look for a stash with message containing 'git-cl-stash:{name}:'")
+        # Note: We don't attempt rollback here since we can't find the stash reference
         return
     
-    # Save stash metadata (this should be atomic with changelist modification)
+    # ATOMIC OPERATION PHASE 3: Save metadata and update changelists
+    # Prepare new metadata first (before any file operations)
+    new_stash_metadata = {
+        "stash_ref": stash_ref,
+        "stash_message": stash_message,
+        "files": files.copy(),
+        "timestamp": datetime.datetime.now().isoformat()
+    }
+    
+    # Make a backup of current changelists for potential rollback
+    original_changelists = changelists.copy()
+    
     try:
-        stashes[name] = {
-            "stash_ref": stash_ref,
-            "stash_message": stash_message,  # Store full message for verification
-            "files": files.copy(),
-            "timestamp": datetime.datetime.now().isoformat()
-        }
+        # Step 3a: Save stash metadata
+        stashes[name] = new_stash_metadata
         clutil_save_stashes(stashes)
         
-        # Remove the changelist from active changelists
+        # Step 3b: Remove changelist from active changelists
         del changelists[name]
         clutil_save(changelists)
         
+        # Success! All atomic operations completed
+        print(f"Successfully stashed changelist '{name}'")
+        print(f"Stashed all {len(existing_files)} file(s):")
+        for stored_path, _ in existing_files:
+            print(f"  {stored_path}")
+        print(f"Use 'git cl unstash {name}' to restore the changelist.")
+        
     except Exception as error:
-        print(f"Error saving stash metadata: {error}")
-        print(f"Stash was created as {stash_ref} but metadata wasn't saved.")
-        print("You may need to manually clean up the stash.")
+        print(f"Error during atomic operation: {error}")
+        print("Attempting to rollback changes...")
+        
+        # ROLLBACK PHASE: Attempt to restore consistent state
+        rollback_success = True
+        
+        # Try to restore stashes metadata (remove the failed entry)
+        try:
+            if name in stashes:
+                del stashes[name]
+                clutil_save_stashes(stashes)
+                print("Rolled back stash metadata.")
+            else:
+                print("Stash metadata was not saved, no rollback needed.")
+        except Exception as stash_rollback_error:
+            print(f"Warning: Could not rollback stash metadata: {stash_rollback_error}")
+            rollback_success = False
+        
+        # Try to restore original changelists
+        try:
+            # Restore the original changelists
+            clutil_save(original_changelists)
+            print("Rolled back changelist modifications.")
+        except Exception as changelist_rollback_error:
+            print(f"Warning: Could not rollback changelist changes: {changelist_rollback_error}")
+            rollback_success = False
+        
+        # Try to drop the orphaned stash
+        if not clutil_rollback_stash(stash_ref, name):
+            rollback_success = False
+        
+        if rollback_success:
+            print(f"Rollback completed successfully. Changelist '{name}' remains active.")
+        else:
+            print(f"Partial rollback failure. Manual cleanup may be required:")
+            print(f"  - Check 'git stash list' for orphaned stash: {stash_ref}")
+            print(f"  - Verify changelist '{name}' state with 'git cl status'")
+            print(f"  - Consider 'git stash drop {stash_ref}' if stash is orphaned")
+        
         return
-    
-    print(f"Successfully stashed changelist '{name}'")
-    print(f"Stashed all {len(existing_files)} file(s):")
-    for stored_path, _ in existing_files:
-        print(f"  {stored_path}")
-    print(f"Use 'git cl unstash {name}' to restore the changelist.")
 
 
 def cl_unstash(args: argparse.Namespace) -> None:

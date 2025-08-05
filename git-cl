@@ -849,6 +849,10 @@ def cl_unstage(args: argparse.Namespace) -> None:
 def cl_status(args: argparse.Namespace) -> None:
     """
     Displays git status grouped by changelist membership, including stashed changelists.
+    
+    Shows active changelists first, then a separate "Stashed Changelists" section,
+    then unassigned files. Filtering by changelist names applies only to active
+    changelists unless --include-no-cl is specified.
     """
     selected_names = set(args.names) if args.names else None
     changelists = clutil_load()
@@ -859,49 +863,76 @@ def cl_status(args: argparse.Namespace) -> None:
     use_color = clutil_should_use_color(args)
 
     assigned_files = set()
+    shown_any_active = False
 
     # Show active changelists first
     for cl_name, files in changelists.items():
+        # Skip any remaining stashed entries (cleanup from old implementation)
+        if cl_name.endswith('_stashed'):
+            continue
+            
         if selected_names is not None and cl_name not in selected_names:
             continue
-        if cl_name.endswith('_stashed'):
-            continue  # Skip, we'll show these in stashed section
-        print(f"{cl_name}:")
-        for file in files:
-            print(clutil_format_file_status(file, st_map, git_root, use_color))
-        for f in files:
-            try:
-                abs_path = (git_root / f).resolve()
-                rel_path = abs_path.relative_to(git_root).as_posix()
-                assigned_files.add(rel_path)
-            except (ValueError, OSError) as error:
-                print(f"Error resolving path: {error}")
+            
+        if files:  # Only show non-empty changelists
+            print(f"{cl_name}:")
+            shown_any_active = True
+            for file in files:
+                print(clutil_format_file_status(file, st_map, git_root, use_color))
+            
+            # Track assigned files
+            for f in files:
+                try:
+                    abs_path = (git_root / f).resolve()
+                    rel_path = abs_path.relative_to(git_root).as_posix()
+                    assigned_files.add(rel_path)
+                except (ValueError, OSError) as error:
+                    print(f"Error resolving path: {error}")
 
     # Show stashed changelists section
-    stashed_changelists = []
-    for cl_name, files in changelists.items():
-        if cl_name.endswith('_stashed'):
-            stashed_changelists.append(cl_name)
-    
-    if stashed_changelists:
-        print("\nStashed Changelists:")
-        for stashed_name in sorted(stashed_changelists):
-            base_name = stashed_name.rstrip('_stashed')
-            if base_name in stashes:
-                stash_data = stashes[base_name]
-                file_count = len(stash_data['files'])
-                timestamp = stash_data.get('timestamp', 'unknown')
-                print(f"  {stashed_name} ({file_count} files, {timestamp})")
-            else:
-                print(f"  {stashed_name} (metadata missing)")
+    if stashes and (selected_names is None):  # Only show when not filtering
+        if shown_any_active:
+            print()  # Add spacing
+        print("Stashed Changelists:")
+        
+        # Sort by timestamp (most recent first)
+        stashed_items = []
+        for stash_name, stash_data in stashes.items():
+            timestamp = stash_data.get('timestamp', '')
+            file_count = len(stash_data.get('files', []))
+            stashed_items.append((stash_name, file_count, timestamp))
+        
+        # Sort by timestamp descending (most recent first)
+        stashed_items.sort(key=lambda x: x[2], reverse=True)
+        
+        for stash_name, file_count, timestamp in stashed_items:
+            # Format timestamp for display
+            try:
+                dt = datetime.datetime.fromisoformat(timestamp)
+                formatted_time = dt.strftime("%Y-%m-%d %H:%M")
+            except (ValueError, AttributeError):
+                formatted_time = "unknown time"
+            
+            file_word = "file" if file_count == 1 else "files"
+            print(f"  {stash_name} ({file_count} {file_word}, {formatted_time})")
 
     # Show unassigned files
     if selected_names is None or args.include_no_cl:
         no_cl_files = [file for file in st_map if file not in assigned_files]
         if no_cl_files:
-            print("\nNo Changelist:")
+            if shown_any_active or stashes:
+                print()  # Add spacing
+            print("No Changelist:")
             for file in sorted(no_cl_files):
                 print(clutil_format_file_status(file, st_map, git_root, use_color))
+    
+    # Clean up any old-style stashed entries from changelists
+    old_stashed_entries = [name for name in changelists.keys() if name.endswith('_stashed')]
+    if old_stashed_entries:
+        for old_name in old_stashed_entries:
+            del changelists[old_name]
+        clutil_save(changelists)
+        print(f"\nCleaned up {len(old_stashed_entries)} old stashed changelist entries.")
 
 
 def cl_diff(args: argparse.Namespace) -> None:

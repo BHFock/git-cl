@@ -542,6 +542,120 @@ def clutil_is_file_untracked(
     return False
 
 
+def clutil_get_stash_file() -> Path:
+    """
+    Returns the path to the stash metadata file inside the Git directory.
+
+    Returns:
+        Path: Path to the '.git/cl-stashes.json' file.
+    """
+    git_dir = Path(subprocess.check_output(
+        ["git", "rev-parse", "--git-dir"],
+        stderr=subprocess.DEVNULL,
+        text=True
+    ).strip())
+    return git_dir / "cl-stashes.json"
+
+
+def clutil_load_stashes() -> dict[str, dict]:
+    """
+    Loads stash metadata from the 'cl-stashes.json' file.
+
+    Returns:
+        dict: A mapping of stashed changelist names to their metadata.
+    """
+    stash_file = clutil_get_stash_file()
+    lock_file = stash_file.with_suffix('.lock')
+    if stash_file.exists():
+        with clutil_file_lock(lock_file):
+            try:
+                with open(stash_file, "r", encoding="utf-8") as file_handle:
+                    return json.load(file_handle)
+            except (json.JSONDecodeError, OSError) as error:
+                print(f"Error reading stash metadata: {error}")
+                return {}
+    return {}
+
+
+def clutil_save_stashes(data: dict[str, dict]) -> None:
+    """
+    Saves the stash metadata to 'cl-stashes.json'.
+
+    Args:
+        data (dict): Mapping of stashed changelist names to metadata.
+    """
+    stash_file = clutil_get_stash_file()
+    lock_file = stash_file.with_suffix('.lock')
+    with clutil_file_lock(lock_file):
+        try:
+            with open(stash_file, "w", encoding="utf-8") as file_handle:
+                json.dump(data, file_handle, indent=2)
+        except OSError as error:
+            print(f"Error saving stash metadata: {error}")
+
+
+def clutil_check_files_unstaged(files: list[str], git_root: Path) -> tuple[list[str], list[str]]:
+    """
+    Check which files in the list have staged vs unstaged changes.
+    
+    Args:
+        files: List of file paths relative to git root
+        git_root: Path to git repository root
+        
+    Returns:
+        tuple: (unstaged_files, staged_files) - files that can/cannot be stashed
+    """
+    status_map = clutil_get_file_status_map(show_all=True)
+    
+    unstaged_files = []
+    staged_files = []
+    
+    for file_path in files:
+        abs_path = (git_root / file_path).resolve()
+        if not abs_path.exists():
+            continue
+            
+        rel_to_git_root = abs_path.relative_to(git_root).as_posix()
+        status = status_map.get(rel_to_git_root, "  ")
+        
+        # Check if file has staged changes (first character is not space)
+        if status[0] != " ":
+            staged_files.append(file_path)
+        else:
+            unstaged_files.append(file_path)
+    
+    return unstaged_files, staged_files
+
+
+def clutil_check_unstash_conflicts(files: list[str], git_root: Path) -> list[str]:
+    """
+    Check which files have been modified since stashing.
+    
+    Args:
+        files: List of file paths relative to git root
+        git_root: Path to git repository root
+        
+    Returns:
+        list: Files that have changes and might conflict
+    """
+    status_map = clutil_get_file_status_map(show_all=True)
+    modified_files = []
+    
+    for file_path in files:
+        abs_path = (git_root / file_path).resolve()
+        if not abs_path.exists():
+            continue
+            
+        rel_to_git_root = abs_path.relative_to(git_root).as_posix()
+        status = status_map.get(rel_to_git_root, "  ")
+        
+        # File has changes if either staged or unstaged (not "  ")
+        if status != "  ":
+            modified_files.append(file_path)
+    
+    return modified_files
+
+
 # =============================================================================
 # CLI COMMANDS
 # =============================================================================
@@ -550,19 +664,18 @@ def clutil_is_file_untracked(
 def cl_add(args: argparse.Namespace) -> None:
     """
     Adds one or more files to the specified changelist, creating it if needed.
-
-    Args:
-        args: argparse.Namespace with 'name' and 'files' attributes.
+    Prevents adding files that are in stashed changelists.
     """
     if not clutil_validate_name(args.name):
         print(
             f"Error: Invalid changelist name '{args.name}'. Names cannot "
             "contain special characters or be Git reserved words.")
         return
+    
     changelists = clutil_load()
-
-    # Always store paths relative to the Git root
+    stashes = clutil_load_stashes()
     git_root = clutil_get_git_root()
+    
     files = []
     for file in args.files:
         sanitized = clutil_sanitize_path(file, git_root)
@@ -571,14 +684,31 @@ def cl_add(args: argparse.Namespace) -> None:
         else:
             print(f"Warning: Skipping invalid or unsafe path: '{file}'")
 
+    # Check if any files are in stashed changelists
+    blocked_files = []
+    for file_path in files:
+        for stash_name, stash_data in stashes.items():
+            if file_path in stash_data['files']:
+                blocked_files.append((file_path, stash_name))
+    
+    if blocked_files:
+        print("Error: Cannot add files that are in stashed changelists:")
+        for file_path, stash_name in blocked_files:
+            print(f"  {file_path} (in stashed changelist '{stash_name}')")
+        print("Unstash the changelist first if you want to modify it.")
+        return
+
     if args.name not in changelists:
         changelists[args.name] = []
+    
     for file in files:
+        # Remove from other active changelists
         for clist in changelists.values():
             if file in clist:
                 clist.remove(file)
         if file not in changelists[args.name]:
             changelists[args.name].append(file)
+    
     clutil_save(changelists)
     print(f"Added to '{args.name}': {files}")
 
@@ -697,28 +827,11 @@ def cl_unstage(args: argparse.Namespace) -> None:
 
 def cl_status(args: argparse.Namespace) -> None:
     """
-    Displays git status grouped by changelist membership.
-
-    If no changelists are specified, shows all changelists plus files
-    not assigned to any changelist ("No Changelist").
-
-    If one or more changelist names are given as arguments, limits output
-    to those changelists only. By default, unassigned files are not shown
-    in this mode unless --include-no-cl is also specified.
-
-    By default, only files with 'interesting' status codes (e.g., modified,
-    added, deleted) are shown. Use --all to also include files with other
-    status codes such as merge conflicts, unmerged files, or other special
-    states reported by git status.
-
-    Color output is disabled if:
-    - The --no-color flag is used
-    - The NO_COLOR environment variable is set (any non-empty value)
-    - colorama is not available
-    - Output is not going to a terminal (TTY)
+    Displays git status grouped by changelist membership, including stashed changelists.
     """
     selected_names = set(args.names) if args.names else None
     changelists = clutil_load()
+    stashes = clutil_load_stashes()
     git_root = clutil_get_git_root()
     st_map = clutil_get_file_status_map(show_all=args.all)
 
@@ -726,9 +839,12 @@ def cl_status(args: argparse.Namespace) -> None:
 
     assigned_files = set()
 
+    # Show active changelists first
     for cl_name, files in changelists.items():
         if selected_names is not None and cl_name not in selected_names:
             continue
+        if cl_name.endswith('_stashed'):
+            continue  # Skip, we'll show these in stashed section
         print(f"{cl_name}:")
         for file in files:
             print(clutil_format_file_status(file, st_map, git_root, use_color))
@@ -740,13 +856,31 @@ def cl_status(args: argparse.Namespace) -> None:
             except (ValueError, OSError) as error:
                 print(f"Error resolving path: {error}")
 
+    # Show stashed changelists section
+    stashed_changelists = []
+    for cl_name, files in changelists.items():
+        if cl_name.endswith('_stashed'):
+            stashed_changelists.append(cl_name)
+    
+    if stashed_changelists:
+        print("\nStashed Changelists:")
+        for stashed_name in sorted(stashed_changelists):
+            base_name = stashed_name.rstrip('_stashed')
+            if base_name in stashes:
+                stash_data = stashes[base_name]
+                file_count = len(stash_data['files'])
+                timestamp = stash_data.get('timestamp', 'unknown')
+                print(f"  {stashed_name} ({file_count} files, {timestamp})")
+            else:
+                print(f"  {stashed_name} (metadata missing)")
+
+    # Show unassigned files
     if selected_names is None or args.include_no_cl:
         no_cl_files = [file for file in st_map if file not in assigned_files]
         if no_cl_files:
-            print("No Changelist:")
+            print("\nNo Changelist:")
             for file in sorted(no_cl_files):
-                print(clutil_format_file_status(file, st_map, git_root,
-                                                use_color))
+                print(clutil_format_file_status(file, st_map, git_root, use_color))
 
 
 def cl_diff(args: argparse.Namespace) -> None:
@@ -928,6 +1062,173 @@ def cl_commit(args: argparse.Namespace) -> None:
         print(f"Deleted changelist '{name}'")
     else:
         print(f"Kept changelist '{name}' (use --keep flag to preserve)")
+
+
+def cl_stash(args: argparse.Namespace) -> None:
+    """
+    Stash all unstaged changes for files in the specified changelist.
+    Only allows stashing if all files in the changelist are unstaged.
+    
+    Args:
+        args: argparse.Namespace with 'name' attribute.
+    """
+    changelists = clutil_load()
+    stashes = clutil_load_stashes()
+    name = args.name
+    
+    if name not in changelists:
+        print(f"Changelist '{name}' not found.")
+        return
+    
+    # Check if changelist is already stashed
+    if name in stashes:
+        print(f"Changelist '{name}' is already stashed. Use 'git cl unstash {name}' first.")
+        return
+    
+    git_root = clutil_get_git_root()
+    files = changelists[name]
+    
+    if not files:
+        print(f"Changelist '{name}' is empty.")
+        return
+    
+    # Check that all files are unstaged
+    unstaged_files, staged_files = clutil_check_files_unstaged(files, git_root)
+    
+    if staged_files:
+        print(f"Error: Cannot stash changelist '{name}' because these files have staged changes:")
+        for file_path in staged_files:
+            print(f"  {file_path}")
+        print("Please unstage the files first or commit them separately.")
+        return
+    
+    # Convert file paths to relative-to-cwd for git command
+    files_for_git = []
+    for stored_path in files:
+        abs_path = (git_root / stored_path).resolve()
+        if abs_path.exists():
+            rel_to_cwd = os.path.relpath(abs_path, Path.cwd())
+            files_for_git.append(rel_to_cwd)
+        else:
+            print(f"Warning: '{stored_path}' does not exist, skipping.")
+    
+    if not files_for_git:
+        print(f"No valid files to stash in changelist '{name}'.")
+        return
+    
+    # Create the stash
+    stash_message = f"git-cl: stash for changelist '{name}'"
+    try:
+        # Use git stash push to stash only specific files
+        cmd = ["git", "stash", "push", "-m", stash_message, "--"] + files_for_git
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        
+        # Get the stash reference (should be stash@{0} after creation)
+        stash_ref = "stash@{0}"
+        
+        # Save stash metadata
+        stashes[name] = {
+            "stash_ref": stash_ref,
+            "files": files.copy(),
+            "timestamp": subprocess.check_output(
+                ["date", "-Iseconds"], text=True
+            ).strip()
+        }
+        clutil_save_stashes(stashes)
+        
+        # Remove the changelist and rename it to stashed version
+        del changelists[name]
+        changelists[f"{name}_stashed"] = []  # Empty list to show in status
+        clutil_save(changelists)
+        
+        print(f"Stashed changelist '{name}' as '{name}_stashed'")
+        print(f"Stashed {len(files_for_git)} file(s):")
+        for file_path in files_for_git:
+            print(f"  {file_path}")
+            
+    except subprocess.CalledProcessError as error:
+        print(f"Error creating stash: {error}")
+        if error.stderr:
+            print(f"Git error: {error.stderr}")
+
+
+def cl_unstash(args: argparse.Namespace) -> None:
+    """
+    Restore a stashed changelist to the working directory.
+    
+    Args:
+        args: argparse.Namespace with 'name' and optional 'force' attributes.
+    """
+    stashes = clutil_load_stashes()
+    changelists = clutil_load()
+    name = args.name
+    
+    # Handle both "name" and "name_stashed" formats
+    stash_key = name
+    if name not in stashes and f"{name}_stashed" in stashes:
+        stash_key = f"{name}_stashed"
+        name = name.rstrip("_stashed")  # Remove suffix for restored changelist
+    
+    if stash_key not in stashes:
+        print(f"No stashed changelist found for '{name}'.")
+        available = list(stashes.keys())
+        if available:
+            print("Available stashed changelists:")
+            for stashed_name in available:
+                print(f"  {stashed_name}")
+        return
+    
+    stash_data = stashes[stash_key]
+    stash_ref = stash_data["stash_ref"]
+    files = stash_data["files"]
+    
+    # Check if target changelist name already exists
+    if name in changelists and changelists[name]:
+        print(f"Error: Changelist '{name}' already exists with files.")
+        print("Please delete or rename the existing changelist first.")
+        return
+    
+    git_root = clutil_get_git_root()
+    
+    # Check for conflicts unless --force is used
+    if not getattr(args, 'force', False):
+        modified_files = clutil_check_unstash_conflicts(files, git_root)
+        if modified_files:
+            print(f"Error: These files have been modified since stashing:")
+            for file_path in modified_files:
+                print(f"  {file_path}")
+            print(f"\nUse 'git cl unstash {name} --force' to attempt merge anyway.")
+            return
+    
+    # Apply the stash
+    try:
+        # Pop the specific stash
+        subprocess.run(["git", "stash", "pop", stash_ref], check=True)
+        
+        # Restore the changelist
+        changelists[name] = files.copy()
+        
+        # Remove stashed version if it exists
+        stashed_name = f"{name}_stashed"
+        if stashed_name in changelists:
+            del changelists[stashed_name]
+        
+        clutil_save(changelists)
+        
+        # Remove from stash metadata
+        del stashes[stash_key]
+        clutil_save_stashes(stashes)
+        
+        print(f"Restored changelist '{name}' from stash")
+        print(f"Restored {len(files)} file(s):")
+        for file_path in files:
+            print(f"  {file_path}")
+            
+    except subprocess.CalledProcessError as error:
+        print(f"Error applying stash: {error}")
+        print("The stash was not removed. You may need to resolve conflicts manually.")
+        print(f"Try: git stash show {stash_ref}")
+        print(f"Or: git stash drop {stash_ref}")
 
 
 def cl_help(args: argparse.Namespace) -> None:
@@ -1116,6 +1417,36 @@ def main() -> None:
     commit_parser.add_argument('--keep', action='store_true',
                                help='Keep the changelist after committing')
     commit_parser.set_defaults(func=cl_commit)
+
+    # stash
+    stash_parser = subparsers.add_parser('stash',
+                                         help='Stash changes in a changelist',
+                                         description=(
+                                             "Stash all unstaged changes for files "
+                                             "in the specified changelist. Only "
+                                             "files with unstaged changes can be "
+                                             "stashed. The changelist will be "
+                                             "renamed to 'name_stashed' and shown "
+                                             "in git cl status."))
+    stash_parser.add_argument('name', metavar='CHANGELIST',
+                              help='Name of the changelist to stash')
+    stash_parser.set_defaults(func=cl_stash)
+
+    # unstash
+    unstash_parser = subparsers.add_parser('unstash',
+                                           help='Restore a stashed changelist',
+                                           description=(
+                                               "Restore a previously stashed "
+                                               "changelist to the working directory. "
+                                               "If any files have been modified since "
+                                               "stashing, use --force to attempt "
+                                               "automatic merging."))
+    unstash_parser.add_argument('name', metavar='CHANGELIST',
+                                help=('Name of the changelist to unstash '
+                                      '(with or without _stashed suffix)'))
+    unstash_parser.add_argument('--force', action='store_true',
+                                help='Force unstash even if files have changed')
+    unstash_parser.set_defaults(func=cl_unstash)
 
     # help command
     help_parser = subparsers.add_parser('help',

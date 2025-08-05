@@ -1143,27 +1143,52 @@ def cl_stash(args: argparse.Namespace) -> None:
         print("Please unstage the files first using 'git cl unstage' or commit them separately.")
         return
     
-    # Pre-validation Step 6: Check if there are actually any changes to stash
+    # Pre-validation Step 6: Check that ALL files have unstaged changes (stashable)
     status_map = clutil_get_file_status_map(show_all=True)
-    files_with_changes = []
+    files_with_unstaged_changes = []
+    files_without_changes = []
+    untracked_files = []
+    
     for stored_path, abs_path in existing_files:
         rel_to_git_root = abs_path.relative_to(git_root).as_posix()
         status = status_map.get(rel_to_git_root, "  ")
-        # File has unstaged changes if second character is not space (and not untracked)
-        if status != "  " and status != "??":
-            files_with_changes.append(stored_path)
+        
+        if status == "??":
+            # Untracked files can't be stashed
+            untracked_files.append(stored_path)
+        elif status[1] != " ":
+            # Second character != space means unstaged changes
+            files_with_unstaged_changes.append(stored_path)
+        else:
+            # Clean files or only staged changes
+            files_without_changes.append(stored_path)
     
-    if not files_with_changes:
-        print(f"No changes to stash in changelist '{name}' - all files are clean.")
+    # Report untracked files
+    if untracked_files:
+        print(f"Error: Cannot stash changelist '{name}' because these files are untracked:")
+        for file_path in untracked_files:
+            print(f"  {file_path}")
+        print("Untracked files cannot be stashed. Add them to git first or remove from changelist.")
         return
     
-    # All pre-validation passed - proceed with stashing
-    print(f"Stashing {len(files_with_changes)} file(s) with changes from changelist '{name}'...")
+    # Report files without unstaged changes
+    if files_without_changes:
+        print(f"Error: Cannot stash changelist '{name}' because these files have no unstaged changes:")
+        for file_path in files_without_changes:
+            status = status_map.get((git_root / file_path).resolve().relative_to(git_root).as_posix(), "  ")
+            if status == "  ":
+                print(f"  {file_path} (clean)")
+            else:
+                print(f"  {file_path} (only staged changes)")
+        print("All files in the changelist must have unstaged changes to be stashed.")
+        return
     
-    # Convert file paths to relative-to-cwd for git command (only files with changes)
+    # All files have unstaged changes - proceed with stashing
+    print(f"Stashing all {len(files_with_unstaged_changes)} file(s) from changelist '{name}'...")
+    
+    # Convert all file paths to relative-to-cwd for git command
     files_for_git = []
-    for stored_path in files_with_changes:
-        abs_path = (git_root / stored_path).resolve()
+    for stored_path, abs_path in existing_files:
         rel_to_cwd = os.path.relpath(abs_path, Path.cwd())
         files_for_git.append(rel_to_cwd)
     
@@ -1218,9 +1243,9 @@ def cl_stash(args: argparse.Namespace) -> None:
         return
     
     print(f"Successfully stashed changelist '{name}'")
-    print(f"Stashed {len(files_with_changes)} file(s) with changes:")
-    for file_path in files_with_changes:
-        print(f"  {file_path}")
+    print(f"Stashed all {len(existing_files)} file(s):")
+    for stored_path, _ in existing_files:
+        print(f"  {stored_path}")
     print(f"Use 'git cl unstash {name}' to restore the changelist.")
 
 

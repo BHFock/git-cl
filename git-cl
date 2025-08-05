@@ -677,6 +677,65 @@ def clutil_find_stash_by_message(message: str) -> Optional[str]:
     return None
 
 
+def clutil_create_unique_stash_message(changelist_name: str) -> str:
+    """
+    Create a unique stash message that includes changelist name and timestamp.
+    This helps identify our stashes even when mixed with user-created stashes.
+    
+    Args:
+        changelist_name: Name of the changelist being stashed
+        
+    Returns:
+        Unique stash message string
+    """
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    return f"git-cl-stash:{changelist_name}:{timestamp}"
+
+
+def clutil_parse_stash_message(stash_message: str) -> Optional[tuple[str, str]]:
+    """
+    Parse our stash message format to extract changelist name and timestamp.
+    
+    Args:
+        stash_message: The stash message to parse
+        
+    Returns:
+        Tuple of (changelist_name, timestamp) or None if not our format
+    """
+    if stash_message.startswith("git-cl-stash:"):
+        try:
+            parts = stash_message.split(":")
+            if len(parts) >= 3:
+                changelist_name = parts[1]
+                timestamp = parts[2]
+                return changelist_name, timestamp
+        except (IndexError, ValueError):
+            pass
+    return None
+
+
+def clutil_find_stash_by_message_substring(message_substring: str) -> Optional[str]:
+    """
+    Find a stash reference by searching for a substring in stash messages.
+    
+    Args:
+        message_substring: Part of the stash message to search for
+        
+    Returns:
+        The stash reference (e.g. "stash@{2}") or None if not found
+    """
+    try:
+        stash_list = subprocess.check_output(["git", "stash", "list"], text=True)
+        for line in stash_list.strip().split('\n'):
+            if line and message_substring in line:
+                # Extract stash reference from format: "stash@{0}: WIP on main: abc1234 message"
+                stash_ref = line.split(':')[0].strip()
+                return stash_ref
+    except subprocess.CalledProcessError:
+        pass
+    return None
+
+
 # =============================================================================
 # CLI COMMANDS
 # =============================================================================
@@ -1224,7 +1283,8 @@ def cl_stash(args: argparse.Namespace) -> None:
         files_for_git.append(rel_to_cwd)
     
     # Create the stash
-    stash_message = f"git-cl: stash for changelist '{name}'"
+    stash_message = clutil_create_unique_stash_message(name)
+    
     try:
         # Use git stash push to stash only specific files
         cmd = ["git", "stash", "push", "-m", stash_message, "--"] + files_for_git
@@ -1241,23 +1301,18 @@ def cl_stash(args: argparse.Namespace) -> None:
             print(f"Git error: {error.stderr}")
         return
     
-    # Get the actual stash reference from git stash list
-    try:
-        stash_list = subprocess.check_output(["git", "stash", "list"], text=True)
-        lines = stash_list.strip().split('\n')
-        if lines and lines[0]:
-            stash_ref = lines[0].split(':')[0]  # Extract "stash@{0}" part
-        else:
-            print("Error: Could not find created stash.")
-            return
-    except subprocess.CalledProcessError:
-        print("Error: Could not list stashes.")
+    # Find our stash by searching for our unique message
+    stash_ref = clutil_find_stash_by_message_substring(f"git-cl-stash:{name}:")
+    if not stash_ref:
+        print("Error: Could not locate the created stash.")
+        print(f"Look for a stash with message containing 'git-cl-stash:{name}:'")
         return
     
     # Save stash metadata (this should be atomic with changelist modification)
     try:
         stashes[name] = {
             "stash_ref": stash_ref,
+            "stash_message": stash_message,  # Store full message for verification
             "files": files.copy(),
             "timestamp": datetime.datetime.now().isoformat()
         }

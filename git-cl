@@ -469,9 +469,13 @@ def clutil_read_commit_message_file(file_path: str) -> str:
         if not path.is_file():
             raise OSError(f"Path is not a file: {file_path}")
 
+        # Reasonable size limit for commit messages (generous 64KB)
+        if path.stat().st_size > 64 * 1024:
+            raise ValueError("Commit message file too large (>64KB)")
+
         # Read the file
         with open(path, 'r', encoding='utf-8') as f:
-            content = f.read()
+            content = f.read(64 * 1024)  # Enforce the same limit
 
     except (OSError, UnicodeDecodeError) as error:
         raise OSError(f"Cannot read file: {error}") from error

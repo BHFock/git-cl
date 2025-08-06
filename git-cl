@@ -1668,7 +1668,8 @@ def cl_stash(args: argparse.Namespace) -> None:
             else:
                 print("Stash metadata was not saved, no rollback needed.")
 
-        except (OSError, subprocess.CalledProcessError, json.JSONDecodeError) as stash_rollback_error:
+        except (OSError, subprocess.CalledProcessError,
+                json.JSONDecodeError) as stash_rollback_error:
             print(f"Warning: Could not rollback stash metadata: {stash_rollback_error}")
             rollback_success = False
 
@@ -1677,7 +1678,8 @@ def cl_stash(args: argparse.Namespace) -> None:
             clutil_save(original_changelists)
             print("Rolled back changelist modifications.")
 
-        except (OSError, subprocess.CalledProcessError, json.JSONDecodeError) as changelist_rollback_error:
+        except (OSError, subprocess.CalledProcessError,
+                json.JSONDecodeError) as changelist_rollback_error:
             print(f"Warning: Could not rollback changelist changes: {changelist_rollback_error}")
             rollback_success = False
 

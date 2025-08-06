@@ -927,7 +927,7 @@ def cl_commit(args: argparse.Namespace) -> None:
         clutil_save(changelists)
         print(f"Deleted changelist '{name}'")
     else:
-        print(f"Kept changelist '{name}' (use --keep flag to preserve)")
+        print(f"Kept changelist '{name}'")
 
 
 def cl_help(args: argparse.Namespace) -> None:

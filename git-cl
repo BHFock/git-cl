@@ -631,19 +631,19 @@ def clutil_check_files_unstaged(files: list[str], git_root: Path) -> tuple[list[
 def clutil_check_unstash_conflicts_optimized(files: list[str], git_root: Path) -> tuple[list[str], dict[str, str]]:
     """
     Check for conflicts optimized for the stash-branch-unstash workflow.
-    
+
     In the intended workflow:
     1. Stash changelists → clean working directory
-    2. Create/switch to feature branch  
+    2. Create/switch to feature branch
     3. Unstash specific changelist → should be conflict-free
-    
+
     This function focuses on detecting only the conflicts that actually matter
     in this workflow, rather than being overly conservative.
-    
+
     Args:
         files: List of file paths relative to git root that were stashed
         git_root: Path to git repository root
-        
+
     Returns:
         tuple: (real_conflicts, file_status_info) where:
         - real_conflicts: Files that will actually prevent unstashing
@@ -652,28 +652,28 @@ def clutil_check_unstash_conflicts_optimized(files: list[str], git_root: Path) -
     status_map = clutil_get_file_status_map(show_all=True)
     real_conflicts = []
     file_status_info = {}
-    
+
     for file_path in files:
         abs_path = (git_root / file_path).resolve()
-        
+
         if not abs_path.exists():
             # File doesn't exist - this is actually GOOD for unstashing
             # The stash will restore it without conflict
             file_status_info[file_path] = "missing (will be restored)"
             continue
-            
+
         rel_to_git_root = abs_path.relative_to(git_root).as_posix()
         status = status_map.get(rel_to_git_root, "  ")
-        
+
         # Analyze what would actually prevent unstashing
         staged, unstaged = status[0], status[1]
-        
+
         if status == "??":
             # Untracked file exists where stash wants to restore a file
             # This is a real conflict - git stash pop will fail
             real_conflicts.append(file_path)
             file_status_info[file_path] = "untracked file blocking stash restoration"
-            
+
         elif unstaged in ['M', 'D']:
             # Working directory modifications that would conflict with stash pop
             real_conflicts.append(file_path)
@@ -681,7 +681,7 @@ def clutil_check_unstash_conflicts_optimized(files: list[str], git_root: Path) -
                 file_status_info[file_path] = "modified in working directory"
             else:  # 'D'
                 file_status_info[file_path] = "deleted in working directory"
-                
+
         elif staged in ['A', 'M', 'D', 'R']:
             # Staged changes - these usually don't conflict with stash pop
             # but we should inform the user
@@ -693,31 +693,31 @@ def clutil_check_unstash_conflicts_optimized(files: list[str], git_root: Path) -
                 file_status_info[file_path] = "staged for deletion (safe)"
             elif staged == 'R':
                 file_status_info[file_path] = "staged rename (safe)"
-                
+
         else:
             # File is clean - perfect for unstashing
             file_status_info[file_path] = "clean (ready for unstash)"
-    
+
     return real_conflicts, file_status_info
 
 
 def clutil_suggest_workflow_actions(conflicting_files: list[str], file_status_info: dict[str, str]) -> None:
     """
     Provide workflow-specific suggestions for resolving conflicts.
-    
+
     Args:
         conflicting_files: Files that have real conflicts
         file_status_info: Status information for all files
     """
     if not conflicting_files:
         return
-        
+
     print("Workflow suggestions to resolve conflicts:")
-    
+
     untracked_conflicts = []
     modified_conflicts = []
     deleted_conflicts = []
-    
+
     for file_path in conflicting_files:
         status_desc = file_status_info[file_path]
         if "untracked" in status_desc:
@@ -726,13 +726,13 @@ def clutil_suggest_workflow_actions(conflicting_files: list[str], file_status_in
             modified_conflicts.append(file_path)
         elif "deleted in working" in status_desc:
             deleted_conflicts.append(file_path)
-    
+
     if untracked_conflicts:
         print(f"\n  Untracked files blocking stash restoration:")
         for file_path in untracked_conflicts:
             print(f"    {file_path}")
         print(f"  → Solution: Move, rename, or delete these untracked files")
-        
+
     if modified_conflicts:
         print(f"\n  Working directory modifications:")
         for file_path in modified_conflicts:
@@ -740,7 +740,7 @@ def clutil_suggest_workflow_actions(conflicting_files: list[str], file_status_in
         print(f"  → Solution: Stage/commit these changes or revert them")
         print(f"    git add {' '.join(modified_conflicts)} && git commit -m 'Save current work'")
         print(f"    # OR: git checkout -- {' '.join(modified_conflicts)}")
-        
+
     if deleted_conflicts:
         print(f"\n  Files deleted in working directory:")
         for file_path in deleted_conflicts:
@@ -753,12 +753,12 @@ def clutil_suggest_workflow_actions(conflicting_files: list[str], file_status_in
 def clutil_get_current_branch() -> Optional[str]:
     """
     Get the name of the current Git branch.
-    
+
     Returns:
         Branch name or None if not on a branch (detached HEAD)
     """
     try:
-        result = subprocess.run(["git", "branch", "--show-current"], 
+        result = subprocess.run(["git", "branch", "--show-current"],
                               capture_output=True, text=True, check=True)
         branch = result.stdout.strip()
         return branch if branch else None
@@ -769,10 +769,10 @@ def clutil_get_current_branch() -> Optional[str]:
 def clutil_get_stash_source_branch(stash_data: dict) -> Optional[str]:
     """
     Extract the branch name from stash metadata if stored.
-    
+
     Args:
         stash_data: Stash metadata dictionary
-        
+
     Returns:
         Branch name or None if not available
     """
@@ -1324,78 +1324,78 @@ def cl_stash(args: argparse.Namespace) -> None:
     Stash all unstaged changes for files in specified changelist(s).
     Supports --all to stash all active changelists.
     Tracks source branch for better workflow support.
-    
+
     Accepts files with:
     - Unstaged changes (modified, deleted)
     - Newly added to index (staged additions)
     - Untracked files (if explicitly in changelist)
-    
+
     Args:
         args: argparse.Namespace with 'name' (or None for --all), 'all' attributes.
     """
     changelists = clutil_load()
     stashes = clutil_load_stashes()
-    
+
     # Handle --all flag
     if getattr(args, 'all', False):
         if not changelists:
             print("No active changelists found.")
             return
-        
+
         # Get current branch for tracking
         current_branch = clutil_get_current_branch()
-        
+
         print(f"Stashing all active changelists from branch '{current_branch or 'detached HEAD'}':")
         success_count = 0
-        
+
         # Sort changelists by name for predictable order
         sorted_changelists = sorted(changelists.items())
-        
+
         for cl_name, files in sorted_changelists:
             if not files:  # Skip empty changelists
                 continue
-                
+
             print(f"\n--- Stashing '{cl_name}' ---")
             # Create a temporary args object for individual stash
             temp_args = argparse.Namespace()
             temp_args.name = cl_name
             temp_args.all = False
-            
+
             try:
                 cl_stash(temp_args)
                 success_count += 1
             except Exception as error:
                 print(f"Failed to stash '{cl_name}': {error}")
                 continue
-        
+
         print(f"\nStashed {success_count}/{len([cl for cl, files in sorted_changelists if files])} changelists successfully.")
         if success_count > 0:
             print("Working directory should now be clean for branch operations.")
             print("Use 'git cl unstash <changelist>' to restore individual changelists to feature branches.")
         return
-    
+
     # Handle single changelist stash
     name = args.name
-    
+
     # Pre-validation Step 1: Check if changelist exists
     if name not in changelists:
         print(f"Changelist '{name}' not found.")
         return
-    
+
     # Pre-validation Step 2: Check if changelist is already stashed
     if name in stashes:
         print(f"Changelist '{name}' is already stashed.")
         print(f"Use 'git cl unstash {name}' to restore it first.")
         return
-    
+
     git_root = clutil_get_git_root()
     files = changelists[name]
-    
+
     # Pre-validation Step 3: Check if changelist is empty
     if not files:
         print(f"Changelist '{name}' is empty - nothing to stash.")
         return
-    
+
     # Pre-validation Step 4: Check that all files exist (for non-untracked files)
     missing_files = []
     existing_files = []
@@ -1406,10 +1406,10 @@ def cl_stash(args: argparse.Namespace) -> None:
             missing_files.append(stored_path)
         else:
             existing_files.append((stored_path, abs_path))
-    
+
     # Pre-validation Step 5: Check file statuses and categorize
     status_map = clutil_get_file_status_map(show_all=True)
-    
+
     stashable_files = []
     unstashable_files = []
     file_categories = {
@@ -1420,13 +1420,13 @@ def cl_stash(args: argparse.Namespace) -> None:
         'clean_files': [],          # Clean files (not stashable)
         'staged_modifications': []   # Files with only staged changes (not stashable)
     }
-    
+
     # Process existing files
     for stored_path, abs_path in existing_files:
         rel_to_git_root = abs_path.relative_to(git_root).as_posix()
         status = status_map.get(rel_to_git_root, "  ")
         staged, unstaged = status[0], status[1]
-        
+
         if status == "??":
             # Untracked files - stashable since they're explicitly in changelist
             file_categories['untracked'].append(stored_path)
@@ -1457,13 +1457,13 @@ def cl_stash(args: argparse.Namespace) -> None:
                 # Only staged component - not stashable
                 file_categories['staged_modifications'].append(stored_path)
                 unstashable_files.append(stored_path)
-    
+
     # Process missing files (potential deletions)
     for stored_path in missing_files:
         # Check if this is a deletion by looking at git status
         rel_to_git_root = stored_path  # stored_path is already relative to git root
         status = status_map.get(rel_to_git_root, "  ")
-        
+
         if status[1] == 'D':  # Deleted in working directory
             file_categories['deleted_files'].append(stored_path)
             stashable_files.append(stored_path)
@@ -1471,7 +1471,7 @@ def cl_stash(args: argparse.Namespace) -> None:
             # File just doesn't exist and git doesn't know about it
             print(f"Warning: File '{stored_path}' does not exist and is not tracked.")
             unstashable_files.append(stored_path)
-    
+
     # Report what we found
     if file_categories['unstaged_changes']:
         print(f"Files with unstaged changes: {len(file_categories['unstaged_changes'])}")
@@ -1481,44 +1481,44 @@ def cl_stash(args: argparse.Namespace) -> None:
         print(f"Untracked files: {len(file_categories['untracked'])}")
     if file_categories['deleted_files']:
         print(f"Deleted files: {len(file_categories['deleted_files'])}")
-    
+
     # Check for unstashable files and report
     if unstashable_files:
         print(f"\nError: Cannot stash changelist '{name}' because these files are not stashable:")
-        
+
         if file_categories['clean_files']:
             print("  Clean files (no changes):")
             for file_path in file_categories['clean_files']:
                 print(f"    {file_path}")
-        
+
         if file_categories['staged_modifications']:
             print("  Files with only staged changes (use 'git stash --staged' manually if needed):")
             for file_path in file_categories['staged_modifications']:
                 print(f"    {file_path}")
-        
-        other_unstashable = [f for f in unstashable_files 
-                           if f not in file_categories['clean_files'] 
+
+        other_unstashable = [f for f in unstashable_files
+                           if f not in file_categories['clean_files']
                            and f not in file_categories['staged_modifications']]
         if other_unstashable:
             print("  Other non-stashable files:")
             for file_path in other_unstashable:
                 print(f"    {file_path}")
-        
+
         print("\nStashable files must have:")
         print("  - Unstaged changes (modified/deleted)")
         print("  - Be newly added to index")
         print("  - Be untracked (if explicitly in changelist)")
         return
-    
+
     if not stashable_files:
         print(f"No stashable files found in changelist '{name}'.")
         return
-    
+
     # Prepare files for git stash command
     current_branch = clutil_get_current_branch()
     branch_info = f" from branch '{current_branch}'" if current_branch else " from detached HEAD"
     print(f"\nStashing {len(stashable_files)} file(s) from changelist '{name}'{branch_info}...")
-    
+
     # Convert file paths for git command
     files_for_git = []
     for stored_path in stashable_files:
@@ -1530,7 +1530,7 @@ def cl_stash(args: argparse.Namespace) -> None:
             # For deleted files, we still need to pass the path
             rel_to_cwd = os.path.relpath(git_root / stored_path, Path.cwd())
             files_for_git.append(rel_to_cwd)
-    
+
     # Handle untracked files specially - they need to be added to git first for stashing
     untracked_files_for_git = []
     if file_categories['untracked']:
@@ -1539,24 +1539,24 @@ def cl_stash(args: argparse.Namespace) -> None:
             abs_path = (git_root / stored_path).resolve()
             rel_to_cwd = os.path.relpath(abs_path, Path.cwd())
             untracked_files_for_git.append(rel_to_cwd)
-        
+
         try:
             # Add untracked files to git index
             subprocess.run(["git", "add", "--"] + untracked_files_for_git, check=True)
         except subprocess.CalledProcessError as error:
             print(f"Error adding untracked files: {error}")
             return
-    
+
     # Create unique stash message
     stash_message = clutil_create_unique_stash_message(name)
-    
+
     # ATOMIC OPERATION PHASE 1: Create the git stash
     try:
         # For mixed content (including newly added), use git stash push --include-untracked
         # But since we've already added untracked files, regular stash push should work
         cmd = ["git", "stash", "push", "-m", stash_message, "--"] + files_for_git
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        
+
         # Check if anything was actually stashed
         if "No local changes to save" in result.stderr:
             print(f"Unexpected: No changes were stashed for changelist '{name}'.")
@@ -1568,12 +1568,12 @@ def cl_stash(args: argparse.Namespace) -> None:
                 except subprocess.CalledProcessError:
                     print("Warning: Could not reset temporarily added untracked files.")
             return
-            
+
     except subprocess.CalledProcessError as error:
         print(f"Error creating stash: {error}")
         if error.stderr:
             print(f"Git error: {error.stderr}")
-        
+
         # Cleanup: Reset any untracked files we added
         if untracked_files_for_git:
             try:
@@ -1582,14 +1582,14 @@ def cl_stash(args: argparse.Namespace) -> None:
             except subprocess.CalledProcessError:
                 print("Warning: Could not reset temporarily added untracked files.")
         return
-    
+
     # ATOMIC OPERATION PHASE 2: Find the created stash
     stash_ref = clutil_find_stash_by_message_substring(f"git-cl-stash:{name}:")
     if not stash_ref:
         print("Error: Could not locate the created stash.")
         print(f"Look for a stash with message containing 'git-cl-stash:{name}:'")
         return
-    
+
     # ATOMIC OPERATION PHASE 3: Save metadata and update changelists
     new_stash_metadata = {
         "stash_ref": stash_ref,
@@ -1604,26 +1604,26 @@ def cl_stash(args: argparse.Namespace) -> None:
             "deleted_files": file_categories['deleted_files']
         }
     }
-    
+
     # Make a backup of current changelists for potential rollback
     original_changelists = changelists.copy()
-    
+
     try:
         # Step 3a: Save stash metadata
         stashes[name] = new_stash_metadata
         clutil_save_stashes(stashes)
-        
+
         # Step 3b: Remove changelist from active changelists
         del changelists[name]
         clutil_save(changelists)
-        
+
         # Success! All atomic operations completed
         success_msg = f"✓ Successfully stashed changelist '{name}'"
         if current_branch:
             success_msg += f" from branch '{current_branch}'"
         print(success_msg)
         print(f"✓ Stashed {len(stashable_files)} file(s):")
-        
+
         # Show breakdown of what was stashed
         for category, files_list in file_categories.items():
             if files_list and category in ['unstaged_changes', 'staged_additions', 'untracked', 'deleted_files']:
@@ -1634,17 +1634,17 @@ def cl_stash(args: argparse.Namespace) -> None:
                     'deleted_files': 'deleted'
                 }
                 print(f"  - {len(files_list)} with {category_display[category]}")
-        
+
         print(f"✓ Working directory is now clean for this changelist")
         print(f"Next: Create a feature branch and unstash: git checkout -b feature && git cl unstash {name}")
-        
+
     except Exception as error:
         print(f"Error during atomic operation: {error}")
         print("Attempting to rollback changes...")
-        
+
         # ROLLBACK PHASE: Attempt to restore consistent state
         rollback_success = True
-        
+
         # Try to restore stashes metadata (remove the failed entry)
         try:
             if name in stashes:
@@ -1656,7 +1656,7 @@ def cl_stash(args: argparse.Namespace) -> None:
         except Exception as stash_rollback_error:
             print(f"Warning: Could not rollback stash metadata: {stash_rollback_error}")
             rollback_success = False
-        
+
         # Try to restore original changelists
         try:
             clutil_save(original_changelists)
@@ -1664,11 +1664,11 @@ def cl_stash(args: argparse.Namespace) -> None:
         except Exception as changelist_rollback_error:
             print(f"Warning: Could not rollback changelist changes: {changelist_rollback_error}")
             rollback_success = False
-        
+
         # Try to drop the orphaned stash
         if not clutil_rollback_stash(stash_ref, name):
             rollback_success = False
-        
+
         if rollback_success:
             print(f"Rollback completed successfully. Changelist '{name}' remains active.")
         else:
@@ -1676,7 +1676,7 @@ def cl_stash(args: argparse.Namespace) -> None:
             print(f"  - Check 'git stash list' for orphaned stash: {stash_ref}")
             print(f"  - Verify changelist '{name}' state with 'git cl status'")
             print(f"  - Consider 'git stash drop {stash_ref}' if stash is orphaned")
-        
+
         return
 
 
@@ -1685,32 +1685,32 @@ def cl_unstash(args: argparse.Namespace) -> None:
     Restore a stashed changelist to the working directory.
     Enforces clean branch workflow by default.
     Supports --all to unstash all stashed changelists.
-    
+
     Args:
         args: argparse.Namespace with 'name' (or None for --all), 'force', and 'all' attributes.
     """
     stashes = clutil_load_stashes()
     changelists = clutil_load()
-    
+
     # Handle --all flag
     if getattr(args, 'all', False):
         if not stashes:
             print("No stashed changelists found.")
             return
-        
+
         current_branch = clutil_get_current_branch()
         if not current_branch:
             print("Error: Cannot unstash --all while in detached HEAD state.")
             print("Switch to a branch first: git checkout -b <branch-name>")
             return
-        
+
         print(f"Unstashing all changelists to branch '{current_branch}':")
         success_count = 0
-        
+
         # Sort by timestamp (oldest first) for predictable order
         stash_items = list(stashes.items())
         stash_items.sort(key=lambda x: x[1].get('timestamp', ''))
-        
+
         for stash_name, stash_data in stash_items:
             print(f"\n--- Unstashing '{stash_name}' ---")
             # Create a temporary args object for individual unstash
@@ -1718,20 +1718,20 @@ def cl_unstash(args: argparse.Namespace) -> None:
             temp_args.name = stash_name
             temp_args.force = getattr(args, 'force', False)
             temp_args.all = False
-            
+
             try:
                 cl_unstash(temp_args)
                 success_count += 1
             except Exception as error:
                 print(f"Failed to unstash '{stash_name}': {error}")
                 continue
-        
+
         print(f"\nUnstashed {success_count}/{len(stash_items)} changelists successfully.")
         return
-    
+
     # Handle single changelist unstash
     name = args.name
-    
+
     # Handle both "name" and "name_stashed" formats
     if name.endswith("_stashed"):
         base_name = name[:-8]  # Remove "_stashed" suffix
@@ -1739,7 +1739,7 @@ def cl_unstash(args: argparse.Namespace) -> None:
     else:
         base_name = name
         stash_key = name
-    
+
     if stash_key not in stashes:
         print(f"No stashed changelist found for '{base_name}'.")
         available = list(stashes.keys())
@@ -1748,18 +1748,18 @@ def cl_unstash(args: argparse.Namespace) -> None:
             for stashed_name in available:
                 print(f"  {stashed_name}")
         return
-    
+
     stash_data = stashes[stash_key]
     stash_ref = stash_data["stash_ref"]
     files = stash_data["files"]
     source_branch = clutil_get_stash_source_branch(stash_data)
-    
+
     # Check if target changelist name already exists
     if base_name in changelists and changelists[base_name]:
         print(f"Error: Changelist '{base_name}' already exists with files.")
         print("Please delete or rename the existing changelist first.")
         return
-    
+
     # Branch enforcement (unless --force)
     current_branch = clutil_get_current_branch()
     if not getattr(args, 'force', False):
@@ -1768,7 +1768,7 @@ def cl_unstash(args: argparse.Namespace) -> None:
             print("Create a new branch first: git checkout -b feature-branch")
             print(f"Or use --force to unstash anyway: git cl unstash {base_name} --force")
             return
-        
+
         # Allow restoring to original branch, but encourage new branches
         if source_branch and current_branch == source_branch:
             print(f"Note: Unstashing '{base_name}' back to original branch '{current_branch}'")
@@ -1776,7 +1776,7 @@ def cl_unstash(args: argparse.Namespace) -> None:
         else:
             # Check if working directory is clean (recommended for branch workflow)
             try:
-                git_status = subprocess.run(["git", "status", "--porcelain"], 
+                git_status = subprocess.run(["git", "status", "--porcelain"],
                                           capture_output=True, text=True, check=True)
                 if git_status.stdout.strip():
                     print(f"Warning: Working directory is not clean on branch '{current_branch}'")
@@ -1786,42 +1786,42 @@ def cl_unstash(args: argparse.Namespace) -> None:
                     return
             except subprocess.CalledProcessError:
                 pass  # git status failed, continue anyway
-    
+
     git_root = clutil_get_git_root()
-    
+
     # Workflow-optimized conflict detection
     if not getattr(args, 'force', False):
         real_conflicts, file_status_info = clutil_check_unstash_conflicts_optimized(files, git_root)
-        
+
         if real_conflicts:
             print(f"Cannot unstash '{base_name}' due to conflicts:")
             for file_path in real_conflicts:
                 status_desc = file_status_info[file_path]
                 print(f"  {file_path} ({status_desc})")
-            
+
             clutil_suggest_workflow_actions(real_conflicts, file_status_info)
             print(f"\nAfter resolving conflicts, retry: git cl unstash {base_name}")
             print(f"Or use --force to attempt automatic merge: git cl unstash {base_name} --force")
             return
-        
+
         # Show informational status for non-conflicting files
         safe_files = [f for f in files if f not in real_conflicts]
         if safe_files:
             staged_files = [f for f in safe_files if "staged" in file_status_info.get(f, "")]
             clean_files = [f for f in safe_files if "clean" in file_status_info.get(f, "")]
             missing_files = [f for f in safe_files if "missing" in file_status_info.get(f, "")]
-            
+
             status_summary = []
             if clean_files:
                 status_summary.append(f"{len(clean_files)} clean")
             if missing_files:
-                status_summary.append(f"{len(missing_files)} to be restored")  
+                status_summary.append(f"{len(missing_files)} to be restored")
             if staged_files:
                 status_summary.append(f"{len(staged_files)} with staged changes")
-                
+
             if status_summary:
                 print(f"Ready to unstash {len(safe_files)} files: {', '.join(status_summary)}")
-    
+
     # Verify stash still exists
     current_stash_ref = clutil_find_stash_by_message_substring(f"git-cl-stash:{base_name}:")
     if not current_stash_ref:
@@ -1837,19 +1837,19 @@ def cl_unstash(args: argparse.Namespace) -> None:
         except subprocess.CalledProcessError:
             print("  (could not list stashes)")
         return
-    
+
     # Update stash reference if needed
     if current_stash_ref != stash_ref:
         print(f"Note: Stash reference updated from {stash_ref} to {current_stash_ref}")
         stash_ref = current_stash_ref
-    
+
     # Apply the stash
     branch_info = f" to branch '{current_branch}'" if current_branch else ""
     print(f"Unstashing changelist '{base_name}'{branch_info}...")
     try:
-        result = subprocess.run(["git", "stash", "pop", stash_ref], 
+        result = subprocess.run(["git", "stash", "pop", stash_ref],
                               capture_output=True, text=True, check=True)
-        
+
         # Handle merge conflicts
         if "CONFLICT" in result.stdout or "CONFLICT" in result.stderr:
             print(f"Merge conflicts occurred while unstashing '{base_name}'.")
@@ -1859,34 +1859,34 @@ def cl_unstash(args: argparse.Namespace) -> None:
             print("  2. Stage resolved files: git add <resolved-files>")
             print("  3. Recreate changelist: git cl add {base_name} <files>")
             return
-        
+
     except subprocess.CalledProcessError as error:
         print(f"Error unstashing '{base_name}': {error}")
         if "CONFLICT" in str(error.stderr):
             print("Merge conflicts occurred. To resolve:")
-            print("  1. Check 'git status' for conflicted files") 
+            print("  1. Check 'git status' for conflicted files")
             print("  2. Resolve conflicts and stage files")
             print("  3. Recreate changelist manually")
         else:
             print("This may indicate the working directory is not clean.")
             print("Ensure you're on a clean branch before unstashing.")
         return
-    
+
     # Success - update metadata
     try:
         changelists[base_name] = files.copy()
         clutil_save(changelists)
-        
+
         del stashes[stash_key]
         clutil_save_stashes(stashes)
-        
+
         success_msg = f"✓ Successfully unstashed changelist '{base_name}'"
         if current_branch:
             success_msg += f" to branch '{current_branch}'"
         print(success_msg)
         print(f"✓ Restored {len(files)} files to working directory")
         print(f"✓ Ready to work on your feature!")
-        
+
         # Show the files that were restored
         if len(files) <= 10:
             print("Files restored:")
@@ -1894,7 +1894,7 @@ def cl_unstash(args: argparse.Namespace) -> None:
                 print(f"  {file_path}")
         else:
             print(f"Files restored: {files[0]}, {files[1]}, ... and {len(files)-2} others")
-            
+
     except Exception as metadata_error:
         print(f"Warning: Unstash succeeded but metadata update failed: {metadata_error}")
         print(f"Manually recreate the changelist: git cl add {base_name} <files>")

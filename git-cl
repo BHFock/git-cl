@@ -728,24 +728,24 @@ def clutil_suggest_workflow_actions(conflicting_files: list[str], file_status_in
             deleted_conflicts.append(file_path)
 
     if untracked_conflicts:
-        print(f"\n  Untracked files blocking stash restoration:")
+        print("\n  Untracked files blocking stash restoration:")
         for file_path in untracked_conflicts:
             print(f"    {file_path}")
-        print(f"  → Solution: Move, rename, or delete these untracked files")
+        print("  → Solution: Move, rename, or delete these untracked files")
 
     if modified_conflicts:
-        print(f"\n  Working directory modifications:")
+        print("\n  Working directory modifications:")
         for file_path in modified_conflicts:
             print(f"    {file_path}")
-        print(f"  → Solution: Stage/commit these changes or revert them")
+        print("  → Solution: Stage/commit these changes or revert them")
         print(f"    git add {' '.join(modified_conflicts)} && git commit -m 'Save current work'")
         print(f"    # OR: git checkout -- {' '.join(modified_conflicts)}")
 
     if deleted_conflicts:
-        print(f"\n  Files deleted in working directory:")
+        print("\n  Files deleted in working directory:")
         for file_path in deleted_conflicts:
             print(f"    {file_path}")
-        print(f"  → Solution: If intentional, stage the deletions; if not, restore the files")
+        print("  → Solution: If intentional, stage the deletions; if not, restore the files")
         print(f"    git rm {' '.join(deleted_conflicts)} && git commit -m 'Remove files'")
         print(f"    # OR: git checkout HEAD -- {' '.join(deleted_conflicts)}")
 
@@ -1635,7 +1635,7 @@ def cl_stash(args: argparse.Namespace) -> None:
                 }
                 print(f"  - {len(files_list)} with {category_display[category]}")
 
-        print(f"✓ Working directory is now clean for this changelist")
+        print("✓ Working directory is now clean for this changelist")
         print(f"Next: Create a feature branch and unstash: git checkout -b feature && git cl unstash {name}")
 
     except Exception as error:
@@ -1672,7 +1672,7 @@ def cl_stash(args: argparse.Namespace) -> None:
         if rollback_success:
             print(f"Rollback completed successfully. Changelist '{name}' remains active.")
         else:
-            print(f"Partial rollback failure. Manual cleanup may be required:")
+            print("Partial rollback failure. Manual cleanup may be required:")
             print(f"  - Check 'git stash list' for orphaned stash: {stash_ref}")
             print(f"  - Verify changelist '{name}' state with 'git cl status'")
             print(f"  - Consider 'git stash drop {stash_ref}' if stash is orphaned")
@@ -1885,7 +1885,7 @@ def cl_unstash(args: argparse.Namespace) -> None:
             success_msg += f" to branch '{current_branch}'"
         print(success_msg)
         print(f"✓ Restored {len(files)} files to working directory")
-        print(f"✓ Ready to work on your feature!")
+        print("✓ Ready to work on your feature!")
 
         # Show the files that were restored
         if len(files) <= 10:

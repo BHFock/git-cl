@@ -761,7 +761,7 @@ def clutil_get_current_branch() -> Optional[str]:
     """
     try:
         result = subprocess.run(["git", "branch", "--show-current"],
-                              capture_output=True, text=True, check=True)
+                                capture_output=True, text=True, check=True)
         branch = result.stdout.strip()
         return branch if branch else None
     except subprocess.CalledProcessError:
@@ -874,7 +874,7 @@ def clutil_rollback_stash(stash_ref: str, changelist_name: str) -> bool:
     try:
         # Attempt to drop the stash
         subprocess.run(["git", "stash", "drop", stash_ref],
-                      check=True, capture_output=True, text=True)
+                       check=True, capture_output=True, text=True)
         print(f"Rolled back stash {stash_ref} due to metadata save failure.")
         return True
     except subprocess.CalledProcessError as error:
@@ -1504,8 +1504,8 @@ def cl_stash(args: argparse.Namespace) -> None:
                 print(f"    {file_path}")
 
         other_unstashable = [f for f in unstashable_files
-                           if f not in file_categories['clean_files']
-                           and f not in file_categories['staged_modifications']]
+                             if f not in file_categories['clean_files']
+                             and f not in file_categories['staged_modifications']]
         if other_unstashable:
             print("  Other non-stashable files:")
             for file_path in other_unstashable:
@@ -1795,7 +1795,7 @@ def cl_unstash(args: argparse.Namespace) -> None:
             # Check if working directory is clean (recommended for branch workflow)
             try:
                 git_status = subprocess.run(["git", "status", "--porcelain"],
-                                          capture_output=True, text=True, check=True)
+                                            capture_output=True, text=True, check=True)
                 if git_status.stdout.strip():
                     print(f"Warning: Working directory is not clean on branch '{current_branch}'")
                     print("The branch workflow works best with a clean working directory.")
@@ -1866,7 +1866,7 @@ def cl_unstash(args: argparse.Namespace) -> None:
     print(f"Unstashing changelist '{base_name}'{branch_info}...")
     try:
         result = subprocess.run(["git", "stash", "pop", stash_ref],
-                              capture_output=True, text=True, check=True)
+                                capture_output=True, text=True, check=True)
 
         # Handle merge conflicts
         if "CONFLICT" in result.stdout or "CONFLICT" in result.stderr:
@@ -2117,9 +2117,9 @@ def main() -> None:
                                              "multi-feature branch workflow."))
     stash_group = stash_parser.add_mutually_exclusive_group(required=True)
     stash_group.add_argument('name', nargs='?', metavar='CHANGELIST',
-                            help='Name of the changelist to stash')
+                             help='Name of the changelist to stash')
     stash_group.add_argument('--all', action='store_true',
-                            help='Stash all active changelists')
+                             help='Stash all active changelists')
     stash_parser.set_defaults(func=cl_stash)
 
     # unstash
@@ -2134,10 +2134,10 @@ def main() -> None:
                                                "changelists to the current branch."))
     unstash_group = unstash_parser.add_mutually_exclusive_group(required=True)
     unstash_group.add_argument('name', nargs='?', metavar='CHANGELIST',
-                              help=('Name of the changelist to unstash '
-                                    '(with or without _stashed suffix)'))
+                               help=('Name of the changelist to unstash '
+                                     '(with or without _stashed suffix)'))
     unstash_group.add_argument('--all', action='store_true',
-                              help='Unstash all stashed changelists')
+                               help='Unstash all stashed changelists')
     unstash_parser.add_argument('--force', action='store_true',
                                 help='Force unstash even if branch/conflicts detected')
     unstash_parser.set_defaults(func=cl_unstash)

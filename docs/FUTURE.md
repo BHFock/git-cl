@@ -22,19 +22,6 @@ Combine two or more changelists into a new one.
 - Merges file assignments from multiple lists
 - Ideal for consolidating related work
 
-### `git cl stash list_name`
-Temporarily shelve changes in a changelist.
-
-- Saves file changes and changelist metadata
-- Tracks stash reference internally
-- Displays stashed state in `git cl st`
-
-### `git cl unstash list_name`
-Restore a previously stashed changelist to the working directory.
-
-- Recovers both file changes and changelist context
-- Seamless integration with ongoing work
-
 ### `git cl br list_name [branch_name]`
 Create a new Git branch for a changelist.
 

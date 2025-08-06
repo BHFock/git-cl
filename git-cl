@@ -1858,7 +1858,8 @@ def cl_unstash(args: argparse.Namespace) -> None:
 
     # Update stash reference if needed
     if current_stash_ref != stash_ref:
-        print(f"Note: Stash reference updated from {stash_ref} to {current_stash_ref}")
+        print(f"Note: Stash reference updated from {stash_ref} "
+              f"to {current_stash_ref}")
         stash_ref = current_stash_ref
 
     # Apply the stash
@@ -1871,7 +1872,8 @@ def cl_unstash(args: argparse.Namespace) -> None:
         # Handle merge conflicts
         if "CONFLICT" in result.stdout or "CONFLICT" in result.stderr:
             print(f"Merge conflicts occurred while unstashing '{base_name}'.")
-            print("This is unexpected in the typical stash-branch-unstash workflow.")
+            print("This is unexpected in the typical "
+                  "stash-branch-unstash workflow.")
             print("\nTo resolve:")
             print("  1. Resolve conflicts in the affected files")
             print("  2. Stage resolved files: git add <resolved-files>")
@@ -1911,11 +1913,15 @@ def cl_unstash(args: argparse.Namespace) -> None:
             for file_path in files:
                 print(f"  {file_path}")
         else:
-            print(f"Files restored: {files[0]}, {files[1]}, ... and {len(files)-2} others")
+            print(f"Files restored: {files[0]}, {files[1]}, "
+                  f"... and {len(files) - 2} others")
 
-    except (OSError, subprocess.CalledProcessError, json.JSONDecodeError) as metadata_error:
-        print(f"Warning: Unstash succeeded but metadata update failed: {metadata_error}")
-        print(f"Manually recreate the changelist: git cl add {base_name} <files>")
+    except (OSError, subprocess.CalledProcessError,
+            json.JSONDecodeError) as metadata_error:
+        print(f"Warning: Unstash succeeded but metadata update failed: "
+              f"{metadata_error}")
+        print("Manually recreate the changelist: git cl add "
+              f"{base_name} <files>")
 
 
 def cl_help(args: argparse.Namespace) -> None:
@@ -2109,12 +2115,14 @@ def main() -> None:
     stash_parser = subparsers.add_parser('stash', aliases=['sh'],
                                          help='Stash changes in changelist(s)',
                                          description=(
-                                             "Stash all unstaged changes for files "
-                                             "in the specified changelist. Only "
-                                             "files with unstaged changes can be "
-                                             "stashed. Use --all to stash all "
-                                             "active changelists at once for "
-                                             "multi-feature branch workflow."))
+                                             "Stash all unstaged changes for "
+                                             "files in the specified "
+                                             "changelist. Only files with "
+                                             "unstaged changes can be "
+                                             "stashed. Use --all to stash "
+                                             "all active changelists at once "
+                                             "for multi-feature branch "
+                                             "workflow."))
     stash_group = stash_parser.add_mutually_exclusive_group(required=True)
     stash_group.add_argument('name', nargs='?', metavar='CHANGELIST',
                              help='Name of the changelist to stash')
@@ -2124,14 +2132,17 @@ def main() -> None:
 
     # unstash
     unstash_parser = subparsers.add_parser('unstash', aliases=['us'],
-                                           help='Restore stashed changelist(s)',
+                                           help=("Restore stashed "
+                                                 "changelist(s)"),
                                            description=(
                                                "Restore a previously stashed "
-                                               "changelist to the working directory. "
-                                               "Enforces clean branch workflow by "
-                                               "default (use --force to override). "
-                                               "Use --all to unstash all stashed "
-                                               "changelists to the current branch."))
+                                               "changelist to the working "
+                                               "directory. Enforces clean "
+                                               "branch workflow by default "
+                                               "(use --force to override). "
+                                               "Use --all to unstash all "
+                                               "stashed changelists to the "
+                                               "current branch."))
     unstash_group = unstash_parser.add_mutually_exclusive_group(required=True)
     unstash_group.add_argument('name', nargs='?', metavar='CHANGELIST',
                                help=('Name of the changelist to unstash '
@@ -2139,7 +2150,8 @@ def main() -> None:
     unstash_group.add_argument('--all', action='store_true',
                                help='Unstash all stashed changelists')
     unstash_parser.add_argument('--force', action='store_true',
-                                help='Force unstash even if branch/conflicts detected')
+                                help=("Force unstash even if branch/"
+                                      "conflicts detected"))
     unstash_parser.set_defaults(func=cl_unstash)
 
     # help command

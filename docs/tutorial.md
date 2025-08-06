@@ -327,8 +327,6 @@ git cl delete --all
 
 Only changelist metadata is deleted — no file content or Git history is lost.
 
-[↑ Back to top](#git-cl-a-git-subcommand-for-changelist-management)
-
 ### 2.8 Stash and Unstash Changelists
 
 You can temporarily shelve changelists using `stash`, then restore them later with `unstash`. This is useful when switching branches or pausing work on a feature.
@@ -378,6 +376,7 @@ git cl unstash docs
 
 This lets you move work-in-progress between branches without committing or losing context.
 
+[↑ Back to top](#git-cl-a-git-subcommand-for-changelist-management)
 
 ## 3. Example Workflow: Changelists as Named Staging Areas
 

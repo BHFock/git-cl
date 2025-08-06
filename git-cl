@@ -1679,7 +1679,8 @@ def cl_stash(args: argparse.Namespace) -> None:
         
         return
 
- def cl_unstash(args: argparse.Namespace) -> None:
+
+def cl_unstash(args: argparse.Namespace) -> None:
     """
     Restore a stashed changelist to the working directory.
     Enforces clean branch workflow by default.

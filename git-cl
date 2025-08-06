@@ -1366,7 +1366,7 @@ def cl_stash(args: argparse.Namespace) -> None:
             try:
                 cl_stash(temp_args)
                 success_count += 1
-            except Exception as error:
+            except (OSError, subprocess.CalledProcessError, json.JSONDecodeError) as error:
                 print(f"Failed to stash '{cl_name}': {error}")
                 continue
 
@@ -1651,7 +1651,8 @@ def cl_stash(args: argparse.Namespace) -> None:
             f"Next: Create a feature branch and unstash: git checkout -b feature && "
             f"git cl unstash {name}")
 
-    except Exception as error:
+    except (OSError, subprocess.CalledProcessError, json.JSONDecodeError) as error:
+
         print(f"Error during atomic operation: {error}")
         print("Attempting to rollback changes...")
 
@@ -1666,7 +1667,8 @@ def cl_stash(args: argparse.Namespace) -> None:
                 print("Rolled back stash metadata.")
             else:
                 print("Stash metadata was not saved, no rollback needed.")
-        except Exception as stash_rollback_error:
+
+        except (OSError, subprocess.CalledProcessError, json.JSONDecodeError) as stash_rollback_error:
             print(f"Warning: Could not rollback stash metadata: {stash_rollback_error}")
             rollback_success = False
 
@@ -1674,7 +1676,8 @@ def cl_stash(args: argparse.Namespace) -> None:
         try:
             clutil_save(original_changelists)
             print("Rolled back changelist modifications.")
-        except Exception as changelist_rollback_error:
+
+        except (OSError, subprocess.CalledProcessError, json.JSONDecodeError) as changelist_rollback_error:
             print(f"Warning: Could not rollback changelist changes: {changelist_rollback_error}")
             rollback_success = False
 
@@ -1735,7 +1738,7 @@ def cl_unstash(args: argparse.Namespace) -> None:
             try:
                 cl_unstash(temp_args)
                 success_count += 1
-            except Exception as error:
+            except (OSError, subprocess.CalledProcessError, json.JSONDecodeError) as error:
                 print(f"Failed to unstash '{stash_name}': {error}")
                 continue
 
@@ -1908,7 +1911,7 @@ def cl_unstash(args: argparse.Namespace) -> None:
         else:
             print(f"Files restored: {files[0]}, {files[1]}, ... and {len(files)-2} others")
 
-    except Exception as metadata_error:
+    except (OSError, subprocess.CalledProcessError, json.JSONDecodeError) as metadata_error:
         print(f"Warning: Unstash succeeded but metadata update failed: {metadata_error}")
         print(f"Manually recreate the changelist: git cl add {base_name} <files>")
 

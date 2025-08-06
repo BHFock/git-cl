@@ -363,18 +363,18 @@ git cl stash --all
 
 #### Unstash all changelists
 
-´``
+```
 git cl unstash --all
 ```
 - Restores all previously stashed changelists.
 
 #### Example
 
-´´´
+```
 git cl stash docs
 git checkout feature-branch
 git cl unstash docs
-´´
+```
 
 This lets you move work-in-progress between branches without committing or losing context.
 

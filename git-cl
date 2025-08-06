@@ -2105,7 +2105,7 @@ def main() -> None:
                                help='Keep the changelist after committing')
     commit_parser.set_defaults(func=cl_commit)
 
-# stash
+    # stash
     stash_parser = subparsers.add_parser('stash',
                                          help='Stash changes in changelist(s)',
                                          description=(

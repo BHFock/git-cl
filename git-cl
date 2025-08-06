@@ -883,11 +883,10 @@ def clutil_rollback_stash(stash_ref: str, changelist_name: str) -> bool:
         return False
 
 
-
 def clutil_stash_all_changelists(changelists: dict[str, list[str]]) -> None:
     """
     Helper function to stash all active changelists.
-    
+
     Args:
         changelists: Dictionary of active changelists
     """
@@ -939,12 +938,12 @@ def clutil_validate_stash_preconditions(
 ) -> Optional[str]:
     """
     Validate preconditions for stashing a changelist.
-    
+
     Args:
         name: Changelist name
         changelists: Active changelists
         stashes: Already stashed changelists
-        
+
     Returns:
         Error message if validation fails, None if all checks pass
     """
@@ -972,13 +971,13 @@ def clutil_categorize_files_for_stash(
 ) -> tuple[dict[str, list[str]], list[str], list[str]]:
     """
     Categorize files based on their Git status for stashing.
-    
+
     Args:
         files: List of (stored_path, abs_path) tuples for existing files
         missing_files: List of paths for non-existent files
         status_map: Git status mapping
         git_root: Git repository root
-        
+
     Returns:
         Tuple of (file_categories, stashable_files, unstashable_files)
     """
@@ -1060,7 +1059,7 @@ def clutil_report_stash_categorization(
         file_categories: Categorized files
         unstashable_files: List of unstashable files
         name: Changelist name
-        
+
     Returns:
         True if stash can proceed, False otherwise
     """
@@ -1112,12 +1111,12 @@ def clutil_prepare_files_for_git_stash(
 ) -> tuple[list[str], list[str]]:
     """
     Prepare file paths for git stash command.
-    
+
     Args:
         stashable_files: List of files to stash
         file_categories: Categorized files
         git_root: Git repository root
-        
+
     Returns:
         Tuple of (files_for_git, untracked_files_for_git)
     """
@@ -1158,15 +1157,15 @@ def clutil_execute_git_stash(
 ) -> str:
     """
     Execute the git stash command.
-    
+
     Args:
         name: Changelist name
         files_for_git: Files to stash
         untracked_files_for_git: Untracked files that were temporarily added
-        
+
     Returns:
         The stash reference if successful
-        
+
     Raises:
         subprocess.CalledProcessError: If stash fails
     """
@@ -1198,7 +1197,7 @@ def clutil_execute_git_stash(
         if untracked_files_for_git:
             try:
                 subprocess.run(["git", "reset", "HEAD", "--"] + untracked_files_for_git,
-                              check=True)
+                               check=True)
                 print("Reset temporarily added untracked files after stash failure.")
             except subprocess.CalledProcessError:
                 print("Warning: Could not reset temporarily added untracked files.")
@@ -1224,7 +1223,7 @@ def clutil_save_stash_metadata_atomic(
 ) -> None:
     """
     Atomically save stash metadata and update changelists.
-    
+
     Args:
         name: Changelist name
         stash_ref: Git stash reference
@@ -1232,7 +1231,7 @@ def clutil_save_stash_metadata_atomic(
         file_categories: Categorized files
         changelists: Active changelists (will be modified)
         stashes: Stashed changelists (will be modified)
-        
+
     Raises:
         Exception: If save operations fail (triggers rollback)
     """
@@ -1271,7 +1270,7 @@ def clutil_handle_stash_failure(
 ) -> None:
     """
     Handle failure during stash metadata save with rollback.
-    
+
     Args:
         error: The exception that occurred
         name: Changelist name
@@ -1328,7 +1327,7 @@ def clutil_unstash_all_changelists(
 ) -> None:
     """
     Helper function to unstash all stashed changelists.
-    
+
     Args:
         stashes: Dictionary of stashed changelists
         changelists: Dictionary of active changelists
@@ -1372,10 +1371,10 @@ def clutil_unstash_all_changelists(
 def clutil_resolve_unstash_name(name: str) -> tuple[str, str]:
     """
     Resolve changelist name handling both "name" and "name_stashed" formats.
-    
+
     Args:
         name: The changelist name (with or without _stashed suffix)
-        
+
     Returns:
         Tuple of (base_name, stash_key)
     """
@@ -1397,13 +1396,13 @@ def clutil_validate_unstash_preconditions(
 ) -> Optional[str]:
     """
     Validate preconditions for unstashing a changelist.
-    
+
     Args:
         base_name: The base changelist name
         stash_key: The key in stashes dictionary
         stashes: Dictionary of stashed changelists
         changelists: Dictionary of active changelists
-        
+
     Returns:
         Error message if validation fails, None if all checks pass
     """
@@ -1431,12 +1430,12 @@ def clutil_check_branch_workflow(
 ) -> Optional[str]:
     """
     Check branch workflow requirements for unstashing.
-    
+
     Args:
         base_name: The changelist name
         source_branch: The branch where changelist was stashed from
         force: Whether to force unstash despite warnings
-        
+
     Returns:
         Error message if check fails, None if checks pass
     """
@@ -1484,7 +1483,7 @@ def clutil_check_and_report_conflicts(
         git_root: Git repository root
         base_name: Changelist name
         force: Whether to force despite conflicts
-        
+
     Returns:
         True if unstash can proceed, False otherwise
     """
@@ -1531,11 +1530,11 @@ def clutil_verify_and_update_stash_ref(
 ) -> Optional[str]:
     """
     Verify stash still exists and update reference if needed.
-    
+
     Args:
         base_name: Changelist name
         old_stash_ref: Previously stored stash reference
-        
+
     Returns:
         Updated stash reference or None if stash doesn't exist
     """
@@ -1566,11 +1565,11 @@ def clutil_verify_and_update_stash_ref(
 def clutil_apply_stash(stash_ref: str, base_name: str) -> bool:
     """
     Apply the stash using git stash pop.
-    
+
     Args:
         stash_ref: Git stash reference
         base_name: Changelist name for error messages
-        
+
     Returns:
         True if successful, False if conflicts occurred
     """
@@ -1617,7 +1616,7 @@ def clutil_update_unstash_metadata(
 ) -> None:
     """
     Update metadata after successful unstash.
-    
+
     Args:
         base_name: Changelist name
         stash_key: Key in stashes dictionary
@@ -2108,7 +2107,8 @@ def cl_stash(args: argparse.Namespace) -> None:
     - Untracked files (if explicitly in changelist)
 
     Args:
-        args: argparse.Namespace with 'name' (or None for --all), 'all' attributes.
+        args: argparse.Namespace with 'name'
+              (or None for --all), 'all' attributes.
     """
     changelists = clutil_load()
     stashes = clutil_load_stashes()
@@ -2148,7 +2148,8 @@ def cl_stash(args: argparse.Namespace) -> None:
     file_categories, stashable_files, unstashable_files = categorization
 
     # Report categorization and check if we can proceed
-    if not clutil_report_stash_categorization(file_categories, unstashable_files, name):
+    if not clutil_report_stash_categorization(file_categories,
+                                              unstashable_files, name):
         return
 
     if not stashable_files:
@@ -2166,7 +2167,8 @@ def cl_stash(args: argparse.Namespace) -> None:
 
     # Execute git stash
     try:
-        stash_ref = clutil_execute_git_stash(name, files_for_git, untracked_files_for_git)
+        stash_ref = clutil_execute_git_stash(name, files_for_git,
+                                             untracked_files_for_git)
     except (subprocess.CalledProcessError, ValueError):
         return
 
@@ -2197,15 +2199,19 @@ def cl_stash(args: argparse.Namespace) -> None:
                     'untracked': 'untracked',
                     'deleted_files': 'deleted'
                 }
-                print(f"  - {len(files_list)} with {category_display[category]}")
+                print(
+                    f"  - {len(files_list)} with {category_display[category]}")
 
         print("✓ Working directory is now clean for this changelist")
         print(
-            f"Next: Create a feature branch and unstash: git checkout -b feature && "
+            f"Next: Create a feature branch and unstash: "
+            f"git checkout -b feature && "
             f"git cl unstash {name}")
 
-    except (OSError, subprocess.CalledProcessError, json.JSONDecodeError) as error:
-        clutil_handle_stash_failure(error, name, stash_ref, original_changelists, stashes)
+    except (OSError, subprocess.CalledProcessError,
+            json.JSONDecodeError) as error:
+        clutil_handle_stash_failure(error, name, stash_ref,
+                                    original_changelists, stashes)
 
 
 def cl_unstash(args: argparse.Namespace) -> None:
@@ -2215,14 +2221,16 @@ def cl_unstash(args: argparse.Namespace) -> None:
     Supports --all to unstash all stashed changelists.
 
     Args:
-        args: argparse.Namespace with 'name' (or None for --all), 'force', and 'all' attributes.
+        args: argparse.Namespace with 'name' (or None for --all),
+            'force', and 'all' attributes.
     """
     stashes = clutil_load_stashes()
     changelists = clutil_load()
 
     # Handle --all flag
     if getattr(args, 'all', False):
-        clutil_unstash_all_changelists(stashes, changelists, getattr(args, 'force', False))
+        clutil_unstash_all_changelists(stashes, changelists,
+                                       getattr(args, 'force', False))
         return
 
     # Handle single changelist unstash
@@ -2230,7 +2238,8 @@ def cl_unstash(args: argparse.Namespace) -> None:
     base_name, stash_key = clutil_resolve_unstash_name(name)
 
     # Validate preconditions
-    error_msg = clutil_validate_unstash_preconditions(base_name, stash_key, stashes, changelists)
+    error_msg = clutil_validate_unstash_preconditions(base_name, stash_key,
+                                                      stashes, changelists)
     if error_msg:
         print(error_msg)
         return
@@ -2264,7 +2273,8 @@ def cl_unstash(args: argparse.Namespace) -> None:
         return
 
     # Success - update metadata
-    clutil_update_unstash_metadata(base_name, stash_key, files, changelists, stashes)
+    clutil_update_unstash_metadata(base_name, stash_key,
+                                   files, changelists, stashes)
 
 
 def cl_help(args: argparse.Namespace) -> None:

@@ -2106,7 +2106,7 @@ def main() -> None:
     commit_parser.set_defaults(func=cl_commit)
 
     # stash
-    stash_parser = subparsers.add_parser('stash',
+    stash_parser = subparsers.add_parser('stash', aliases=['sh'],
                                          help='Stash changes in changelist(s)',
                                          description=(
                                              "Stash all unstaged changes for files "
@@ -2123,7 +2123,7 @@ def main() -> None:
     stash_parser.set_defaults(func=cl_stash)
 
     # unstash
-    unstash_parser = subparsers.add_parser('unstash',
+    unstash_parser = subparsers.add_parser('unstash', aliases=['us'],
                                            help='Restore stashed changelist(s)',
                                            description=(
                                                "Restore a previously stashed "

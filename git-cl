@@ -628,7 +628,8 @@ def clutil_check_files_unstaged(files: list[str], git_root: Path) -> tuple[list[
     return unstaged_files, staged_files
 
 
-def clutil_check_unstash_conflicts_optimized(files: list[str], git_root: Path) -> tuple[list[str], dict[str, str]]:
+def clutil_check_unstash_conflicts_optimized(
+        files: list[str], git_root: Path) -> tuple[list[str], dict[str, str]]:
     """
     Check for conflicts optimized for the stash-branch-unstash workflow.
 
@@ -701,7 +702,8 @@ def clutil_check_unstash_conflicts_optimized(files: list[str], git_root: Path) -
     return real_conflicts, file_status_info
 
 
-def clutil_suggest_workflow_actions(conflicting_files: list[str], file_status_info: dict[str, str]) -> None:
+def clutil_suggest_workflow_actions(
+        conflicting_files: list[str], file_status_info: dict[str, str]) -> None:
     """
     Provide workflow-specific suggestions for resolving conflicts.
 
@@ -1368,10 +1370,15 @@ def cl_stash(args: argparse.Namespace) -> None:
                 print(f"Failed to stash '{cl_name}': {error}")
                 continue
 
-        print(f"\nStashed {success_count}/{len([cl for cl, files in sorted_changelists if files])} changelists successfully.")
+        print(
+            f"\nStashed {success_count}/"
+            f"{len([cl for cl, files in sorted_changelists if files])} "
+            "changelists successfully."
+        )
         if success_count > 0:
             print("Working directory should now be clean for branch operations.")
-            print("Use 'git cl unstash <changelist>' to restore individual changelists to feature branches.")
+            print("Use 'git cl unstash <changelist>' to restore individual "
+                  "changelists to feature branches.")
         return
 
     # Handle single changelist stash
@@ -1563,7 +1570,8 @@ def cl_stash(args: argparse.Namespace) -> None:
             # If we added untracked files, we should reset them
             if untracked_files_for_git:
                 try:
-                    subprocess.run(["git", "reset", "HEAD", "--"] + untracked_files_for_git, check=True)
+                    subprocess.run(["git", "reset", "HEAD", "--"] +
+                                   untracked_files_for_git, check=True)
                     print("Reset temporarily added untracked files.")
                 except subprocess.CalledProcessError:
                     print("Warning: Could not reset temporarily added untracked files.")
@@ -1626,7 +1634,10 @@ def cl_stash(args: argparse.Namespace) -> None:
 
         # Show breakdown of what was stashed
         for category, files_list in file_categories.items():
-            if files_list and category in ['unstaged_changes', 'staged_additions', 'untracked', 'deleted_files']:
+            if files_list and category in ['unstaged_changes',
+                                           'staged_additions',
+                                           'untracked',
+                                           'deleted_files']:
                 category_display = {
                     'unstaged_changes': 'unstaged changes',
                     'staged_additions': 'newly added',
@@ -1636,7 +1647,9 @@ def cl_stash(args: argparse.Namespace) -> None:
                 print(f"  - {len(files_list)} with {category_display[category]}")
 
         print("✓ Working directory is now clean for this changelist")
-        print(f"Next: Create a feature branch and unstash: git checkout -b feature && git cl unstash {name}")
+        print(
+            f"Next: Create a feature branch and unstash: git checkout -b feature && "
+            f"git cl unstash {name}")
 
     except Exception as error:
         print(f"Error during atomic operation: {error}")

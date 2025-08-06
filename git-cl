@@ -628,33 +628,155 @@ def clutil_check_files_unstaged(files: list[str], git_root: Path) -> tuple[list[
     return unstaged_files, staged_files
 
 
-def clutil_check_unstash_conflicts(files: list[str], git_root: Path) -> list[str]:
+def clutil_check_unstash_conflicts_optimized(files: list[str], git_root: Path) -> tuple[list[str], dict[str, str]]:
     """
-    Check which files have been modified since stashing.
-
+    Check for conflicts optimized for the stash-branch-unstash workflow.
+    
+    In the intended workflow:
+    1. Stash changelists → clean working directory
+    2. Create/switch to feature branch  
+    3. Unstash specific changelist → should be conflict-free
+    
+    This function focuses on detecting only the conflicts that actually matter
+    in this workflow, rather than being overly conservative.
+    
     Args:
-        files: List of file paths relative to git root
+        files: List of file paths relative to git root that were stashed
         git_root: Path to git repository root
-
+        
     Returns:
-        list: Files that have changes and might conflict
+        tuple: (real_conflicts, file_status_info) where:
+        - real_conflicts: Files that will actually prevent unstashing
+        - file_status_info: Dict of file -> status description for user info
     """
     status_map = clutil_get_file_status_map(show_all=True)
-    modified_files = []
-
+    real_conflicts = []
+    file_status_info = {}
+    
     for file_path in files:
         abs_path = (git_root / file_path).resolve()
+        
         if not abs_path.exists():
+            # File doesn't exist - this is actually GOOD for unstashing
+            # The stash will restore it without conflict
+            file_status_info[file_path] = "missing (will be restored)"
             continue
-
+            
         rel_to_git_root = abs_path.relative_to(git_root).as_posix()
         status = status_map.get(rel_to_git_root, "  ")
+        
+        # Analyze what would actually prevent unstashing
+        staged, unstaged = status[0], status[1]
+        
+        if status == "??":
+            # Untracked file exists where stash wants to restore a file
+            # This is a real conflict - git stash pop will fail
+            real_conflicts.append(file_path)
+            file_status_info[file_path] = "untracked file blocking stash restoration"
+            
+        elif unstaged in ['M', 'D']:
+            # Working directory modifications that would conflict with stash pop
+            real_conflicts.append(file_path)
+            if unstaged == 'M':
+                file_status_info[file_path] = "modified in working directory"
+            else:  # 'D'
+                file_status_info[file_path] = "deleted in working directory"
+                
+        elif staged in ['A', 'M', 'D', 'R']:
+            # Staged changes - these usually don't conflict with stash pop
+            # but we should inform the user
+            if staged == 'A':
+                file_status_info[file_path] = "staged for addition (safe)"
+            elif staged == 'M':
+                file_status_info[file_path] = "staged modifications (safe)"
+            elif staged == 'D':
+                file_status_info[file_path] = "staged for deletion (safe)"
+            elif staged == 'R':
+                file_status_info[file_path] = "staged rename (safe)"
+                
+        else:
+            # File is clean - perfect for unstashing
+            file_status_info[file_path] = "clean (ready for unstash)"
+    
+    return real_conflicts, file_status_info
 
-        # File has changes if either staged or unstaged (not "  ")
-        if status != "  ":
-            modified_files.append(file_path)
 
-    return modified_files
+def clutil_suggest_workflow_actions(conflicting_files: list[str], file_status_info: dict[str, str]) -> None:
+    """
+    Provide workflow-specific suggestions for resolving conflicts.
+    
+    Args:
+        conflicting_files: Files that have real conflicts
+        file_status_info: Status information for all files
+    """
+    if not conflicting_files:
+        return
+        
+    print("Workflow suggestions to resolve conflicts:")
+    
+    untracked_conflicts = []
+    modified_conflicts = []
+    deleted_conflicts = []
+    
+    for file_path in conflicting_files:
+        status_desc = file_status_info[file_path]
+        if "untracked" in status_desc:
+            untracked_conflicts.append(file_path)
+        elif "modified in working" in status_desc:
+            modified_conflicts.append(file_path)
+        elif "deleted in working" in status_desc:
+            deleted_conflicts.append(file_path)
+    
+    if untracked_conflicts:
+        print(f"\n  Untracked files blocking stash restoration:")
+        for file_path in untracked_conflicts:
+            print(f"    {file_path}")
+        print(f"  → Solution: Move, rename, or delete these untracked files")
+        
+    if modified_conflicts:
+        print(f"\n  Working directory modifications:")
+        for file_path in modified_conflicts:
+            print(f"    {file_path}")
+        print(f"  → Solution: Stage/commit these changes or revert them")
+        print(f"    git add {' '.join(modified_conflicts)} && git commit -m 'Save current work'")
+        print(f"    # OR: git checkout -- {' '.join(modified_conflicts)}")
+        
+    if deleted_conflicts:
+        print(f"\n  Files deleted in working directory:")
+        for file_path in deleted_conflicts:
+            print(f"    {file_path}")
+        print(f"  → Solution: If intentional, stage the deletions; if not, restore the files")
+        print(f"    git rm {' '.join(deleted_conflicts)} && git commit -m 'Remove files'")
+        print(f"    # OR: git checkout HEAD -- {' '.join(deleted_conflicts)}")
+
+
+def clutil_get_current_branch() -> Optional[str]:
+    """
+    Get the name of the current Git branch.
+    
+    Returns:
+        Branch name or None if not on a branch (detached HEAD)
+    """
+    try:
+        result = subprocess.run(["git", "branch", "--show-current"], 
+                              capture_output=True, text=True, check=True)
+        branch = result.stdout.strip()
+        return branch if branch else None
+    except subprocess.CalledProcessError:
+        return None
+
+
+def clutil_get_stash_source_branch(stash_data: dict) -> Optional[str]:
+    """
+    Extract the branch name from stash metadata if stored.
+    
+    Args:
+        stash_data: Stash metadata dictionary
+        
+    Returns:
+        Branch name or None if not available
+    """
+    return stash_data.get('source_branch')
 
 
 def clutil_find_stash_by_message(message: str) -> Optional[str]:

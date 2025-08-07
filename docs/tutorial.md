@@ -25,6 +25,7 @@ git-cl: A Git subcommand to manage changelists in Git. Group files by intent, ma
   - [2.5 Commit a changelist](#25-commit-a-changelist)
   - [2.6 Remove files from changelists](#26-remove-files-from-changelists)
   - [2.7 Delete changelists](#27-delete-changelists)
+  - [2.8 Stash and Unstash Changelists](#28-stash-and-unstash-changelists)
 - [3. Example Workflow: Changelists as Named Staging Areas](#3-example-workflow-changelists-as-named-staging-areas)
 - [4. FAQ & Common Pitfalls](#4-faq--common-pitfalls)
 - [5. Command Summary](#5-command-summary)
@@ -325,6 +326,55 @@ git cl delete --all
 - This clears all changelists from your workspace, leaving files untouched.
 
 Only changelist metadata is deleted — no file content or Git history is lost.
+
+### 2.8 Stash and Unstash Changelists
+
+You can temporarily shelve changelists using `stash`, then restore them later with `unstash`. This is useful when switching branches or pausing work on a feature.
+
+#### Stash a changelist
+
+```
+git cl stash <changelist-name>
+```
+
+- Saves unstaged and untracked changes from the changelist.
+- Staged changes are skipped.
+- The stash is named after the changelist and timestamped.
+
+#### Unstash a changelist
+
+```
+git cl unstash <changelist-name>
+```
+
+- Restores the previously stashed changes.
+- Warns if files conflict with current working directory.
+
+#### Stash all changelists
+
+```
+git cl stash --all
+```
+
+- Stashes all active changelists.
+- Useful before switching branches or pulling updates.
+
+#### Unstash all changelists
+
+```
+git cl unstash --all
+```
+- Restores all previously stashed changelists.
+
+#### Example
+
+```
+git cl stash docs
+git checkout feature-branch
+git cl unstash docs
+```
+
+This lets you move work-in-progress between branches without committing or losing context.
 
 [↑ Back to top](#git-cl-a-git-subcommand-for-changelist-management)
 

@@ -51,7 +51,7 @@ Traditional Git Workflow              With git-cl
  git add file2.py                     Changelist: "refactor"  
  git add file3.py                     Changelist: "docs"
         ↓                                    ↓
-   Staging Area                       git cl commit bugfix
+ Staging Area                         git cl commit bugfix
 (still mixed up)                     (clean, focused commit)
 ```
 

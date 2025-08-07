@@ -360,6 +360,14 @@ git cl unstash <changelist-name>
 - Restores the previously stashed changes.
 - Warns if files conflict with current working directory.
 
+#### Stash all changelists
+
+```
+git cl stash --all
+```
+
+- Stashes all active changelists at once
+
 [↑ Back to top](#git-cl-a-git-subcommand-for-changelist-management)
 
 ## 3. Example Workflows

@@ -26,7 +26,9 @@ git-cl: A Git subcommand to manage changelists in Git. Group files by intent, ma
   - [2.6 Remove files from changelists](#26-remove-files-from-changelists)
   - [2.7 Delete changelists](#27-delete-changelists)
   - [2.8 Stash and Unstash Changelists](#28-stash-and-unstash-changelists)
-- [3. Example Workflow: Changelists as Named Staging Areas](#3-example-workflow-changelists-as-named-staging-areas)
+- [3. Example Workflows](#3-example-workflows)
+  - [3.1 Changelists as Named Staging Areas](#31-changelists-as-named-staging-areas)
+  - [3.2 Branching Mid-Feature with git cl stash](#32-branching-mid-feature-with-git-cl-stash)
 - [4. FAQ & Common Pitfalls](#4-faq--common-pitfalls)
 - [5. Command Summary](#5-command-summary)
 
@@ -393,30 +395,11 @@ git cl unstash <changelist-name>
 - Restores the previously stashed changes.
 - Warns if files conflict with current working directory.
 
-#### Power Tip: Use git cl stash When Switching Branches
-
-Need to start a new feature but your current work isn't ready to commit?
-
-Use git cl stash to temporarily shelve one or more changelists, then safely switch to a new branch and resume work there.
-
-```
-# You’re halfway through a feature...
-git cl stash model-refactor
-
-# Create a new feature branch
-git checkout -b model-refactor-work
-
-# Restore the shelved changes
-git cl unstash model-refactor
-```
-
-This keeps your working directory clean and avoids accidental commits to the wrong branch — without losing any intent or grouping.
-
-Unlike `git stash`, `git cl stash` preserves changelist structure. This lets you move work-in-progress between branches without committing or losing context.
-
 [↑ Back to top](#git-cl-a-git-subcommand-for-changelist-management)
 
-## 3. Example Workflow: Changelists as Named Staging Areas
+## 3. Example Workflows
+
+### 3.1 Changelists as Named Staging Areas
 
 `git-cl` changelists function as named pre-staging areas. Instead of staging files directly, you organise them into changelists — then selectively stage or commit based on those names.
 
@@ -442,6 +425,27 @@ git commit -m "Implement core feature"
 ```
 
 The other changelists remain untouched, keeping your workspace organised and uncommitted changes visible.
+
+
+### 3.2 Branching Mid-Feature with git cl stash
+
+Sometimes you're midway through a changelist but need to pause and start a new branch — without committing unfinished work. `git cl stash` makes that safe and simple.
+
+Let’s say you’ve grouped your edits into a changelist:
+
+```
+git cl add feature-x src/app.py src/utils.py
+```
+
+You're not ready to commit, but want to move this work to a new branch. Use:
+
+```
+git cl stash feature-x
+git checkout -b feature-x-work
+git cl unstash feature-x
+```
+
+This preserves your work-in-progress and the changelist grouping — so you can pick up right where you left off. Unlike `git stash`, `git cl stash` is changelist-aware. You don’t lose file intent or grouping across branches.
 
 [↑ Back to top](#git-cl-a-git-subcommand-for-changelist-management)
 
@@ -500,7 +504,7 @@ git cl delete old-list
 
 ### How do I pause work in progress without committing?
 
-Use `git cl stash <name>`, then switch branches and git cl unstash when ready. See [Power Tip](#power-tip-use-git-cl-stash-when-switching-branches).
+Use `git cl stash <name>`, then switch branches and git cl unstash when ready. See [Section 3.2](#32-branching-mid-feature-with-git-cl-stash).
 
 ### Why don’t I see all files in git cl status?
 

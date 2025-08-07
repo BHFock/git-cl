@@ -425,6 +425,15 @@ def clutil_format_file_status(
 
     rel_to_git_root = abs_file.relative_to(git_root).as_posix()
     status = status_map.get(rel_to_git_root, "  ")
+
+    # Add detection of files which are deleted (committed) but still
+    # included in a changelists
+    if not abs_file.exists() and status == "  ":
+        status = "XX"  # Custom code for missing file
+        print(f"Warning: The file '{rel_to_cwd}' does not exist "
+              f"on the current branch.\n"
+              f"         Remove it from changelist with 'git cl rm {rel_to_cwd}'.")
+
     tag = f"[{status}]"
 
     if not use_color or not COLORAMA_AVAILABLE:

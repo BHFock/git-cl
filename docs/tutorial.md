@@ -78,7 +78,7 @@ modified: plot.py ─────────┐
 modified: charts.py ───────┼─> Changelist: "visualisation"  
 modified: style.mplstyle ──┘
 
-modified: test_filters.py ───> Changelist: "tests"
+modified: test_filters.py  ──> Changelist: "tests"
 
 new file: debug_output.csv ──> (No Changelist)
 

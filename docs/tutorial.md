@@ -37,6 +37,22 @@ git-cl: A Git subcommand to manage changelists in Git. Group files by intent, ma
 
 `git-cl` is a Git subcommand that lets you group related file changes under a named changelist — similar to changelists in Subversion, but tailored for Git workflows.
 
+```
+Traditional Git Workflow              With git-cl
+========================              ===========
+
+ Working Directory                    Working Directory
+        ↓                                    ↓
+(all mixed together)                 (organised by intent)
+        ↓                                    ↓
+ git add file1.py                     Changelist: "bugfix"
+ git add file2.py                     Changelist: "refactor"  
+ git add file3.py                     Changelist: "docs"
+        ↓                                    ↓
+   Staging Area                       git cl commit bugfix
+(still mixed up)                     (clean, focused commit)
+```
+
 This helps when:
 
 - Working on several features or fixes in parallel
@@ -47,7 +63,34 @@ Changelists are saved locally in `.git/cl.json`. They’re private to your works
 
 ## How changelists fit into Git workflows
 
-Changelists act as a layer above Git’s staging area — helping you group related edits before deciding what to stage or commit. They work alongside Git’s core concepts, not in place of them:
+Changelists act as a layer above Git's staging area — helping you group related edits before deciding what to stage or commit:
+
+```
+Working Directory
+=================
+modified: auth.py ───┐
+modified: login.py ──┼─> Changelist: "auth-feature"
+modified: user.py ───┘
+
+modified: README.md ─┐
+modified: docs.md ───┼─> Changelist: "documentation"  
+modified: API.md ────┘
+
+modified: test.py ───> Changelist: "tests"
+
+new file: debug.log ─> (No Changelist)
+                        
+     ↓ git cl stage auth-feature
+     
+Staging Area                     
+============
+auth.py
+login.py  ─────────--> git commit -m "Add auth feature"
+user.py
+```
+
+They work alongside Git's core concepts, not in place of them:
+
 
 | Concept          | Description                                 | Role in Workflow                    |
 |------------------|---------------------------------------------|-------------------------------------|

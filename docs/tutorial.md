@@ -31,6 +31,8 @@ git-cl: A Git subcommand to manage changelists in Git. Group files by intent, ma
   - [3.2 Branching Mid-Feature with git cl stash](#32-branching-mid-feature-with-git-cl-stash)
 - [4. FAQ & Common Pitfalls](#4-faq--common-pitfalls)
 - [5. Command Summary](#5-command-summary)
+  - [5.1 Command Summary Table](#51-command-summary-table)
+  - [5.2 Git Status Code Reference](#52-git-status-code-reference)
 
 </details>
 
@@ -204,30 +206,6 @@ To include all Git status codes — including merge conflicts and type changes �
 git cl st --all
 ```
 
-This reveals additional cases like
-
-| Code  | Description             |
-| ----- | ----------------------- |
-| \[UU] | Unmerged (conflict)     |
-| \[T ] | Type change             |
-
-#### Git Status Codes
-
-| Code   | Status                 | Description                                         |
-|--------|------------------------|-----------------------------------------------------|
-| `[??]` | Untracked              | New file, not yet tracked by Git                   |
-| `[M ]` | Staged                 | Change staged and ready to commit                  |
-| `[ M]` | Unstaged               | Change made but not yet staged                     |
-| `[MM]` | Mixed                  | Staged change with additional unstaged modification|
-| `[A ]` | Added                  | New file added and staged                          |
-| `[AM]` | Added + Modified       | File added and then further modified               |
-| `[D ]` | Deletion (staged)      | File deletion staged                               |
-| `[ D]` | Deletion (unstaged)    | File deleted but not yet staged                    |
-| `[R ]` | Renamed                | File renamed and staged                            |
-| `[RM]` | Renamed + Modified     | Renamed and then modified before staging           |
-
-See the full list of codes in the [Git documentation](https://git-scm.com/docs/git-status). 
-
 #### Example
 
 ```
@@ -241,19 +219,6 @@ No Changelist:
   [??] scratch.txt
   [UU] merge_conflict_file.py
 ```
-
-#### Color Key
-
-By default, `git cl status` uses colors to highlight file states:
-
-| Color   | Meaning                       |
-|---------|-------------------------------|
-| Green   | Staged changes (`[M ]`, `[A ]`)|
-| Red     | Unstaged changes (`[ M]`, `[ D]`)|
-| Magenta | Both staged and unstaged (`[MM]`, `[AM]`)|
-| Blue    | Untracked (`[??]`)            |
-
-You can disable color with the `--no-color` flag or `NO_COLOR=1` environment variable.
 
 ### 2.3 Diff a changelist
 
@@ -522,8 +487,10 @@ This will show all files, including those with status codes like `[UU]` (unmerge
 
 ## 5. Command Summary
 
-| Task                                     | Command                              | Alias        | 
-| ---------------------------------------- | ------------------------------------ | ------------ |
+### 5.1 Command Summary Table
+
+| Task                           | Command                                        | Alias        | 
+| ------------------------------ | ---------------------------------------------- | ------------ |
 | Add files to a changelist      | `git cl add <name> <files...>`                 | `git cl a`   |
 | View grouped status            | `git cl status` / `git cl st`                  | `git cl st`  | 
 | View all statuses, no color    | `git cl status --all --no-color`               |              |
@@ -536,5 +503,58 @@ This will show all files, including those with status codes like `[UU]` (unmerge
 | Delete changelists             | `git cl delete <name1> <name2> ...`            | `git cl del` | 
 | Delete all changelists         | `git cl delete --all`                          |              |
 | Show help                      | `git cl help`                                  |              |
+
+
+### 5.2 Git Status Code Reference
+
+`git cl status` uses standard Git status codes — shown as two-character prefixes (e.g. `[M ]`, `[??]`).
+
+#### Common Status Codes
+
+| Code   | Status                 | Description                                         |
+|--------|------------------------|-----------------------------------------------------|
+| `[??]` | Untracked              | New file, not yet tracked by Git                   |
+| `[M ]` | Staged                 | Change staged and ready to commit                  |
+| `[ M]` | Unstaged               | Change made but not yet staged                     |
+| `[MM]` | Mixed                  | Staged change with additional unstaged modification|
+| `[A ]` | Added                  | New file added and staged                          |
+| `[AM]` | Added + Modified       | File added and then further modified               |
+| `[D ]` | Deletion (staged)      | File deletion staged                               |
+| `[ D]` | Deletion (unstaged)    | File deleted but not yet staged                    |
+| `[R ]` | Renamed                | File renamed and staged                            |
+| `[RM]` | Renamed + Modified     | Renamed and then modified before staging           |
+
+To show all codes, including rare ones like `[UU]` (conflicts), use:
+
+```
+git cl status --all
+```
+
+#### Additional Codes
+
+| Code  | Description             |
+| ----- | ----------------------- |
+| `[UU]` | Unmerged (conflict)     |
+| `[T ]` | Type change             |
+
+#### Color Key
+
+| Color   | Meaning                       |
+|---------|-------------------------------|
+| Green   | Staged changes (`[M ]`, `[A ]`)|
+| Red     | Unstaged changes (`[ M]`, `[ D]`)|
+| Magenta | Both staged and unstaged (`[MM]`, `[AM]`)|
+| Blue    | Untracked (`[??]`)            |
+
+You can disable color output with:
+
+```
+git cl status --no-color
+```
+
+or set `NO_COLOR=1` in your environment.
+
+See also: [Git status documentation](https://git-scm.com/docs/git-status)
+
 
 [↑ Back to top](#git-cl-a-git-subcommand-for-changelist-management)

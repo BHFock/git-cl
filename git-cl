@@ -90,6 +90,9 @@ except ImportError:
 # INTERNAL UTILITIES
 # =============================================================================
 
+# Note: Some utility functions call CLI command functions (cl_stash, cl_unstash)
+# These are defined later in the module but are called by utility functions.
+
 
 @contextmanager
 def clutil_file_lock(lock_path: Path):
@@ -914,6 +917,7 @@ def clutil_stash_all_changelists(changelists: dict[str, list[str]]) -> None:
         temp_args.all = False
 
         try:
+            # Note: cl_stash is called later in the module
             cl_stash(temp_args)
             success_count += 1
         except (OSError, subprocess.CalledProcessError, json.JSONDecodeError) as error:
@@ -1213,6 +1217,43 @@ def clutil_execute_git_stash(
     return stash_ref
 
 
+def clutil_build_stash_metadata(
+    name: str,
+    stash_ref: str,
+    files: list[str],
+    file_categories: dict[str, list[str]],
+    current_branch: Optional[str]
+) -> dict:
+    """
+    Build stash metadata dictionary.
+
+    Args:
+        name: Changelist name
+        stash_ref: Git stash reference
+        files: Files in the changelist
+        file_categories: Categorized files
+        current_branch: Current Git branch
+
+    Returns:
+        Dictionary containing stash metadata
+    """
+    stash_message = clutil_create_unique_stash_message(name)
+
+    return {
+        "stash_ref": stash_ref,
+        "stash_message": stash_message,
+        "files": files.copy(),
+        "timestamp": datetime.datetime.now().isoformat(),
+        "source_branch": current_branch,
+        "file_categories": {
+            "unstaged_changes": file_categories['unstaged_changes'],
+            "staged_additions": file_categories['staged_additions'],
+            "untracked": file_categories['untracked'],
+            "deleted_files": file_categories['deleted_files']
+        }
+    }
+
+
 def clutil_save_stash_metadata_atomic(
     name: str,
     stash_ref: str,
@@ -1236,24 +1277,14 @@ def clutil_save_stash_metadata_atomic(
         Exception: If save operations fail (triggers rollback)
     """
     current_branch = clutil_get_current_branch()
-    stash_message = clutil_create_unique_stash_message(name)
 
-    new_stash_metadata = {
-        "stash_ref": stash_ref,
-        "stash_message": stash_message,
-        "files": files.copy(),
-        "timestamp": datetime.datetime.now().isoformat(),
-        "source_branch": current_branch,
-        "file_categories": {
-            "unstaged_changes": file_categories['unstaged_changes'],
-            "staged_additions": file_categories['staged_additions'],
-            "untracked": file_categories['untracked'],
-            "deleted_files": file_categories['deleted_files']
-        }
-    }
+    # Build stash metadata
+    stash_metadata = clutil_build_stash_metadata(
+        name, stash_ref, files, file_categories, current_branch
+    )
 
     # Save stash metadata
-    stashes[name] = new_stash_metadata
+    stashes[name] = stash_metadata
     clutil_save_stashes(stashes)
 
     # Remove changelist from active changelists
@@ -1330,7 +1361,7 @@ def clutil_unstash_all_changelists(
 
     Args:
         stashes: Dictionary of stashed changelists
-        changelists: Dictionary of active changelists
+        changelists: Dictionary of active changelists (not used but kept for interface)
         force: Whether to force unstash despite conflicts
     """
     if not stashes:
@@ -1350,7 +1381,7 @@ def clutil_unstash_all_changelists(
     stash_items = list(stashes.items())
     stash_items.sort(key=lambda x: x[1].get('timestamp', ''))
 
-    for stash_name, stash_data in stash_items:
+    for stash_name, _ in stash_items:
         print(f"\n--- Unstashing '{stash_name}' ---")
         # Create a temporary args object for individual unstash
         temp_args = argparse.Namespace()
@@ -1359,6 +1390,7 @@ def clutil_unstash_all_changelists(
         temp_args.all = False
 
         try:
+            # Note: cl_unstash is called later in the module
             cl_unstash(temp_args)
             success_count += 1
         except (OSError, subprocess.CalledProcessError, json.JSONDecodeError) as error:
@@ -1607,6 +1639,36 @@ def clutil_apply_stash(stash_ref: str, base_name: str) -> bool:
         return False
 
 
+def clutil_process_unstash_result(
+    base_name: str,
+    files: list[str],
+    current_branch: Optional[str]
+) -> None:
+    """
+    Process and display results after successful unstash.
+
+    Args:
+        base_name: Changelist name
+        files: List of files that were restored
+        current_branch: Current Git branch
+    """
+    success_msg = f"✓ Successfully unstashed changelist '{base_name}'"
+    if current_branch:
+        success_msg += f" to branch '{current_branch}'"
+    print(success_msg)
+    print(f"✓ Restored {len(files)} files to working directory")
+    print("✓ Ready to work on your feature!")
+
+    # Show the files that were restored
+    if len(files) <= 10:
+        print("Files restored:")
+        for file_path in files:
+            print(f"  {file_path}")
+    else:
+        print(f"Files restored: {files[0]}, {files[1]}, "
+              f"... and {len(files) - 2} others")
+
+
 def clutil_update_unstash_metadata(
     base_name: str,
     stash_key: str,
@@ -1632,21 +1694,7 @@ def clutil_update_unstash_metadata(
         clutil_save_stashes(stashes)
 
         current_branch = clutil_get_current_branch()
-        success_msg = f"✓ Successfully unstashed changelist '{base_name}'"
-        if current_branch:
-            success_msg += f" to branch '{current_branch}'"
-        print(success_msg)
-        print(f"✓ Restored {len(files)} files to working directory")
-        print("✓ Ready to work on your feature!")
-
-        # Show the files that were restored
-        if len(files) <= 10:
-            print("Files restored:")
-            for file_path in files:
-                print(f"  {file_path}")
-        else:
-            print(f"Files restored: {files[0]}, {files[1]}, "
-                  f"... and {len(files) - 2} others")
+        clutil_process_unstash_result(base_name, files, current_branch)
 
     except (OSError, subprocess.CalledProcessError,
             json.JSONDecodeError) as metadata_error:
@@ -1654,6 +1702,193 @@ def clutil_update_unstash_metadata(
               f"{metadata_error}")
         print(f"Manually recreate the changelist: git cl add "
               f"{base_name} <files>")
+
+
+def clutil_prepare_stash_files(
+    files: list[str],
+    git_root: Path
+) -> tuple[list[tuple[str, Path]], list[str]]:
+    """
+    Prepare files for stashing by checking existence.
+
+    Args:
+        files: List of file paths from changelist
+        git_root: Git repository root
+
+    Returns:
+        Tuple of (existing_files, missing_files)
+    """
+    missing_files = []
+    existing_files = []
+
+    for stored_path in files:
+        abs_path = (git_root / stored_path).resolve()
+        if not abs_path.exists():
+            missing_files.append(stored_path)
+        else:
+            existing_files.append((stored_path, abs_path))
+
+    return existing_files, missing_files
+
+
+def clutil_print_stash_success(
+    name: str,
+    stashable_files: list[str],
+    file_categories: dict[str, list[str]],
+    current_branch: Optional[str]
+) -> None:
+    """
+    Print success message after stashing.
+
+    Args:
+        name: Changelist name
+        stashable_files: List of files that were stashed
+        file_categories: Categorized files
+        current_branch: Current Git branch
+    """
+    success_msg = f"✓ Successfully stashed changelist '{name}'"
+    if current_branch:
+        success_msg += f" from branch '{current_branch}'"
+    print(success_msg)
+    print(f"✓ Stashed {len(stashable_files)} file(s):")
+
+    # Show breakdown of what was stashed
+    categories_to_show = {
+        'unstaged_changes': 'unstaged changes',
+        'staged_additions': 'newly added',
+        'untracked': 'untracked',
+        'deleted_files': 'deleted'
+    }
+
+    for category_key, category_display in categories_to_show.items():
+        files_list = file_categories.get(category_key, [])
+        if files_list:
+            print(f"  - {len(files_list)} with {category_display}")
+
+    print("✓ Working directory is now clean for this changelist")
+    print(
+        f"Next: Create a feature branch and unstash: "
+        f"git checkout -b feature && "
+        f"git cl unstash {name}"
+    )
+
+
+def clutil_show_active_changelists(
+    changelists: dict[str, list[str]],
+    selected_names: Optional[set[str]],
+    st_map: dict[str, str],
+    git_root: Path,
+    use_color: bool
+) -> tuple[bool, set[str]]:
+    """
+    Display active changelists and return assigned files.
+
+    Args:
+        changelists: Active changelists
+        selected_names: Set of names to filter by (None = show all)
+        st_map: Git status mapping
+        git_root: Git repository root
+        use_color: Whether to use colored output
+
+    Returns:
+        Tuple of (shown_any, assigned_files)
+    """
+    assigned_files = set()
+    shown_any = False
+
+    for cl_name, files in changelists.items():
+        # Skip any remaining stashed entries (cleanup from old implementation)
+        if cl_name.endswith('_stashed'):
+            continue
+
+        if selected_names is not None and cl_name not in selected_names:
+            continue
+
+        if files:  # Only show non-empty changelists
+            print(f"{cl_name}:")
+            shown_any = True
+            for file in files:
+                print(clutil_format_file_status(file, st_map, git_root, use_color))
+
+            # Track assigned files
+            for f in files:
+                try:
+                    abs_path = (git_root / f).resolve()
+                    rel_path = abs_path.relative_to(git_root).as_posix()
+                    assigned_files.add(rel_path)
+                except (ValueError, OSError) as error:
+                    print(f"Error resolving path: {error}")
+
+    return shown_any, assigned_files
+
+
+def clutil_show_stashed_changelists(stashes: dict[str, dict]) -> None:
+    """
+    Display stashed changelists section.
+
+    Args:
+        stashes: Dictionary of stashed changelists
+    """
+    print("Stashed Changelists:")
+
+    # Sort by timestamp (most recent first)
+    stashed_items = []
+    for stash_name, stash_data in stashes.items():
+        timestamp = stash_data.get('timestamp', '')
+        file_count = len(stash_data.get('files', []))
+        stashed_items.append((stash_name, file_count, timestamp))
+
+    # Sort by timestamp descending (most recent first)
+    stashed_items.sort(key=lambda x: x[2], reverse=True)
+
+    for stash_name, file_count, timestamp in stashed_items:
+        # Format timestamp for display
+        try:
+            dt = datetime.datetime.fromisoformat(timestamp)
+            formatted_time = dt.strftime("%Y-%m-%d %H:%M")
+        except (ValueError, AttributeError):
+            formatted_time = "unknown time"
+
+        file_word = "file" if file_count == 1 else "files"
+        print(f"  {stash_name} ({file_count} {file_word}, {formatted_time})")
+
+
+def clutil_validate_unstash_environment(
+    base_name: str,
+    stash_key: str,
+    stashes: dict[str, dict],
+    changelists: dict[str, list[str]],
+    force: bool
+) -> tuple[Optional[str], Optional[dict]]:
+    """
+    Validate all preconditions for unstashing.
+
+    Args:
+        base_name: Base changelist name
+        stash_key: Key in stashes dictionary  
+        stashes: Stashed changelists
+        changelists: Active changelists
+        force: Whether to force despite warnings
+
+    Returns:
+        Tuple of (error_message, stash_data) - error_message is None if valid
+    """
+    # Validate basic preconditions
+    error_msg = clutil_validate_unstash_preconditions(
+        base_name, stash_key, stashes, changelists
+    )
+    if error_msg:
+        return error_msg, None
+
+    stash_data = stashes[stash_key]
+    source_branch = clutil_get_stash_source_branch(stash_data)
+
+    # Check branch workflow requirements
+    error_msg = clutil_check_branch_workflow(base_name, source_branch, force)
+    if error_msg:
+        return error_msg, None
+
+    return None, stash_data
 
 
 # =============================================================================
@@ -1841,59 +2076,16 @@ def cl_status(args: argparse.Namespace) -> None:
 
     use_color = clutil_should_use_color(args)
 
-    assigned_files = set()
-    shown_any_active = False
-
-    # Show active changelists first
-    for cl_name, files in changelists.items():
-        # Skip any remaining stashed entries (cleanup from old implementation)
-        if cl_name.endswith('_stashed'):
-            continue
-
-        if selected_names is not None and cl_name not in selected_names:
-            continue
-
-        if files:  # Only show non-empty changelists
-            print(f"{cl_name}:")
-            shown_any_active = True
-            for file in files:
-                print(clutil_format_file_status(file, st_map, git_root, use_color))
-
-            # Track assigned files
-            for f in files:
-                try:
-                    abs_path = (git_root / f).resolve()
-                    rel_path = abs_path.relative_to(git_root).as_posix()
-                    assigned_files.add(rel_path)
-                except (ValueError, OSError) as error:
-                    print(f"Error resolving path: {error}")
+    # Show active changelists
+    shown_any_active, assigned_files = clutil_show_active_changelists(
+        changelists, selected_names, st_map, git_root, use_color
+    )
 
     # Show stashed changelists section
     if stashes and (selected_names is None):  # Only show when not filtering
         if shown_any_active:
             print()  # Add spacing
-        print("Stashed Changelists:")
-
-        # Sort by timestamp (most recent first)
-        stashed_items = []
-        for stash_name, stash_data in stashes.items():
-            timestamp = stash_data.get('timestamp', '')
-            file_count = len(stash_data.get('files', []))
-            stashed_items.append((stash_name, file_count, timestamp))
-
-        # Sort by timestamp descending (most recent first)
-        stashed_items.sort(key=lambda x: x[2], reverse=True)
-
-        for stash_name, file_count, timestamp in stashed_items:
-            # Format timestamp for display
-            try:
-                dt = datetime.datetime.fromisoformat(timestamp)
-                formatted_time = dt.strftime("%Y-%m-%d %H:%M")
-            except (ValueError, AttributeError):
-                formatted_time = "unknown time"
-
-            file_word = "file" if file_count == 1 else "files"
-            print(f"  {stash_name} ({file_count} {file_word}, {formatted_time})")
+        clutil_show_stashed_changelists(stashes)
 
     # Show unassigned files
     if selected_names is None or args.include_no_cl:
@@ -2131,14 +2323,7 @@ def cl_stash(args: argparse.Namespace) -> None:
     files = changelists[name]
 
     # Check that files exist and categorize them
-    missing_files = []
-    existing_files = []
-    for stored_path in files:
-        abs_path = (git_root / stored_path).resolve()
-        if not abs_path.exists():
-            missing_files.append(stored_path)
-        else:
-            existing_files.append((stored_path, abs_path))
+    existing_files, missing_files = clutil_prepare_stash_files(files, git_root)
 
     # Get file statuses and categorize
     status_map = clutil_get_file_status_map(show_all=True)
@@ -2181,32 +2366,8 @@ def cl_stash(args: argparse.Namespace) -> None:
         )
 
         # Success! All atomic operations completed
-        success_msg = f"✓ Successfully stashed changelist '{name}'"
-        if current_branch:
-            success_msg += f" from branch '{current_branch}'"
-        print(success_msg)
-        print(f"✓ Stashed {len(stashable_files)} file(s):")
-
-        # Show breakdown of what was stashed
-        for category, files_list in file_categories.items():
-            if files_list and category in ['unstaged_changes',
-                                           'staged_additions',
-                                           'untracked',
-                                           'deleted_files']:
-                category_display = {
-                    'unstaged_changes': 'unstaged changes',
-                    'staged_additions': 'newly added',
-                    'untracked': 'untracked',
-                    'deleted_files': 'deleted'
-                }
-                print(
-                    f"  - {len(files_list)} with {category_display[category]}")
-
-        print("✓ Working directory is now clean for this changelist")
-        print(
-            f"Next: Create a feature branch and unstash: "
-            f"git checkout -b feature && "
-            f"git cl unstash {name}")
+        clutil_print_stash_success(name, stashable_files,
+                                   file_categories, current_branch)
 
     except (OSError, subprocess.CalledProcessError,
             json.JSONDecodeError) as error:
@@ -2237,25 +2398,17 @@ def cl_unstash(args: argparse.Namespace) -> None:
     name = args.name
     base_name, stash_key = clutil_resolve_unstash_name(name)
 
-    # Validate preconditions
-    error_msg = clutil_validate_unstash_preconditions(base_name, stash_key,
-                                                      stashes, changelists)
+    # Validate environment and get stash data
+    error_msg, stash_data = clutil_validate_unstash_environment(
+        base_name, stash_key, stashes, changelists,
+        getattr(args, 'force', False)
+    )
     if error_msg:
         print(error_msg)
         return
 
-    stash_data = stashes[stash_key]
     stash_ref = stash_data["stash_ref"]
     files = stash_data["files"]
-    source_branch = clutil_get_stash_source_branch(stash_data)
-
-    # Check branch workflow requirements
-    error_msg = clutil_check_branch_workflow(base_name, source_branch,
-                                             getattr(args, 'force', False))
-    if error_msg:
-        print(error_msg)
-        return
-
     git_root = clutil_get_git_root()
 
     # Check for conflicts

@@ -393,31 +393,26 @@ git cl unstash <changelist-name>
 - Restores the previously stashed changes.
 - Warns if files conflict with current working directory.
 
-#### Stash all changelists
+#### Power Tip: Use git cl stash When Switching Branches
+
+Need to start a new feature but your current work isn't ready to commit?
+
+Use git cl stash to temporarily shelve one or more changelists, then safely switch to a new branch and resume work there.
 
 ```
-git cl stash --all
+# You’re halfway through a feature...
+git cl stash model-refactor
+
+# Create a new feature branch
+git checkout -b model-refactor-work
+
+# Restore the shelved changes
+git cl unstash model-refactor
 ```
 
-- Stashes all active changelists.
-- Useful before switching branches or pulling updates.
+This keeps your working directory clean and avoids accidental commits to the wrong branch — without losing any intent or grouping.
 
-#### Unstash all changelists
-
-```
-git cl unstash --all
-```
-- Restores all previously stashed changelists.
-
-#### Example
-
-```
-git cl stash docs
-git checkout feature-branch
-git cl unstash docs
-```
-
-This lets you move work-in-progress between branches without committing or losing context.
+Unlike `git stash`, `git cl stash` preserves changelist structure. This lets you move work-in-progress between branches without committing or losing context.
 
 [↑ Back to top](#git-cl-a-git-subcommand-for-changelist-management)
 
@@ -502,6 +497,10 @@ If things get messy, delete a stale changelist:
 ```
 git cl delete old-list
 ```
+
+### How do I pause work in progress without committing?
+
+Use `git cl stash <name>`, then switch branches and git cl unstash when ready. See [Power Tip](#power-tip-use-git-cl-stash-when-switching-branches).
 
 ### Why don’t I see all files in git cl status?
 

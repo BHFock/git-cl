@@ -68,25 +68,25 @@ Changelists act as a layer above Git's staging area — helping you group relate
 ```
 Working Directory
 =================
-modified: auth.py ───┐
-modified: login.py ──┼─> Changelist: "auth-feature"
-modified: user.py ───┘
+modified: clean_data.py ───┐
+modified: filters.py ──────┼─> Changelist: "preprocessing"
+modified: utils/math.py ───┘
 
-modified: README.md ─┐
-modified: docs.md ───┼─> Changelist: "documentation"  
-modified: API.md ────┘
+modified: plot.py ─────────┐
+modified: charts.py ───────┼─> Changelist: "visualisation"  
+modified: style.mplstyle ──┘
 
-modified: test.py ───> Changelist: "tests"
+modified: test_filters.py ───> Changelist: "tests"
 
-new file: debug.log ─> (No Changelist)
-                        
-     ↓ git cl stage auth-feature
+new file: debug_output.csv ──> (No Changelist)
+
+     ↓ git cl stage preprocessing
      
 Staging Area                     
 ============
-auth.py
-login.py  ─────────--> git commit -m "Add auth feature"
-user.py
+clean_data.py
+filters.py      ─────────────> git commit -m "Apply Gaussian filters to input data"
+math.py
 ```
 
 They work alongside Git's core concepts, not in place of them:

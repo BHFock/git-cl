@@ -22,6 +22,11 @@ Combine two or more changelists into a new one.
 - Merges file assignments from multiple lists
 - Ideal for consolidating related work
 
+## `git cl co list_1 [list_2 ...]`
+
+-  Checkout files from changelists
+-  Useful for reverting local changes 
+
 ### `git cl br list_name [branch_name]`
 Create a new Git branch for a changelist.
 

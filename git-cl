@@ -99,18 +99,36 @@ def clutil_file_lock(lock_path: Path):
     """
     Acquires an exclusive lock on a file for safe concurrent access.
 
+    Creates a lock file and acquires an exclusive lock to prevent concurrent
+    access to shared resources. The lock file is automatically cleaned up
+    when the context exits, regardless of whether an exception occurs.
+
     Args:
-        lock_path (Path): Path to the lock file.
+        lock_path (Path): Path to the lock file to create and lock.
 
     Yields:
         None
+
+    Raises:
+        OSError: If the lock file cannot be created or locked.
+
+    Example:
+        >>> lock_file = Path('.git/cl.lock')
+        >>> with clutil_file_lock(lock_file):
+        ...     # Perform operations that need exclusive access
+        ...     pass
+        # Lock file is automatically cleaned up here
     """
-    with open(lock_path, 'w', encoding='utf-8') as lock_file:
+    lock_file = None
+    try:
+        lock_file = open(lock_path, 'w', encoding='utf-8')
         fcntl.flock(lock_file, fcntl.LOCK_EX)
-        try:
-            yield
-        finally:
+        yield
+    finally:
+        if lock_file:
             fcntl.flock(lock_file, fcntl.LOCK_UN)
+            lock_file.close()
+            lock_path.unlink(missing_ok=True)
 
 
 def clutil_should_use_color(args) -> bool:

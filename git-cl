@@ -2671,14 +2671,12 @@ def main() -> None:
 
     # checkout / co
     checkout_parser = subparsers.add_parser('checkout', aliases=['co'],
-                                           help='Checkout (revert) files from changelists',
-                                           description=(
-                                               "Revert files in one or more changelists "
-                                               "to their HEAD state, discarding any local "
-                                               "changes in the working directory. This is "
-                                               "useful for undoing unwanted modifications. "
-                                               "By default, asks for confirmation before "
-                                               "proceeding."))
+                                            help='Checkout (revert) files from changelists',
+                                            description=(
+                                                "Revert files in one or more changelists to their HEAD state, "
+                                                "discarding both staged and unstaged changes in those files. "
+                                                "This completely restores files to their last committed state. "
+                                                "By default, asks for confirmation before proceeding."))
     checkout_parser.add_argument('names', metavar='CHANGELIST', nargs='+',
                                 help='One or more changelists to checkout/revert')
     checkout_parser.add_argument('--force', '-f', action='store_true',

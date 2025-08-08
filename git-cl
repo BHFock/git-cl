@@ -1953,6 +1953,10 @@ def cl_add(args: argparse.Namespace) -> None:
     for file in args.files:
         sanitized = clutil_sanitize_path(file, git_root)
         if sanitized:
+            # Check if file exists and warn if not
+            abs_path = (git_root / sanitized).resolve()
+            if not abs_path.exists():
+                print(f"Warning: File '{file}' does not exist.")
             files.append(sanitized)
         else:
             print(f"Warning: Skipping invalid or unsafe path: '{file}'")

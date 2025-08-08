@@ -2596,7 +2596,10 @@ def cl_branch(args: argparse.Namespace) -> None:
     stashes = clutil_load_stashes()
 
     changelist_name = args.changelist_name
-    branch_name = args.branch_name if hasattr(args, 'branch_name') and args.branch_name else changelist_name
+    if hasattr(args, 'branch_name') and args.branch_name:
+        branch_name = args.branch_name
+    else:
+        branch_name = changelist_name
 
     # Validate changelist exists and is active (not stashed)
     if changelist_name not in changelists:
@@ -2669,7 +2672,7 @@ def cl_branch(args: argparse.Namespace) -> None:
 
     # Determine base branch
     base_branch = getattr(args, 'from_branch', None) or current_branch
-    
+
     print(f"Creating branch workflow for changelist '{changelist_name}':")
     print(f"  Current branch: {current_branch}")
     print(f"  New branch: {branch_name}")
@@ -3007,7 +3010,7 @@ def main() -> None:
     branch_parser.add_argument('--from', dest='from_branch', metavar='BASE_BRANCH',
                           help='Create branch from specified base branch (default: current branch)')
     branch_parser.set_defaults(func=cl_branch)
-    
+
     # help command
     help_parser = subparsers.add_parser('help',
                                         help='Show this help message',

@@ -16,16 +16,13 @@ git-cl: A Git subcommand to manage changelists in Git. Group files by intent, ma
 - [2. Basic Commands](#2-basic-commands)
   - [2.1 Add files to a changelist](#21-add-files-to-a-changelist)
   - [2.2 View status by changelist](#22-view-status-by-changelist) 
-    - [Filtering by changelist name](#filtering-by-changelist-name)
-    - [Showing all Git status codes](#showing-all-git-status-codes)
-    - [Git Status codes](#git-status-codes)
-    - [Color Key](#color-key)
   - [2.3 Diff a changelist](#23-diff-a-changelist) 
   - [2.4 Stage and unstage a changelist](#24-stage-and-unstage-a-changelist)
   - [2.5 Commit a changelist](#25-commit-a-changelist)
   - [2.6 Remove files from changelists](#26-remove-files-from-changelists)
   - [2.7 Delete changelists](#27-delete-changelists)
   - [2.8 Stash and Unstash Changelists](#28-stash-and-unstash-changelists)
+  - [2.9 Checkout a Changelist](#29-checkout-a-changelist)
 - [3. Example Workflows](#3-example-workflows)
   - [3.1 Changelists as Named Staging Areas](#31-changelists-as-named-staging-areas)
   - [3.2 Branching Mid-Feature with git cl stash](#32-branching-mid-feature-with-git-cl-stash)
@@ -368,6 +365,19 @@ git cl stash --all
 
 - Stashes all active changelists at once
 
+### 2.9 Checkout a Changelist
+
+```
+git cl checkout <changelist-name>
+# or
+git cl co <changelist-name>
+```
+
+- Reverts all files in the changelist to their last committed state ([HEAD](https://git-scm.com/book/ms/v2/Git-Tools-Reset-Demystified.html#_the_head)).
+- Useful for discarding local changes by intent, not just by filename.
+- Prompts for confirmation before proceeding.
+- Shows a summary of reverted files.
+
 [↑ Back to top](#git-cl-a-git-subcommand-for-changelist-management)
 
 ## 3. Example Workflows
@@ -507,6 +517,7 @@ This will show all files, including those with status codes like `[UU]` (unmerge
 | Unstage a changelist           | `git cl unstage <name> [--delete]`             |              |
 | Commit with inline message     | `git cl commit <name> -m "Message" [--keep]`   | `git cl ci`  |
 | Commit using message from file | `git cl commit <name> -F message.txt [--keep]` |              |
+| Revert changelist to HEAD	     | `git cl checkout <name>`                       |	`git cl co`  |
 | Remove files from changelists  | `git cl remove <file1> <file2> ...`            | `git cl rm`  |
 | Delete changelists             | `git cl delete <name1> <name2> ...`            | `git cl del` | 
 | Delete all changelists         | `git cl delete --all`                          |              |

@@ -501,6 +501,10 @@ git cl status --all
 
 This will show all files, including those with status codes like `[UU]` (unmerged) or `[T ]` (type change).
 
+### Can I reuse a changelist name later?
+
+Yes. If the changelist was deleted after a stage or commit, you can create a new one with the same name — it's just a label, not a persistent identity.
+
 [↑ Back to top](#git-cl-a-git-subcommand-for-changelist-management)
 
 ## 5. Command Summary

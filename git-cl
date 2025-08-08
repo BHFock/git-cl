@@ -1380,7 +1380,6 @@ def clutil_handle_stash_failure(
 
 def clutil_unstash_all_changelists(
     stashes: dict[str, dict],
-    changelists: dict[str, list[str]],
     force: bool = False
 ) -> None:
     """
@@ -1388,7 +1387,6 @@ def clutil_unstash_all_changelists(
 
     Args:
         stashes: Dictionary of stashed changelists
-        changelists: Dictionary of active changelists (not used but kept for interface)
         force: Whether to force unstash despite conflicts
     """
     if not stashes:
@@ -1903,7 +1901,7 @@ def clutil_validate_unstash_environment(
 
     Args:
         base_name: Base changelist name
-        stash_key: Key in stashes dictionary  
+        stash_key: Key in stashes dictionary
         stashes: Stashed changelists
         changelists: Active changelists
         force: Whether to force despite warnings
@@ -2207,7 +2205,7 @@ def cl_checkout(args: argparse.Namespace) -> None:
     This discards local changes in the working directory for the specified files,
     reverting them to their last committed state. Useful for undoing unwanted
     local modifications.
- 
+
     Args:
         args: argparse.Namespace with 'names' list of changelist names,
               and optional 'force' flag for confirmation.
@@ -2233,7 +2231,7 @@ def cl_checkout(args: argparse.Namespace) -> None:
 
     # Report missing changelists
     if missing_changelists:
-        print(f"Error: The following changelists were not found:")
+        print("Error: The following changelists were not found:")
         for name in missing_changelists:
             print(f"  {name}")
         if not all_files:  # No valid changelists found
@@ -2303,7 +2301,6 @@ def cl_checkout(args: argparse.Namespace) -> None:
     except subprocess.CalledProcessError as error:
         print(f"Error during checkout: {error}")
         print("Some files may not have been reverted.")
-        return
 
 
 def cl_remove(args: argparse.Namespace) -> None:
@@ -2538,8 +2535,7 @@ def cl_unstash(args: argparse.Namespace) -> None:
 
     # Handle --all flag
     if getattr(args, 'all', False):
-        clutil_unstash_all_changelists(stashes, changelists,
-                                       getattr(args, 'force', False))
+        clutil_unstash_all_changelists(stashes, getattr(args, 'force', False))
         return
 
     # Handle single changelist unstash
@@ -2578,9 +2574,99 @@ def cl_unstash(args: argparse.Namespace) -> None:
                                    files, changelists, stashes)
 
 
+def clutil_validate_branch_preconditions(changelist_name: str, changelists: dict, stashes: dict) -> str:
+    """Validate preconditions for branch creation workflow."""
+    if changelist_name not in changelists:
+        error_msg = f"Error: Changelist '{changelist_name}' not found."
+        available = [name for name in changelists.keys() if changelists[name]]
+        if available:
+            error_msg += "\nAvailable active changelists:"
+            for name in available:
+                error_msg += f"\n  {name}"
+        return error_msg
+
+    if not changelists[changelist_name]:
+        return (f"Error: Changelist '{changelist_name}' is empty.\n"
+                f"Add files with: git cl add {changelist_name} <files>")
+
+    if changelist_name in stashes:
+        return (f"Error: Changelist '{changelist_name}' is already stashed.\n"
+                f"Use 'git cl unstash {changelist_name}' to restore it first.")
+
+    return ""
+
+
+def clutil_check_branch_exists(branch_name: str) -> bool:
+    """Check if a branch already exists."""
+    try:
+        result = subprocess.run(["git", "show-ref", "--verify", f"refs/heads/{branch_name}"],
+                               capture_output=True, text=True, check=False)
+        return result.returncode == 0
+    except subprocess.CalledProcessError:
+        return False
+
+
+def clutil_check_unassigned_changes(changelists: dict, git_root: Path) -> list[str]:
+    """Check for uncommitted changes not in any changelist."""
+    status_map = clutil_get_file_status_map(show_all=True)
+
+    # Get all files assigned to changelists
+    assigned_files = set()
+    for files in changelists.values():
+        for file_path in files:
+            try:
+                abs_path = (git_root / file_path).resolve()
+                rel_path = abs_path.relative_to(git_root).as_posix()
+                assigned_files.add(rel_path)
+            except (ValueError, OSError):
+                continue
+
+    # Check for unassigned changes (ignore untracked files)
+    return [file_path for file_path, status in status_map.items()
+            if file_path not in assigned_files and status != "??"]
+
+
+def clutil_execute_stash_all() -> None:
+    """Execute stash all operation."""
+    temp_args = argparse.Namespace()
+    temp_args.all = True
+    cl_stash(temp_args)
+
+
+def clutil_create_branch(branch_name: str, base_branch: str, current_branch: str) -> None:
+    """Create new branch from base."""
+    if base_branch != current_branch:
+        # Create branch from specified base
+        subprocess.run(["git", "checkout", "-b", branch_name, base_branch], check=True)
+    else:
+        # Create branch from current HEAD
+        subprocess.run(["git", "checkout", "-b", branch_name], check=True)
+
+
+def clutil_unstash_changelist(changelist_name: str) -> None:
+    """Unstash specific changelist."""
+    temp_unstash_args = argparse.Namespace()
+    temp_unstash_args.name = changelist_name
+    temp_unstash_args.force = False
+    temp_unstash_args.all = False
+    cl_unstash(temp_unstash_args)
+
+
+def clutil_handle_branch_creation_failure() -> None:
+    """Handle failure during branch creation by restoring stashes."""
+    try:
+        temp_unstash_args = argparse.Namespace()
+        temp_unstash_args.all = True
+        temp_unstash_args.force = True
+        cl_unstash(temp_unstash_args)
+    except Exception as restore_error:
+        print(f"Error restoring stashes: {restore_error}")
+        print("You may need to manually unstash: git cl unstash --all")
+
+
 def cl_branch(args: argparse.Namespace) -> None:
     """
-    Create a new branch with changelist workflow: stash all changelists, 
+    Create a new branch with changelist workflow: stash all changelists,
     create branch, unstash specified changelist.
 
     This automates the common workflow of:
@@ -2596,66 +2682,28 @@ def cl_branch(args: argparse.Namespace) -> None:
     stashes = clutil_load_stashes()
 
     changelist_name = args.changelist_name
-    if hasattr(args, 'branch_name') and args.branch_name:
-        branch_name = args.branch_name
-    else:
-        branch_name = changelist_name
+    branch_name = getattr(args, 'branch_name', None) or changelist_name
 
-    # Validate changelist exists and is active (not stashed)
-    if changelist_name not in changelists:
-        print(f"Error: Changelist '{changelist_name}' not found.")
-        available = [name for name in changelists.keys() if changelists[name]]
-        if available:
-            print("Available active changelists:")
-            for name in available:
-                print(f"  {name}")
-        return
-
-    if not changelists[changelist_name]:
-        print(f"Error: Changelist '{changelist_name}' is empty.")
-        print(f"Add files with: git cl add {changelist_name} <files>")
-        return
-
-    if changelist_name in stashes:
-        print(f"Error: Changelist '{changelist_name}' is already stashed.")
-        print(f"Use 'git cl unstash {changelist_name}' to restore it first.")
+    # Validate changelist exists and is active
+    error_msg = clutil_validate_branch_preconditions(changelist_name, changelists, stashes)
+    if error_msg:
+        print(error_msg)
         return
 
     # Check if branch already exists
-    try:
-        result = subprocess.run(["git", "show-ref", "--verify", f"refs/heads/{branch_name}"],
-                               capture_output=True, text=True, check=False)
-        if result.returncode == 0:
-            print(f"Error: Branch '{branch_name}' already exists.")
-            print(f"Use a different branch name: git cl br {changelist_name} <new-branch-name>")
-            return
-    except subprocess.CalledProcessError:
-        pass  # Branch doesn't exist, which is what we want
+    if clutil_check_branch_exists(branch_name):
+        print(f"Error: Branch '{branch_name}' already exists.")
+        print(f"Use a different branch name: git cl br {changelist_name} <new-branch-name>")
+        return
 
     # Check for uncommitted changes not in any changelist
     git_root = clutil_get_git_root()
-    status_map = clutil_get_file_status_map(show_all=True)
-
-    # Get all files assigned to changelists
-    assigned_files = set()
-    for cl_name, files in changelists.items():
-        for file_path in files:
-            try:
-                abs_path = (git_root / file_path).resolve()
-                rel_path = abs_path.relative_to(git_root).as_posix()
-                assigned_files.add(rel_path)
-            except (ValueError, OSError):
-                continue
-
-    # Check for unassigned changes
-    unassigned_changes = []
-    for file_path, status in status_map.items():
-        if file_path not in assigned_files and status != "??":  # Ignore untracked files
-            unassigned_changes.append(file_path)
+    unassigned_changes = clutil_check_unassigned_changes(changelists, git_root)
 
     if unassigned_changes:
         print("Error: There are uncommitted changes not in any changelist:")
         for file_path in unassigned_changes[:10]:  # Show first 10
+            status_map = clutil_get_file_status_map(show_all=True)
             print(f"  [{status_map[file_path]}] {file_path}")
         if len(unassigned_changes) > 10:
             print(f"  ... and {len(unassigned_changes) - 10} more files")
@@ -2680,19 +2728,15 @@ def cl_branch(args: argparse.Namespace) -> None:
     print(f"  Files in changelist: {len(changelists[changelist_name])}")
 
     # Step 1: Stash all active changelists
-    print(f"\n1. Stashing all active changelists...")
+    print("\n1. Stashing all active changelists...")
     active_changelists = {name: files for name, files in changelists.items() if files}
     if len(active_changelists) == 1:
         print(f"   Only '{changelist_name}' is active - will stash it.")
     else:
         print(f"   Stashing {len(active_changelists)} active changelists.")
 
-    # Use existing stash-all functionality
-    temp_args = argparse.Namespace()
-    temp_args.all = True
-
     try:
-        cl_stash(temp_args)
+        clutil_execute_stash_all()
     except Exception as error:
         print(f"Error during stash operation: {error}")
         print("Branch creation aborted.")
@@ -2701,40 +2745,21 @@ def cl_branch(args: argparse.Namespace) -> None:
     # Step 2: Create the new branch
     print(f"\n2. Creating branch '{branch_name}' from '{base_branch}'...")
     try:
-        if base_branch != current_branch:
-            # Create branch from specified base
-            subprocess.run(["git", "checkout", "-b", branch_name, base_branch], check=True)
-        else:
-            # Create branch from current HEAD
-            subprocess.run(["git", "checkout", "-b", branch_name], check=True)
+        clutil_create_branch(branch_name, base_branch, current_branch)
         print(f"   ✓ Created and switched to branch '{branch_name}'")
     except subprocess.CalledProcessError as error:
         print(f"Error creating branch: {error}")
         print("Attempting to restore stashed changelists...")
-
-        # Try to restore what we stashed
-        try:
-            temp_unstash_args = argparse.Namespace()
-            temp_unstash_args.all = True
-            temp_unstash_args.force = True
-            cl_unstash(temp_unstash_args)
-        except Exception as restore_error:
-            print(f"Error restoring stashes: {restore_error}")
-            print("You may need to manually unstash: git cl unstash --all")
+        clutil_handle_branch_creation_failure()
         return
 
     # Step 3: Unstash the target changelist
     print(f"\n3. Unstashing changelist '{changelist_name}' to branch '{branch_name}'...")
-    temp_unstash_args = argparse.Namespace()
-    temp_unstash_args.name = changelist_name
-    temp_unstash_args.force = False
-    temp_unstash_args.all = False
-
     try:
-        cl_unstash(temp_unstash_args)
-        print(f"\n✓ Branch workflow completed successfully!")
+        clutil_unstash_changelist(changelist_name)
+        print("\n✓ Branch workflow completed successfully!")
         print(f"✓ Now on branch '{branch_name}' with changelist '{changelist_name}' ready for work")
-        print(f"✓ Other changelists remain stashed and can be unstashed later")
+        print("✓ Other changelists remain stashed and can be unstashed later")
 
     except Exception as error:
         print(f"Error unstashing changelist: {error}")

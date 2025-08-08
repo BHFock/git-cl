@@ -2578,6 +2578,167 @@ def cl_unstash(args: argparse.Namespace) -> None:
                                    files, changelists, stashes)
 
 
+def cl_branch(args: argparse.Namespace) -> None:
+    """
+    Create a new branch with changelist workflow: stash all changelists, 
+    create branch, unstash specified changelist.
+
+    This automates the common workflow of:
+    1. Stash all active changelists to clean working directory
+    2. Create a new branch from current HEAD (or specified base)
+    3. Unstash the specified changelist to the new branch
+
+    Args:
+        args: argparse.Namespace with 'changelist_name', optional 'branch_name',
+              and optional 'from_branch' attributes.
+    """
+    changelists = clutil_load()
+    stashes = clutil_load_stashes()
+
+    changelist_name = args.changelist_name
+    branch_name = args.branch_name if hasattr(args, 'branch_name') and args.branch_name else changelist_name
+
+    # Validate changelist exists and is active (not stashed)
+    if changelist_name not in changelists:
+        print(f"Error: Changelist '{changelist_name}' not found.")
+        available = [name for name in changelists.keys() if changelists[name]]
+        if available:
+            print("Available active changelists:")
+            for name in available:
+                print(f"  {name}")
+        return
+
+    if not changelists[changelist_name]:
+        print(f"Error: Changelist '{changelist_name}' is empty.")
+        print(f"Add files with: git cl add {changelist_name} <files>")
+        return
+
+    if changelist_name in stashes:
+        print(f"Error: Changelist '{changelist_name}' is already stashed.")
+        print(f"Use 'git cl unstash {changelist_name}' to restore it first.")
+        return
+
+    # Check if branch already exists
+    try:
+        result = subprocess.run(["git", "show-ref", "--verify", f"refs/heads/{branch_name}"],
+                               capture_output=True, text=True, check=False)
+        if result.returncode == 0:
+            print(f"Error: Branch '{branch_name}' already exists.")
+            print(f"Use a different branch name: git cl br {changelist_name} <new-branch-name>")
+            return
+    except subprocess.CalledProcessError:
+        pass  # Branch doesn't exist, which is what we want
+
+    # Check for uncommitted changes not in any changelist
+    git_root = clutil_get_git_root()
+    status_map = clutil_get_file_status_map(show_all=True)
+
+    # Get all files assigned to changelists
+    assigned_files = set()
+    for cl_name, files in changelists.items():
+        for file_path in files:
+            try:
+                abs_path = (git_root / file_path).resolve()
+                rel_path = abs_path.relative_to(git_root).as_posix()
+                assigned_files.add(rel_path)
+            except (ValueError, OSError):
+                continue
+
+    # Check for unassigned changes
+    unassigned_changes = []
+    for file_path, status in status_map.items():
+        if file_path not in assigned_files and status != "??":  # Ignore untracked files
+            unassigned_changes.append(file_path)
+
+    if unassigned_changes:
+        print("Error: There are uncommitted changes not in any changelist:")
+        for file_path in unassigned_changes[:10]:  # Show first 10
+            print(f"  [{status_map[file_path]}] {file_path}")
+        if len(unassigned_changes) > 10:
+            print(f"  ... and {len(unassigned_changes) - 10} more files")
+        print("\nPlease assign these files to changelists first:")
+        print(f"  git cl add <changelist-name> {' '.join(unassigned_changes[:3])}")
+        return
+
+    # Get current branch for messaging
+    current_branch = clutil_get_current_branch()
+    if not current_branch:
+        print("Error: Cannot create branch from detached HEAD state.")
+        print("Switch to a branch first: git checkout <branch-name>")
+        return
+
+    # Determine base branch
+    base_branch = getattr(args, 'from_branch', None) or current_branch
+    
+    print(f"Creating branch workflow for changelist '{changelist_name}':")
+    print(f"  Current branch: {current_branch}")
+    print(f"  New branch: {branch_name}")
+    print(f"  Base branch: {base_branch}")
+    print(f"  Files in changelist: {len(changelists[changelist_name])}")
+
+    # Step 1: Stash all active changelists
+    print(f"\n1. Stashing all active changelists...")
+    active_changelists = {name: files for name, files in changelists.items() if files}
+    if len(active_changelists) == 1:
+        print(f"   Only '{changelist_name}' is active - will stash it.")
+    else:
+        print(f"   Stashing {len(active_changelists)} active changelists.")
+
+    # Use existing stash-all functionality
+    temp_args = argparse.Namespace()
+    temp_args.all = True
+
+    try:
+        cl_stash(temp_args)
+    except Exception as error:
+        print(f"Error during stash operation: {error}")
+        print("Branch creation aborted.")
+        return
+
+    # Step 2: Create the new branch
+    print(f"\n2. Creating branch '{branch_name}' from '{base_branch}'...")
+    try:
+        if base_branch != current_branch:
+            # Create branch from specified base
+            subprocess.run(["git", "checkout", "-b", branch_name, base_branch], check=True)
+        else:
+            # Create branch from current HEAD
+            subprocess.run(["git", "checkout", "-b", branch_name], check=True)
+        print(f"   ✓ Created and switched to branch '{branch_name}'")
+    except subprocess.CalledProcessError as error:
+        print(f"Error creating branch: {error}")
+        print("Attempting to restore stashed changelists...")
+
+        # Try to restore what we stashed
+        try:
+            temp_unstash_args = argparse.Namespace()
+            temp_unstash_args.all = True
+            temp_unstash_args.force = True
+            cl_unstash(temp_unstash_args)
+        except Exception as restore_error:
+            print(f"Error restoring stashes: {restore_error}")
+            print("You may need to manually unstash: git cl unstash --all")
+        return
+
+    # Step 3: Unstash the target changelist
+    print(f"\n3. Unstashing changelist '{changelist_name}' to branch '{branch_name}'...")
+    temp_unstash_args = argparse.Namespace()
+    temp_unstash_args.name = changelist_name
+    temp_unstash_args.force = False
+    temp_unstash_args.all = False
+
+    try:
+        cl_unstash(temp_unstash_args)
+        print(f"\n✓ Branch workflow completed successfully!")
+        print(f"✓ Now on branch '{branch_name}' with changelist '{changelist_name}' ready for work")
+        print(f"✓ Other changelists remain stashed and can be unstashed later")
+
+    except Exception as error:
+        print(f"Error unstashing changelist: {error}")
+        print(f"Branch '{branch_name}' was created but changelist restore failed.")
+        print(f"Try manually: git cl unstash {changelist_name}")
+
+
 def cl_help(args: argparse.Namespace) -> None:
     """
     Displays the main help message using argparse's built-in formatting.
@@ -2829,6 +2990,24 @@ def main() -> None:
                                       "conflicts detected"))
     unstash_parser.set_defaults(func=cl_unstash)
 
+    # branch
+    branch_parser = subparsers.add_parser('branch', aliases=['br'],
+                                      help='Create branch from changelist workflow',
+                                      description=(
+                                          "Automate the changelist-to-branch workflow: "
+                                          "stash all active changelists, create a new "
+                                          "branch, and unstash the specified changelist "
+                                          "to the new branch. This provides a clean "
+                                          "way to move changelist work to a dedicated "
+                                          "feature branch."))
+    branch_parser.add_argument('changelist_name', metavar='CHANGELIST',
+                          help='Name of the changelist to create branch for')
+    branch_parser.add_argument('branch_name', metavar='BRANCH', nargs='?',
+                          help='Name of the new branch (defaults to changelist name)')
+    branch_parser.add_argument('--from', dest='from_branch', metavar='BASE_BRANCH',
+                          help='Create branch from specified base branch (default: current branch)')
+    branch_parser.set_defaults(func=cl_branch)
+    
     # help command
     help_parser = subparsers.add_parser('help',
                                         help='Show this help message',

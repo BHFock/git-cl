@@ -2190,7 +2190,7 @@ def cl_checkout(args: argparse.Namespace) -> None:
         if name not in changelists:
             missing_changelists.append(name)
             continue
-            
+
         files = changelists[name]
         if not files:
             print(f"Warning: Changelist '{name}' is empty.")
@@ -2205,7 +2205,7 @@ def cl_checkout(args: argparse.Namespace) -> None:
             print(f"  {name}")
         if not all_files:  # No valid changelists found
             return
-    
+
     if not all_files:
         print("No files to checkout.")
         return
@@ -2253,7 +2253,7 @@ def cl_checkout(args: argparse.Namespace) -> None:
 
     # Perform the checkout
     try:
-        subprocess.run(["git", "checkout", "HEAD", "--"] + checkout_files, 
+        subprocess.run(["git", "checkout", "HEAD", "--"] + checkout_files,
                       check=True)
         print(f"Successfully reverted {len(checkout_files)} file(s) to HEAD state.")
 
@@ -2261,8 +2261,8 @@ def cl_checkout(args: argparse.Namespace) -> None:
         print("\nFiles reverted by changelist:")
         for name in args.names:
             if name in changelists and changelists[name]:
-                reverted_count = sum(1 for f in changelists[name] 
-                                   if f in all_files and 
+                reverted_count = sum(1 for f in changelists[name]
+                                   if f in all_files and
                                    (git_root / f).resolve().exists())
                 if reverted_count > 0:
                     print(f"  {name}: {reverted_count} files")
@@ -2689,7 +2689,7 @@ def main() -> None:
     checkout_parser.add_argument('--force', '-f', action='store_true',
                                 help='Skip confirmation prompt')
     checkout_parser.set_defaults(func=cl_checkout)
-    
+
     # stage
     stage_parser = subparsers.add_parser('stage',
                                          help=("Stage tracked files from a "

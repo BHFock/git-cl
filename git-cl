@@ -1590,6 +1590,11 @@ def clutil_verify_and_update_stash_ref(
     """
     Verify stash still exists and update reference if needed.
 
+    Checks if the stash for the given changelist still exists and updates
+    the stash reference if it has changed (due to other stash operations).
+    The updated reference is persisted to the stash metadata file to prevent
+    future reference drift.
+
     Args:
         base_name: Changelist name
         old_stash_ref: Previously stored stash reference
@@ -1617,6 +1622,12 @@ def clutil_verify_and_update_stash_ref(
     if current_stash_ref != old_stash_ref:
         print(f"Note: Stash reference updated from {old_stash_ref} "
               f"to {current_stash_ref}")
+
+        # Persist the updated reference to prevent future drift
+        stashes = clutil_load_stashes()
+        if base_name in stashes:
+            stashes[base_name]["stash_ref"] = current_stash_ref
+            clutil_save_stashes(stashes)
 
     return current_stash_ref
 

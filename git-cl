@@ -2167,6 +2167,112 @@ def cl_diff(args: argparse.Namespace) -> None:
         print(f"Error running git diff: {error}")
 
 
+def cl_checkout(args: argparse.Namespace) -> None:
+    """
+    Checkout (revert) files from one or more changelists to their HEAD state.
+
+    This discards local changes in the working directory for the specified files,
+    reverting them to their last committed state. Useful for undoing unwanted
+    local modifications.
+ 
+    Args:
+        args: argparse.Namespace with 'names' list of changelist names,
+              and optional 'force' flag for confirmation.
+    """
+    changelists = clutil_load()
+    git_root = clutil_get_git_root()
+
+    # Collect all files from specified changelists
+    all_files = []
+    missing_changelists = []
+
+    for name in args.names:
+        if name not in changelists:
+            missing_changelists.append(name)
+            continue
+
+        files = changelists[name]
+        if not files:
+            print(f"Warning: Changelist '{name}' is empty.")
+            continue
+
+        all_files.extend(files)
+
+    # Report missing changelists
+    if missing_changelists:
+        print(f"Error: The following changelists were not found:")
+        for name in missing_changelists:
+            print(f"  {name}")
+        if not all_files:  # No valid changelists found
+            return
+
+    if not all_files:
+        print("No files to checkout.")
+        return
+
+    # Convert to paths relative to current working directory for git command
+    checkout_files = []
+    missing_files = []
+
+    for stored_path in all_files:
+        abs_path = (git_root / stored_path).resolve()
+
+        if not abs_path.exists():
+            missing_files.append(stored_path)
+            continue
+
+        rel_to_cwd = os.path.relpath(abs_path, Path.cwd())
+        checkout_files.append(rel_to_cwd)
+
+    # Report missing files
+    if missing_files:
+        print("Warning: The following files do not exist and will be skipped:")
+        for file_path in missing_files:
+            print(f"  {file_path}")
+
+    if not checkout_files:
+        print("No existing files to checkout.")
+        return
+
+    # Show what will be affected and ask for confirmation unless --force
+    print(f"This will discard local changes in {len(checkout_files)} file(s):")
+    for file_path in checkout_files[:10]:  # Show first 10 files
+        print(f"  {file_path}")
+    if len(checkout_files) > 10:
+        print(f"  ... and {len(checkout_files) - 10} more files")
+
+    if not args.force:
+        try:
+            response = input("\nProceed? [y/N]: ").strip().lower()
+            if response not in ('y', 'yes'):
+                print("Checkout cancelled.")
+                return
+        except (EOFError, KeyboardInterrupt):
+            print("\nCheckout cancelled.")
+            return
+
+    # Perform the checkout
+    try:
+        subprocess.run(["git", "checkout", "HEAD", "--"] + checkout_files,
+                      check=True)
+        print(f"Successfully reverted {len(checkout_files)} file(s) to HEAD state.")
+
+        # Show summary by changelist
+        print("\nFiles reverted by changelist:")
+        for name in args.names:
+            if name in changelists and changelists[name]:
+                reverted_count = sum(1 for f in changelists[name]
+                                   if f in all_files and
+                                   (git_root / f).resolve().exists())
+                if reverted_count > 0:
+                    print(f"  {name}: {reverted_count} files")
+
+    except subprocess.CalledProcessError as error:
+        print(f"Error during checkout: {error}")
+        print("Some files may not have been reverted.")
+        return
+
+
 def cl_remove(args: argparse.Namespace) -> None:
     """
     Removes one or more files from any changelists they are part of.
@@ -2562,6 +2668,27 @@ def main() -> None:
     diff_parser.add_argument('--both', action='store_true',
                              help='Show both unstaged and staged diffs')
     diff_parser.set_defaults(func=cl_diff)
+
+    # checkout
+    checkout_parser = subparsers.add_parser('checkout', aliases=['co'],
+                                            help=("Checkout (revert) files "
+                                                  "from changelists"),
+                                            description=(
+                                                "Revert files in one or more "
+                                                "changelists to their HEAD "
+                                                "state, discarding both "
+                                                "staged and unstaged changes "
+                                                "in those files. This "
+                                                "completely restores files "
+                                                "to their last committed "
+                                                "state. By default, asks for "
+                                                " confirmation before "
+                                                "proceeding."))
+    checkout_parser.add_argument('names', metavar='CHANGELIST', nargs='+',
+                                help='One or more changelists to checkout')
+    checkout_parser.add_argument('--force', '-f', action='store_true',
+                                help='Skip confirmation prompt')
+    checkout_parser.set_defaults(func=cl_checkout)
 
     # stage
     stage_parser = subparsers.add_parser('stage',

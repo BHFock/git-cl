@@ -81,7 +81,10 @@ git cl unstash docs-fix
 - Requires Python 3.9+, Git, and a Unix-like OS
 - Changelists are local and not version-controlled
 - Designed for single-user workflows, concurrent operations may conflict
-- See the [tutorial](docs/tutorial.md) for full details
+- Always inspect downloaded scripts before executing. See [git-cl](https://github.com/BHFock/git-cl) for source.
+
+📘 See the full [git-cl tutorial](https://github.com/BHFock/git-cl/blob/main/docs/tutorial.md).
+
   
 ## Project status
 

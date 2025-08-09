@@ -928,23 +928,26 @@ def clutil_rollback_stash(stash_ref: str, changelist_name: str) -> bool:
               f"'{changelist_name}'")
         return False
 
-
-def clutil_stash_all_changelists(changelists: dict[str, list[str]]) -> None:
+def clutil_stash_all_changelists(changelists: dict[str, list[str]], quiet: bool = False) -> None:
     """
     Helper function to stash all active changelists.
 
     Args:
         changelists: Dictionary of active changelists
+        quiet: If True, suppress verbose output for workflow contexts
     """
     if not changelists:
-        print("No active changelists found.")
+        if not quiet:
+            print("No active changelists found.")
         return
 
     # Get current branch for tracking
     current_branch = clutil_get_current_branch()
 
-    print(f"Stashing all active changelists from branch "
-          f"'{current_branch or 'detached HEAD'}':")
+    if not quiet:
+        print(f"Stashing all active changelists from branch "
+              f"'{current_branch or 'detached HEAD'}':")
+
     success_count = 0
 
     # Sort changelists by name for predictable order
@@ -954,30 +957,33 @@ def clutil_stash_all_changelists(changelists: dict[str, list[str]]) -> None:
         if not files:  # Skip empty changelists
             continue
 
-        print(f"\n--- Stashing '{cl_name}' ---")
+        if not quiet:
+            print(f"\n--- Stashing '{cl_name}' ---")
+
         # Create a temporary args object for individual stash
         temp_args = argparse.Namespace()
         temp_args.name = cl_name
         temp_args.all = False
 
         try:
-            # Note: cl_stash is called later in the module
-            cl_stash(temp_args)
+            # Call cl_stash with quiet mode
+            cl_stash(temp_args, quiet=quiet)
             success_count += 1
         except (OSError, subprocess.CalledProcessError,
                 json.JSONDecodeError) as error:
             print(f"Failed to stash '{cl_name}': {error}")
             continue
 
-    print(
-        f"\nStashed {success_count}/"
-        f"{len([cl for cl, files in sorted_changelists if files])} "
-        "changelists successfully."
-    )
-    if success_count > 0:
-        print("Working directory should now be clean for branch operations.")
-        print("Use 'git cl unstash <changelist>' to restore individual "
-              "changelists to feature branches.")
+    if not quiet:
+        print(
+            f"\nStashed {success_count}/"
+            f"{len([cl for cl, files in sorted_changelists if files])} "
+            "changelists successfully."
+        )
+        if success_count > 0:
+            print("Working directory should now be clean for branch operations.")
+            print("Use 'git cl unstash <changelist>' to restore individual "
+                  "changelists to feature branches.")
 
 
 def clutil_validate_stash_preconditions(
@@ -1101,7 +1107,8 @@ def clutil_categorize_files_for_stash(
 def clutil_report_stash_categorization(
     file_categories: dict[str, list[str]],
     unstashable_files: list[str],
-    name: str
+    name: str,
+    quiet: bool = False
 ) -> bool:
     """
     Report file categorization results and check if stash can proceed.
@@ -1110,23 +1117,25 @@ def clutil_report_stash_categorization(
         file_categories: Categorized files
         unstashable_files: List of unstashable files
         name: Changelist name
+        quiet: If True, suppress verbose output
 
     Returns:
         True if stash can proceed, False otherwise
     """
-    # Report what we found
-    if file_categories['unstaged_changes']:
-        print(f"Files with unstaged changes: "
-              f"{len(file_categories['unstaged_changes'])}")
-    if file_categories['staged_additions']:
-        print(f"Newly added files: "
-              f"{len(file_categories['staged_additions'])}")
-    if file_categories['untracked']:
-        print(f"Untracked files: {len(file_categories['untracked'])}")
-    if file_categories['deleted_files']:
-        print(f"Deleted files: {len(file_categories['deleted_files'])}")
+    # Report what we found (unless in quiet mode)
+    if not quiet:
+        if file_categories['unstaged_changes']:
+            print(f"Files with unstaged changes: "
+                  f"{len(file_categories['unstaged_changes'])}")
+        if file_categories['staged_additions']:
+            print(f"Newly added files: "
+                  f"{len(file_categories['staged_additions'])}")
+        if file_categories['untracked']:
+            print(f"Untracked files: {len(file_categories['untracked'])}")
+        if file_categories['deleted_files']:
+            print(f"Deleted files: {len(file_categories['deleted_files'])}")
 
-    # Check for unstashable files and report
+    # Check for unstashable files and report (always show errors)
     if unstashable_files:
         print(f"\nError: Cannot stash changelist '{name}' "
               f"because these files are not stashable:")
@@ -1162,7 +1171,8 @@ def clutil_report_stash_categorization(
 def clutil_prepare_files_for_git_stash(
     stashable_files: list[str],
     file_categories: dict[str, list[str]],
-    git_root: Path
+    git_root: Path,
+    quiet: bool = False
 ) -> tuple[list[str], list[str]]:
     """
     Prepare file paths for git stash command.
@@ -1171,6 +1181,7 @@ def clutil_prepare_files_for_git_stash(
         stashable_files: List of files to stash
         file_categories: Categorized files
         git_root: Git repository root
+        quiet: If True, suppress verbose output
 
     Returns:
         Tuple of (files_for_git, untracked_files_for_git)
@@ -1189,7 +1200,8 @@ def clutil_prepare_files_for_git_stash(
     # Handle untracked files specially - they need to be added to git first for stashing
     untracked_files_for_git = []
     if file_categories['untracked']:
-        print("Adding untracked files to git temporarily for stashing...")
+        if not quiet:
+            print("Adding untracked files to git temporarily for stashing...")
         for stored_path in file_categories['untracked']:
             abs_path = (git_root / stored_path).resolve()
             rel_to_cwd = os.path.relpath(abs_path, Path.cwd())
@@ -1557,7 +1569,8 @@ def clutil_check_and_report_conflicts(
     files: list[str],
     git_root: Path,
     base_name: str,
-    force: bool
+    force: bool,
+    quiet: bool = False
 ) -> bool:
     """
     Check for conflicts and report them to user.
@@ -1567,6 +1580,7 @@ def clutil_check_and_report_conflicts(
         git_root: Git repository root
         base_name: Changelist name
         force: Whether to force despite conflicts
+        quiet: If True, suppress verbose output
 
     Returns:
         True if unstash can proceed, False otherwise
@@ -1589,32 +1603,33 @@ def clutil_check_and_report_conflicts(
               f"git cl unstash {base_name} --force")
         return False
 
-    # Show informational status for non-conflicting files
-    safe_files = [f for f in files if f not in real_conflicts]
-    if safe_files:
-        staged_files = []
-        clean_files = []
-        missing_files = []
-        for file_path in safe_files:
-            status_desc = file_status_info.get(file_path, "")
-            if "staged" in status_desc:
-                staged_files.append(file_path)
-            elif "clean" in status_desc:
-                clean_files.append(file_path)
-            elif "missing" in status_desc:
-                missing_files.append(file_path)
+    # Show informational status for non-conflicting files (unless quiet)
+    if not quiet:
+        safe_files = [f for f in files if f not in real_conflicts]
+        if safe_files:
+            staged_files = []
+            clean_files = []
+            missing_files = []
+            for file_path in safe_files:
+                status_desc = file_status_info.get(file_path, "")
+                if "staged" in status_desc:
+                    staged_files.append(file_path)
+                elif "clean" in status_desc:
+                    clean_files.append(file_path)
+                elif "missing" in status_desc:
+                    missing_files.append(file_path)
 
-        status_summary = []
-        if clean_files:
-            status_summary.append(f"{len(clean_files)} clean")
-        if missing_files:
-            status_summary.append(f"{len(missing_files)} to be restored")
-        if staged_files:
-            status_summary.append(f"{len(staged_files)} with staged changes")
+            status_summary = []
+            if clean_files:
+                status_summary.append(f"{len(clean_files)} clean")
+            if missing_files:
+                status_summary.append(f"{len(missing_files)} to be restored")
+            if staged_files:
+                status_summary.append(f"{len(staged_files)} with staged changes")
 
-        if status_summary:
-            print(f"Ready to unstash {len(safe_files)} "
-                  f"files: {', '.join(status_summary)}")
+            if status_summary:
+                print(f"Ready to unstash {len(safe_files)} "
+                      f"files: {', '.join(status_summary)}")
 
     return True
 
@@ -1669,20 +1684,22 @@ def clutil_verify_and_update_stash_ref(
     return current_stash_ref
 
 
-def clutil_apply_stash(stash_ref: str, base_name: str) -> bool:
+def clutil_apply_stash(stash_ref: str, base_name: str, quiet: bool = False) -> bool:
     """
     Apply the stash using git stash pop.
 
     Args:
         stash_ref: Git stash reference
         base_name: Changelist name for error messages
+        quiet: If True, suppress verbose output
 
     Returns:
         True if successful, False if conflicts occurred
     """
-    current_branch = clutil_get_current_branch()
-    branch_info = f" to branch '{current_branch}'" if current_branch else ""
-    print(f"Unstashing changelist '{base_name}'{branch_info}...")
+    if not quiet:
+        current_branch = clutil_get_current_branch()
+        branch_info = f" to branch '{current_branch}'" if current_branch else ""
+        print(f"Unstashing changelist '{base_name}'{branch_info}...")
 
     try:
         result = subprocess.run(["git", "stash", "pop", stash_ref],
@@ -1749,7 +1766,8 @@ def clutil_update_unstash_metadata(
     stash_key: str,
     files: list[str],
     changelists: dict[str, list[str]],
-    stashes: dict[str, dict]
+    stashes: dict[str, dict],
+    quiet: bool = False
 ) -> None:
     """
     Update metadata after successful unstash.
@@ -1760,6 +1778,7 @@ def clutil_update_unstash_metadata(
         files: List of files in the changelist
         changelists: Active changelists dictionary (will be modified)
         stashes: Stashed changelists dictionary (will be modified)
+        quiet: If True, suppress verbose output
     """
     try:
         changelists[base_name] = files.copy()
@@ -1768,8 +1787,9 @@ def clutil_update_unstash_metadata(
         del stashes[stash_key]
         clutil_save_stashes(stashes)
 
-        current_branch = clutil_get_current_branch()
-        clutil_process_unstash_result(base_name, files, current_branch)
+        if not quiet:
+            current_branch = clutil_get_current_branch()
+            clutil_process_unstash_result(base_name, files, current_branch)
 
     except (OSError, subprocess.CalledProcessError,
             json.JSONDecodeError) as metadata_error:
@@ -2048,7 +2068,7 @@ def clutil_unstash_changelist(changelist_name: str) -> None:
     temp_unstash_args.name = changelist_name
     temp_unstash_args.force = False
     temp_unstash_args.all = False
-    cl_unstash(temp_unstash_args)
+    cl_unstash(temp_unstash_args, quiet=True)  # Add quiet=True here
 
 
 def clutil_handle_branch_creation_failure() -> None:
@@ -2561,7 +2581,7 @@ def cl_commit(args: argparse.Namespace) -> None:
         print(f"Kept changelist '{name}'")
 
 
-def cl_stash(args: argparse.Namespace) -> None:
+def cl_stash(args: argparse.Namespace, quiet: bool = False) -> None:
     """
     Stash all unstaged changes for files in specified changelist(s).
     Supports --all to stash all active changelists.
@@ -2575,13 +2595,14 @@ def cl_stash(args: argparse.Namespace) -> None:
     Args:
         args: argparse.Namespace with 'name'
               (or None for --all), 'all' attributes.
+        quiet: If True, suppress verbose output for workflow contexts
     """
     changelists = clutil_load()
     stashes = clutil_load_stashes()
 
     # Handle --all flag
     if getattr(args, 'all', False):
-        clutil_stash_all_changelists(changelists)
+        clutil_stash_all_changelists(changelists, quiet=quiet)
         return
 
     # Handle single changelist stash
@@ -2606,26 +2627,28 @@ def cl_stash(args: argparse.Namespace) -> None:
     )
     file_categories, stashable_files, unstashable_files = categorization
 
-    # Report categorization and check if we can proceed
+    # Report categorization and check if we can proceed (suppress in quiet mode)
     if not clutil_report_stash_categorization(file_categories,
-                                              unstashable_files, name):
+                                              unstashable_files, name, quiet=quiet):
         return
 
     if not stashable_files:
-        print(f"No stashable files found in changelist '{name}'.")
+        if not quiet:
+            print(f"No stashable files found in changelist '{name}'.")
         return
 
     # Prepare files for git stash command
     current_branch = clutil_get_current_branch()
-    if current_branch:
-        branch_info = f" from branch '{current_branch}'"
-    else:
-        branch_info = " from detached HEAD"
-    print(f"\nStashing {len(stashable_files)} file(s) "
-          f"from changelist '{name}'{branch_info}...")
+    if not quiet:
+        if current_branch:
+            branch_info = f" from branch '{current_branch}'"
+        else:
+            branch_info = " from detached HEAD"
+        print(f"\nStashing {len(stashable_files)} file(s) "
+              f"from changelist '{name}'{branch_info}...")
 
     files_for_git, untracked_files_for_git = clutil_prepare_files_for_git_stash(
-        stashable_files, file_categories, git_root
+        stashable_files, file_categories, git_root, quiet=quiet
     )
 
     # Execute git stash
@@ -2643,17 +2666,17 @@ def cl_stash(args: argparse.Namespace) -> None:
             name, stash_ref, files, file_categories, changelists, stashes
         )
 
-        # Success! All atomic operations completed
-        clutil_print_stash_success(name, stashable_files,
-                                   file_categories, current_branch)
+        # Success! Print appropriate message based on context
+        if not quiet:
+            clutil_print_stash_success(name, stashable_files,
+                                       file_categories, current_branch)
 
     except (OSError, subprocess.CalledProcessError,
             json.JSONDecodeError) as error:
         clutil_handle_stash_failure(error, name, stash_ref,
                                     original_changelists, stashes)
 
-
-def cl_unstash(args: argparse.Namespace) -> None:
+def cl_unstash(args: argparse.Namespace, quiet: bool = False) -> None:
     """
     Restore a stashed changelist to the working directory.
     Enforces clean branch workflow by default.
@@ -2662,6 +2685,7 @@ def cl_unstash(args: argparse.Namespace) -> None:
     Args:
         args: argparse.Namespace with 'name' (or None for --all),
             'force', and 'all' attributes.
+        quiet: If True, suppress verbose output for workflow contexts
     """
     stashes = clutil_load_stashes()
     changelists = clutil_load()
@@ -2688,9 +2712,9 @@ def cl_unstash(args: argparse.Namespace) -> None:
     files = stash_data["files"]
     git_root = clutil_get_git_root()
 
-    # Check for conflicts
+    # Check for conflicts (suppress verbose output in quiet mode)
     if not clutil_check_and_report_conflicts(files, git_root, base_name,
-                                             getattr(args, 'force', False)):
+                                             getattr(args, 'force', False), quiet=quiet):
         return
 
     # Verify stash still exists and update reference
@@ -2698,13 +2722,13 @@ def cl_unstash(args: argparse.Namespace) -> None:
     if not stash_ref:
         return
 
-    # Apply the stash
-    if not clutil_apply_stash(stash_ref, base_name):
+    # Apply the stash (suppress verbose output in quiet mode)
+    if not clutil_apply_stash(stash_ref, base_name, quiet=quiet):
         return
 
-    # Success - update metadata
+    # Success - update metadata (suppress verbose output in quiet mode)
     clutil_update_unstash_metadata(base_name, stash_key,
-                                   files, changelists, stashes)
+                                   files, changelists, stashes, quiet=quiet)
 
 
 def cl_branch(args: argparse.Namespace) -> None:
@@ -2766,51 +2790,43 @@ def cl_branch(args: argparse.Namespace) -> None:
     # Determine base branch
     base_branch = getattr(args, 'from_branch', None) or current_branch
 
-    print(f"Creating branch workflow for changelist '{changelist_name}':")
-    print(f"  Current branch: {current_branch}")
-    print(f"  New branch: {branch_name}")
-    print(f"  Base branch: {base_branch}")
-    print(f"  Files in changelist: {len(changelists[changelist_name])}")
-
-    # Step 1: Stash all active changelists
-    print("\n1. Stashing all active changelists...")
+    # Count active changelists for summary
     active_changelists = {name: files for name, files in changelists.items() if files}
-    if len(active_changelists) == 1:
-        print(f"   Only '{changelist_name}' is active - will stash it.")
-    else:
-        print(f"   Stashing {len(active_changelists)} active changelists.")
 
+    print(f"Creating branch '{branch_name}' with changelist '{changelist_name}'")
+    if len(active_changelists) > 1:
+        print(f"Stashing {len(active_changelists)} active changelists...")
+
+    # Step 1: Stash all active changelists (quietly)
     try:
-        clutil_execute_stash_all()
+        clutil_stash_all_changelists(active_changelists, quiet=True)
     except Exception as error:
         print(f"Error during stash operation: {error}")
         print("Branch creation aborted.")
         return
 
     # Step 2: Create the new branch
-    print(f"\n2. Creating branch '{branch_name}' from '{base_branch}'...")
     try:
         clutil_create_branch(branch_name, base_branch, current_branch)
-        print(f"   ✓ Created and switched to branch '{branch_name}'")
+        print(f"Switched to new branch '{branch_name}'")
     except subprocess.CalledProcessError as error:
         print(f"Error creating branch: {error}")
         print("Attempting to restore stashed changelists...")
         clutil_handle_branch_creation_failure()
         return
 
-    # Step 3: Unstash the target changelist
-    print(f"\n3. Unstashing changelist '{changelist_name}' to branch '{branch_name}'...")
+    # Step 3: Unstash the target changelist (quietly)
     try:
         clutil_unstash_changelist(changelist_name)
-        print("\n✓ Branch workflow completed successfully!")
-        print(f"✓ Now on branch '{branch_name}' with changelist "
-              f"'{changelist_name}' ready for work")
-        print("✓ Other changelists remain stashed and can be unstashed later")
+
+        # Single success message
+        file_count = len(changelists.get(changelist_name, []))
+        print(f"Restored changelist '{changelist_name}' ({file_count} files)")
+        print("Ready to work on your feature!")
 
     except Exception as error:
         print(f"Error unstashing changelist: {error}")
-        print(f"Branch '{branch_name}' "
-              f"was created but changelist restore failed.")
+        print(f"Branch '{branch_name}' was created but changelist restore failed.")
         print(f"Try manually: git cl unstash {changelist_name}")
 
 

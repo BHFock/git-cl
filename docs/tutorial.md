@@ -525,7 +525,7 @@ No. Changelists are stored locally in `.git/cl.json` and are not version-control
 
 ### Do changelists persist when switching branches?
 
-Yes — changelists are local and independent of branches. This means:
+Yes — changelists are local and independent of [branches](https://git-scm.com/docs/git-branch). This means:
 
 - You can keep working on the same files across branches
 - But beware: a changelist may reference files that don't exist in the new branch

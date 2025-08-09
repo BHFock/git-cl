@@ -1564,9 +1564,18 @@ def clutil_check_and_report_conflicts(
     # Show informational status for non-conflicting files
     safe_files = [f for f in files if f not in real_conflicts]
     if safe_files:
-        staged_files = [f for f in safe_files if "staged" in file_status_info.get(f, "")]
-        clean_files = [f for f in safe_files if "clean" in file_status_info.get(f, "")]
-        missing_files = [f for f in safe_files if "missing" in file_status_info.get(f, "")]
+        staged_files = []
+        clean_files = []
+        missing_files = []
+        for file_path in safe_files:
+            status_desc = file_status_info.get(file_path, "")
+
+        if "staged" in status_desc:
+            staged_files.append(file_path)
+        elif "clean" in status_desc:
+            clean_files.append(file_path)
+        elif "missing" in status_desc:
+            missing_files.append(file_path)
 
         status_summary = []
         if clean_files:
@@ -1577,7 +1586,8 @@ def clutil_check_and_report_conflicts(
             status_summary.append(f"{len(staged_files)} with staged changes")
 
         if status_summary:
-            print(f"Ready to unstash {len(safe_files)} files: {', '.join(status_summary)}")
+            print(f"Ready to unstash {len(safe_files)} "
+                  f"files: {', '.join(status_summary)}")
 
     return True
 
@@ -1601,7 +1611,8 @@ def clutil_verify_and_update_stash_ref(
     Returns:
         Updated stash reference or None if stash doesn't exist
     """
-    current_stash_ref = clutil_find_stash_by_message_substring(f"git-cl-stash:{base_name}:")
+    current_stash_ref = clutil_find_stash_by_message_substring(f"git-cl-stash:"
+                                                               f"{base_name}:")
 
     if not current_stash_ref:
         print(f"Error: Stash for changelist '{base_name}' no longer exists.")
@@ -1958,7 +1969,8 @@ def clutil_validate_branch_preconditions(
 def clutil_check_branch_exists(branch_name: str) -> bool:
     """Check if a branch already exists."""
     try:
-        result = subprocess.run(["git", "show-ref", "--verify", f"refs/heads/{branch_name}"],
+        result = subprocess.run(["git", "show-ref", "--verify",
+                                 f"refs/heads/{branch_name}"],
                                 capture_output=True, text=True, check=False)
         return result.returncode == 0
     except subprocess.CalledProcessError:
@@ -1992,7 +2004,8 @@ def clutil_execute_stash_all() -> None:
     cl_stash(temp_args)
 
 
-def clutil_create_branch(branch_name: str, base_branch: str, current_branch: str) -> None:
+def clutil_create_branch(branch_name: str,
+                         base_branch: str, current_branch: str) -> None:
     """Create new branch from base."""
     if base_branch != current_branch:
         # Create branch from specified base

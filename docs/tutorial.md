@@ -357,7 +357,9 @@ git cl co <changelist-name>
 
 ### 3.1 Stash and Unstash Changelists
 
-You can temporarily shelve changelists using `stash`, then restore them later with `unstash`. This is useful when switching branches or pausing work on a feature.
+Sometimes you’re in the middle of a changelist but need to switch branches or pause your work — without committing it.
+
+Stash saves those changes aside, and unstash brings them back later.
 
 #### Stash a changelist
 
@@ -365,9 +367,9 @@ You can temporarily shelve changelists using `stash`, then restore them later wi
 git cl stash <changelist-name>
 ```
 
-- Saves unstaged and untracked changes from the changelist.
-- Staged changes are skipped.
-- The stash is named after the changelist and timestamped.
+- Saves all unstaged and untracked files from the changelist.
+- Staged files are left alone (so you can commit them separately).
+- The stash is named after your changelist and timestamped.
 
 #### Unstash a changelist
 
@@ -386,6 +388,7 @@ git cl stash --all
 
 - Stashes all active changelists at once
 
+Tip: Your files aren’t deleted — they’re just “put in a box” until you bring them back with unstash.
 
 ### 3.2 Create a branch from a changelist
 

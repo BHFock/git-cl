@@ -947,7 +947,7 @@ def clutil_stash_all_changelists(changelists: dict[str, list[str]], quiet: bool 
     if not quiet:
         print(f"Stashing all active changelists from branch "
               f"'{current_branch or 'detached HEAD'}':")
-    
+
     success_count = 0
 
     # Sort changelists by name for predictable order
@@ -959,7 +959,7 @@ def clutil_stash_all_changelists(changelists: dict[str, list[str]], quiet: bool 
 
         if not quiet:
             print(f"\n--- Stashing '{cl_name}' ---")
-        
+
         # Create a temporary args object for individual stash
         temp_args = argparse.Namespace()
         temp_args.name = cl_name
@@ -2792,11 +2792,11 @@ def cl_branch(args: argparse.Namespace) -> None:
 
     # Count active changelists for summary
     active_changelists = {name: files for name, files in changelists.items() if files}
-    
+
     print(f"Creating branch '{branch_name}' with changelist '{changelist_name}'")
     if len(active_changelists) > 1:
         print(f"Stashing {len(active_changelists)} active changelists...")
-    
+
     # Step 1: Stash all active changelists (quietly)
     try:
         clutil_stash_all_changelists(active_changelists, quiet=True)
@@ -2818,7 +2818,7 @@ def cl_branch(args: argparse.Namespace) -> None:
     # Step 3: Unstash the target changelist (quietly)
     try:
         clutil_unstash_changelist(changelist_name)
-        
+
         # Single success message
         file_count = len(changelists.get(changelist_name, []))
         print(f"Restored changelist '{changelist_name}' ({file_count} files)")

@@ -416,6 +416,8 @@ See [Section 4.2](#42-branching-mid-feature-with-git-cl-branch) for a worked exa
 
 ## 4. Example Workflows
 
+Perfect for developers who prefer to organise their work logically from the start, rather than managing [complex commit history](https://git-scm.com/docs/git-rebase) afterward.
+
 ### 4.1 Changelists as Named Staging Areas
 
 `git-cl` changelists function as named pre-staging areas. Instead of staging files directly, you organise them into changelists — then selectively [stage](#stage-a-changelist) or [commit](#25-commit-a-changelist) based on those names.

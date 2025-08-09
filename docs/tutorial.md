@@ -455,12 +455,6 @@ You’re not ready to commit, but you decide this optimisation deserves its own 
 git cl branch solver-opt
 ```
 
-Under the hood, this will:
-
-1. Stash all active changelists (including solver-opt).
-2. Create and check out a branch named solver-opt.
-3. Restore just the solver-opt changelist onto that branch.
-
 Your workspace will now look like you never left, but you’re on a dedicated branch:
 
 ```

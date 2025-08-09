@@ -290,7 +290,7 @@ git cl commit <changelist-name> -F commit.txt
 ```
 
 - Automatically stages and commits all tracked files in the changelist — no need to `git cl stage` or `git add` first.
-- Untracked files ([??]) are ignored unless you add them first with `git add`.
+- Untracked files ([see status codes](#common-status-codes)) are ignored unless you add them first with `git add`.
 - The changelist is deleted after commit, unless you use `--keep`.
 
 Important: This command automatically stages tracked files before committing them, so you don't need to `run git add` or `git cl stage` first. However, untracked files ([??]) in the changelists are safely ignored and will remain untracked.

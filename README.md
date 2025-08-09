@@ -18,6 +18,7 @@ Perfect for developers who prefer to organise their work logically from the star
 - Work on multiple features on a single branch
 - Stage and commit changes by intent
 - Stash changelists and resume work later
+- Create a new branch directly from a changelist
 - Local-only metadata (`.git/cl.json`)
 - Simple CLI: `git cl <command>`
 
@@ -68,6 +69,9 @@ git cl delete docs-fix
 git cl stash docs-fix
 git checkout -b docs-fix-work
 git cl unstash docs-fix
+
+# Create and switch to a new branch from a changelist (auto-stash/unstash)
+git cl br docs-fix
 ```
 
 ## Example Output

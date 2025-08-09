@@ -27,7 +27,7 @@ git-cl: A Git subcommand to manage changelists in Git. Group files by intent, ma
   - [3.2 Create a branch from a changelist](#32-create-a-branch-from-a-changelist)
 - [4. Example Workflows](#4-example-workflows)
   - [4.1 Changelists as named staging areas](#41-changelists-as-named-staging-areas)
-  - [4.2 Branching mid-feature with git cl stash](#42-branching-mid-feature-with-git-cl-stash)
+  - [4.2 Branching Mid-Feature with git cl branch](#42-branching-mid-feature-with-git-cl-branch)
 - [5. FAQ & Common Pitfalls](#5-faq--common-pitfalls)
 - [6. Command Summary](#6-command-summary)
   - [6.1 Command Summary Table](#61-command-summary-table)
@@ -447,25 +447,48 @@ git commit -m "Implement core feature"
 The other changelists remain untouched, keeping your workspace organised and uncommitted changes visible.
 
 
-### 4.2 Branching Mid-Feature with git cl stash
+### 4.2 Branching Mid-Feature with git cl branch
 
-Sometimes you're midway through a changelist but need to pause and start a new branch — without committing unfinished work. `git cl stash` makes that safe and simple.
+Sometimes you’re deep in the middle of a changelist — maybe tweaking numerical algorithms or refactoring simulation code — and you realise it would be cleaner to finish the work on a separate branch.
+`git cl branch` makes that move painless, without committing incomplete work.
 
-Let’s say you’ve grouped your edits into a changelist:
-
-```
-git cl add feature-x src/app.py src/utils.py
-```
-
-You're not ready to commit, but want to move this work to a new branch. Use:
+Let’s say you’re improving the performance of a weather simulation in Fortran. You’ve grouped your edits into a changelist:
 
 ```
-git cl stash feature-x
-git checkout -b feature-x-work
-git cl unstash feature-x
+git cl add solver-opt src/solver.f90 src/utils_math.f90
+```
+
+You’re not ready to commit, but you decide this optimisation deserves its own branch. Use:
+
+```
+git cl branch solver-opt
+```
+
+Under the hood, this will:
+
+1. Stash all active changelists (including solver-opt).
+2. Create and check out a branch named solver-opt.
+3. Restore just the solver-opt changelist onto that branch.
+
+Your workspace will now look like you never left, but you’re on a dedicated branch:
+
+```
+$ git cl st
+solver-opt:
+  [ M] src/solver.f90
+  [ M] src/utils_math.f90
 ```
 
 This preserves your work-in-progress and the changelist grouping — so you can pick up right where you left off. Unlike `git stash`, `git cl stash` is changelist-aware. You don’t lose file intent or grouping across branches.
+
+If you prefer a custom branch name or base branch, you can specify them:
+
+```
+git cl branch solver-opt feature/fortran-speedup --from main
+```
+
+This workflow is especially handy when experimental work — like optimising a finite-difference solver or changing file I/O routines — starts to grow beyond the original scope of your current branch.
+It keeps unrelated changes isolated and easy to review later.
 
 [↑ Back to top](#git-cl-a-git-subcommand-for-changelist-management)
 

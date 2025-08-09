@@ -392,37 +392,28 @@ Tip: Your files aren’t deleted — they’re just “put in a box” until you
 
 ### 3.2 Create a branch from a changelist
 
+You can turn a changelist into its own branch in one step — great for separating work mid-feature or starting a dedicated branch for a new idea.
+
 ```
 git cl branch <changelist-name> [<branch-name>] [--from <base-branch>]
 ```
 
-Creates a new branch for a changelist and restores its files there in one step.
+What happens under the hood:
 
-1. Stashes all active changelists to clean the working directory.
-2. Creates and checks out the new branch (defaults to <changelist> from the current branch, or use --from).
-3. Unstashes only the chosen changelist onto the new branch; others stay stashed.
+1. Saves (stashes) all active changelists.
+2. Creates and checks out the new branch.
+3. Restores only the chosen changelist on that branch — the rest stay stashed.
 
-Preconditions:
-
-- Changelist exists and not already stashed.
-- Must be on a branch (not detached HEAD).
-- No unassigned modified files (except untracked).
-
-### Example
+#### Example
 
 ```
-# Create a changelist for feature x
 git cl add feature-x src/app.py src/utils.py
-
-# Create changelist with other changes to stash away
-git cl add docs docs/tutorial.md README
-
-# Create a branch named after the changelist
-git cl br feature-x
+git cl branch feature-x
 ```
 
+Now you’re on a branch named feature-x with those edits ready to go.
 
-
+Tip: If you don’t specify <branch-name>, it uses the changelist name by default. No work is lost — stashed changes can be restored anytime with git cl unstash.
 
 [↑ Back to top](#git-cl-a-git-subcommand-for-changelist-management)
 

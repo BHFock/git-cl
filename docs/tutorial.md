@@ -464,7 +464,7 @@ solver-opt:
   [ M] src/utils_math.f90
 ```
 
-This preserves your work-in-progress and the changelist grouping — so you can pick up right where you left off. Unlike `git stash`, `git cl stash` is changelist-aware. You don’t lose file intent or grouping across branches.
+This preserves your work-in-progress and the changelist grouping — so you can pick up right where you left off. Unlike `git stash`, [git cl branch](#32-create-a-branch-from-a-changelist)) is changelist-aware. You don’t lose file intent or grouping across branches.
 
 If you prefer a custom branch name or base branch, you can specify them:
 

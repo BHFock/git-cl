@@ -107,6 +107,8 @@ Use changelists to track your intent, keep unrelated edits separate, or manage o
 
 ### Method 1: Download the script
 
+For the latest stable version, download directly from the [git-cl repository](https://github.com/BHFock/git-cl):
+
 ```
 mkdir -p ~/bin
 wget https://raw.githubusercontent.com/BHFock/git-cl/main/git-cl -O ~/bin/git-cl
@@ -120,6 +122,8 @@ export PATH="$HOME/bin:$PATH"
 ```
 
 ### Method 2: Clone the repository
+
+Clone the complete [git-cl project](https://github.com/BHFock/git-cl) including documentation:
 
 ```
 git clone https://github.com/BHFock/git-cl.git ~/opt/git-cl

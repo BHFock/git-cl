@@ -285,7 +285,7 @@ git cl commit <changelist-name> -m "Message"
 git cl commit <changelist-name> -F commit.txt
 ```
 
-- Automatically stages and commits all tracked files in the changelist — no need to `run git cl stage` or `git add` first.
+- Automatically stages and commits all tracked files in the changelist — no need to `git cl stage` or `git add` first.
 - Untracked files ([??]) are ignored unless you add them first with `git add`.
 - The changelist is deleted after commit, unless you use `--keep`.
 

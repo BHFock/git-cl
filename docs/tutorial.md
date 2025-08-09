@@ -468,7 +468,7 @@ solver-opt:
   [ M] src/utils_math.f90
 ```
 
-This preserves your work-in-progress and the changelist grouping — so you can pick up right where you left off. Unlike `git stash`, [git cl branch](#32-create-a-branch-from-a-changelist)) is changelist-aware. You don’t lose file intent or grouping across branches.
+This preserves your work-in-progress and the changelist grouping — so you can pick up right where you left off. Unlike `git stash`, [git cl branch](#32-create-a-branch-from-a-changelist) is changelist-aware. You don’t lose file intent or grouping across branches.
 
 If you prefer a custom branch name or base branch, you can specify them:
 
@@ -536,7 +536,7 @@ git cl delete old-list
 
 ### How do I pause work in progress without committing?
 
-Use `git cl stash <name>`, then switch branches and git cl unstash when ready. See [Section 3.2](#32-branching-mid-feature-with-git-cl-stash).
+Use `git cl stash <name>`, then switch branches and [git cl unstash](#31-stash-and-unstash-changelists) when ready. See [Section 4.2](#42-branching-mid-feature-with-git-cl-branch) for a complete example.
 
 ### Why don’t I see all files in git cl status?
 

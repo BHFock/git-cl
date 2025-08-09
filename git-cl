@@ -1928,6 +1928,100 @@ def clutil_validate_unstash_environment(
 
 
 # =============================================================================
+# BRANCH WORKFLOW UTILITIES (branch-specific utilities)
+# =============================================================================
+
+def clutil_validate_branch_preconditions(changelist_name: str, changelists: dict, stashes: dict) -> str:
+    """Validate preconditions for branch creation workflow."""
+    if changelist_name not in changelists:
+        error_msg = f"Error: Changelist '{changelist_name}' not found."
+        available = [name for name in changelists.keys() if changelists[name]]
+        if available:
+            error_msg += "\nAvailable active changelists:"
+            for name in available:
+                error_msg += f"\n  {name}"
+        return error_msg
+
+    if not changelists[changelist_name]:
+        return (f"Error: Changelist '{changelist_name}' is empty.\n"
+                f"Add files with: git cl add {changelist_name} <files>")
+
+    if changelist_name in stashes:
+        return (f"Error: Changelist '{changelist_name}' is already stashed.\n"
+                f"Use 'git cl unstash {changelist_name}' to restore it first.")
+
+    return ""
+
+
+def clutil_check_branch_exists(branch_name: str) -> bool:
+    """Check if a branch already exists."""
+    try:
+        result = subprocess.run(["git", "show-ref", "--verify", f"refs/heads/{branch_name}"],
+                                capture_output=True, text=True, check=False)
+        return result.returncode == 0
+    except subprocess.CalledProcessError:
+        return False
+
+
+def clutil_check_unassigned_changes(changelists: dict, git_root: Path) -> list[str]:
+    """Check for uncommitted changes not in any changelist."""
+    status_map = clutil_get_file_status_map(show_all=True)
+
+    # Get all files assigned to changelists
+    assigned_files = set()
+    for files in changelists.values():
+        for file_path in files:
+            try:
+                abs_path = (git_root / file_path).resolve()
+                rel_path = abs_path.relative_to(git_root).as_posix()
+                assigned_files.add(rel_path)
+            except (ValueError, OSError):
+                continue
+
+    # Check for unassigned changes (ignore untracked files)
+    return [file_path for file_path, status in status_map.items()
+            if file_path not in assigned_files and status != "??"]
+
+
+def clutil_execute_stash_all() -> None:
+    """Execute stash all operation."""
+    temp_args = argparse.Namespace()
+    temp_args.all = True
+    cl_stash(temp_args)
+
+
+def clutil_create_branch(branch_name: str, base_branch: str, current_branch: str) -> None:
+    """Create new branch from base."""
+    if base_branch != current_branch:
+        # Create branch from specified base
+        subprocess.run(["git", "checkout", "-b", branch_name, base_branch], check=True)
+    else:
+        # Create branch from current HEAD
+        subprocess.run(["git", "checkout", "-b", branch_name], check=True)
+
+
+def clutil_unstash_changelist(changelist_name: str) -> None:
+    """Unstash specific changelist."""
+    temp_unstash_args = argparse.Namespace()
+    temp_unstash_args.name = changelist_name
+    temp_unstash_args.force = False
+    temp_unstash_args.all = False
+    cl_unstash(temp_unstash_args)
+
+
+def clutil_handle_branch_creation_failure() -> None:
+    """Handle failure during branch creation by restoring stashes."""
+    try:
+        temp_unstash_args = argparse.Namespace()
+        temp_unstash_args.all = True
+        temp_unstash_args.force = True
+        cl_unstash(temp_unstash_args)
+    except Exception as restore_error:
+        print(f"Error restoring stashes: {restore_error}")
+        print("You may need to manually unstash: git cl unstash --all")
+
+
+# =============================================================================
 # CLI COMMANDS
 # =============================================================================
 
@@ -2572,96 +2666,6 @@ def cl_unstash(args: argparse.Namespace) -> None:
     # Success - update metadata
     clutil_update_unstash_metadata(base_name, stash_key,
                                    files, changelists, stashes)
-
-
-def clutil_validate_branch_preconditions(changelist_name: str, changelists: dict, stashes: dict) -> str:
-    """Validate preconditions for branch creation workflow."""
-    if changelist_name not in changelists:
-        error_msg = f"Error: Changelist '{changelist_name}' not found."
-        available = [name for name in changelists.keys() if changelists[name]]
-        if available:
-            error_msg += "\nAvailable active changelists:"
-            for name in available:
-                error_msg += f"\n  {name}"
-        return error_msg
-
-    if not changelists[changelist_name]:
-        return (f"Error: Changelist '{changelist_name}' is empty.\n"
-                f"Add files with: git cl add {changelist_name} <files>")
-
-    if changelist_name in stashes:
-        return (f"Error: Changelist '{changelist_name}' is already stashed.\n"
-                f"Use 'git cl unstash {changelist_name}' to restore it first.")
-
-    return ""
-
-
-def clutil_check_branch_exists(branch_name: str) -> bool:
-    """Check if a branch already exists."""
-    try:
-        result = subprocess.run(["git", "show-ref", "--verify", f"refs/heads/{branch_name}"],
-                                capture_output=True, text=True, check=False)
-        return result.returncode == 0
-    except subprocess.CalledProcessError:
-        return False
-
-
-def clutil_check_unassigned_changes(changelists: dict, git_root: Path) -> list[str]:
-    """Check for uncommitted changes not in any changelist."""
-    status_map = clutil_get_file_status_map(show_all=True)
-
-    # Get all files assigned to changelists
-    assigned_files = set()
-    for files in changelists.values():
-        for file_path in files:
-            try:
-                abs_path = (git_root / file_path).resolve()
-                rel_path = abs_path.relative_to(git_root).as_posix()
-                assigned_files.add(rel_path)
-            except (ValueError, OSError):
-                continue
-
-    # Check for unassigned changes (ignore untracked files)
-    return [file_path for file_path, status in status_map.items()
-            if file_path not in assigned_files and status != "??"]
-
-
-def clutil_execute_stash_all() -> None:
-    """Execute stash all operation."""
-    temp_args = argparse.Namespace()
-    temp_args.all = True
-    cl_stash(temp_args)
-
-
-def clutil_create_branch(branch_name: str, base_branch: str, current_branch: str) -> None:
-    """Create new branch from base."""
-    if base_branch != current_branch:
-        # Create branch from specified base
-        subprocess.run(["git", "checkout", "-b", branch_name, base_branch], check=True)
-    else:
-        # Create branch from current HEAD
-        subprocess.run(["git", "checkout", "-b", branch_name], check=True)
-
-
-def clutil_unstash_changelist(changelist_name: str) -> None:
-    """Unstash specific changelist."""
-    temp_unstash_args = argparse.Namespace()
-    temp_unstash_args.name = changelist_name
-    temp_unstash_args.force = False
-    temp_unstash_args.all = False
-    cl_unstash(temp_unstash_args)
-
-
-def clutil_handle_branch_creation_failure() -> None:
-    """Handle failure during branch creation by restoring stashes."""
-    try:
-        temp_unstash_args = argparse.Namespace()
-        temp_unstash_args.all = True
-        temp_unstash_args.force = True
-        cl_unstash(temp_unstash_args)
-    except Exception as restore_error:
-        print(f"Error restoring stashes: {restore_error}")
-        print("You may need to manually unstash: git cl unstash --all")
 
 
 def cl_branch(args: argparse.Namespace) -> None:

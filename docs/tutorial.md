@@ -21,15 +21,17 @@ git-cl: A Git subcommand to manage changelists in Git. Group files by intent, ma
   - [2.5 Commit a changelist](#25-commit-a-changelist)
   - [2.6 Remove files from changelists](#26-remove-files-from-changelists)
   - [2.7 Delete changelists](#27-delete-changelists)
-  - [2.8 Stash and Unstash Changelists](#28-stash-and-unstash-changelists)
-  - [2.9 Checkout a Changelist](#29-checkout-a-changelist)
-- [3. Example Workflows](#3-example-workflows)
-  - [3.1 Changelists as Named Staging Areas](#31-changelists-as-named-staging-areas)
-  - [3.2 Branching Mid-Feature with git cl stash](#32-branching-mid-feature-with-git-cl-stash)
-- [4. FAQ & Common Pitfalls](#4-faq--common-pitfalls)
-- [5. Command Summary](#5-command-summary)
-  - [5.1 Command Summary Table](#51-command-summary-table)
-  - [5.2 Git Status Code Reference](#52-git-status-code-reference)
+  - [2.8 Checkout a changelist](#28-checkout-a-changelist)
+- [3. Advanced Commands](#3-advanced-commands)
+  - [3.1 Stash and Unstash changelists](#31-stash-and-unstash-changelists)
+  - [3.2 Create a branch from a changelist](#32-create-a-branch-from-a-changelist)
+- [4. Example Workflows](#4-example-workflows)
+  - [4.1 Changelists as named staging areas](#41-changelists-as-named-staging-areas)
+  - [4.2 Branching mid-feature with git cl stash](#42-branching-mid-feature-with-git-cl-stash)
+- [5. FAQ & Common Pitfalls](#5-faq--common-pitfalls)
+- [6. Command Summary](#6-command-summary)
+  - [6.1 Command Summary Table](#61-command-summary-table)
+  - [6.2 Git Status Code Reference](#62-git-status-code-reference)
 
 </details>
 
@@ -334,7 +336,26 @@ git cl delete --all
 
 Only changelist metadata is deleted — no file content or Git history is lost.
 
-### 2.8 Stash and Unstash Changelists
+### 2.8 Checkout a Changelist
+
+```
+git cl checkout <changelist-name>
+# or
+git cl co <changelist-name>
+```
+
+- Reverts all files in the changelist to their last committed state ([HEAD](https://git-scm.com/book/ms/v2/Git-Tools-Reset-Demystified.html#_the_head)).
+- Useful for discarding local changes by intent, not just by filename.
+- Prompts for confirmation before proceeding.
+- Shows a summary of reverted files.
+
+
+[↑ Back to top](#git-cl-a-git-subcommand-for-changelist-management)
+
+
+ ## 3. Advanced Commands
+
+### 3.1 Stash and Unstash Changelists
 
 You can temporarily shelve changelists using `stash`, then restore them later with `unstash`. This is useful when switching branches or pausing work on a feature.
 
@@ -365,24 +386,46 @@ git cl stash --all
 
 - Stashes all active changelists at once
 
-### 2.9 Checkout a Changelist
+
+### 3.2 Create a branch from a changelist
 
 ```
-git cl checkout <changelist-name>
-# or
-git cl co <changelist-name>
+git cl branch <changelist-name> [<branch-name>] [--from <base-branch>]
 ```
 
-- Reverts all files in the changelist to their last committed state ([HEAD](https://git-scm.com/book/ms/v2/Git-Tools-Reset-Demystified.html#_the_head)).
-- Useful for discarding local changes by intent, not just by filename.
-- Prompts for confirmation before proceeding.
-- Shows a summary of reverted files.
+Creates a new branch for a changelist and restores its files there in one step.
+
+1. Stashes all active changelists to clean the working directory.
+2. Creates and checks out the new branch (defaults to <changelist> from the current branch, or use --from).
+3. Unstashes only the chosen changelist onto the new branch; others stay stashed.
+
+Preconditions:
+
+- Changelist exists and not already stashed.
+- Must be on a branch (not detached HEAD).
+- No unassigned modified files (except untracked).
+
+### Example
+
+```
+# Create a changelist for feature x
+git cl add feature-x src/app.py src/utils.py
+
+# Create changelist with other changes to stash away
+git cl add docs docs/tutorial.md README
+
+# Create a branch named after the changelist
+git cl br feature-x
+```
+
+
+
 
 [↑ Back to top](#git-cl-a-git-subcommand-for-changelist-management)
 
-## 3. Example Workflows
+## 4. Example Workflows
 
-### 3.1 Changelists as Named Staging Areas
+### 4.1 Changelists as Named Staging Areas
 
 `git-cl` changelists function as named pre-staging areas. Instead of staging files directly, you organise them into changelists — then selectively stage or commit based on those names.
 
@@ -410,7 +453,7 @@ git commit -m "Implement core feature"
 The other changelists remain untouched, keeping your workspace organised and uncommitted changes visible.
 
 
-### 3.2 Branching Mid-Feature with git cl stash
+### 4.2 Branching Mid-Feature with git cl stash
 
 Sometimes you're midway through a changelist but need to pause and start a new branch — without committing unfinished work. `git cl stash` makes that safe and simple.
 
@@ -432,7 +475,7 @@ This preserves your work-in-progress and the changelist grouping — so you can 
 
 [↑ Back to top](#git-cl-a-git-subcommand-for-changelist-management)
 
-## 4. FAQ & Common Pitfalls
+## 5. FAQ & Common Pitfalls
 
 ### How do I move a file from one changelist to another?
 
@@ -507,28 +550,28 @@ Yes. If the changelist was deleted after a stage or commit, you can create a new
 
 [↑ Back to top](#git-cl-a-git-subcommand-for-changelist-management)
 
-## 5. Command Summary
+## 6. Command Summary
 
-### 5.1 Command Summary Table
+### 6.1 Command Summary Table
 
-| Task                           | Command                                        | Alias        | 
-| ------------------------------ | ---------------------------------------------- | ------------ |
-| Add files to a changelist      | `git cl add <name> <files...>`                 | `git cl a`   |
-| View grouped status            | `git cl status` / `git cl st`                  | `git cl st`  | 
-| View all statuses, no color    | `git cl status --all --no-color`               |              |
-| Show diff for changelist(s)    | `git cl diff <name1> [<name2> ...] [--staged]` |              |
-| Stage a changelist             | `git cl stage <name> [--delete]`               |              |
-| Unstage a changelist           | `git cl unstage <name> [--delete]`             |              |
-| Commit with inline message     | `git cl commit <name> -m "Message" [--keep]`   | `git cl ci`  |
-| Commit using message from file | `git cl commit <name> -F message.txt [--keep]` |              |
-| Revert changelist to HEAD	     | `git cl checkout <name>`                       |	`git cl co`  |
-| Remove files from changelists  | `git cl remove <file1> <file2> ...`            | `git cl rm`  |
-| Delete changelists             | `git cl delete <name1> <name2> ...`            | `git cl del` | 
-| Delete all changelists         | `git cl delete --all`                          |              |
-| Show help                      | `git cl help`                                  |              |
+| Task                            | Command                                                   | Alias         | 
+| ------------------------------- | --------------------------------------------------------- | ------------- |
+| Add files to a changelist       | `git cl add <name> <files...>`                            | `git cl a`    |
+| View grouped status             | `git cl status [--all] [--no-color] `                     | `git cl st`   | 
+| Show diff for changelist(s)     | `git cl diff <name1> [<name2> ...] [--staged]`            |               |
+| Stage a changelist              | `git cl stage <name> [--delete]`                          |               |
+| Unstage a changelist            | `git cl unstage <name> [--delete]`                        |               |
+| Commit with inline message      | `git cl commit <name> -m "Message" [--keep]`              | `git cl ci`   |
+| Commit using message from file  | `git cl commit <name> -F message.txt [--keep]`            |               |
+| Revert changelist to HEAD	      | `git cl checkout <name>`                                  | `git cl co`   |
+| Remove files from changelists   | `git cl remove <file1> <file2> ...`                       | `git cl rm`   |
+| Delete changelists              | `git cl delete <name1> <name2> ...`                       | `git cl del`  | 
+| Stash a changelist              | `git cl stash <name>`                                     |               |
+| Unstash a changelist            | `git cl unstash <name> [--force]`                         |               |
+| Create branch from changelist   | `git cl branch <name> [<branch>] [--from <base>]`         | `git cl br`   |
+| Show help                       | `git cl help`                                             |               |
 
-
-### 5.2 Git Status Code Reference
+### 6.2 Git Status Code Reference
 
 `git cl status` uses standard Git status codes — shown as two-character prefixes (e.g. `[M ]`, `[??]`).
 

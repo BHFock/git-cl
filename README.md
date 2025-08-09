@@ -7,8 +7,7 @@ git-cl is a minimal Git subcommand that brings changelist support to Git. Organi
 
 [![Git Changelist Tutorial](https://img.shields.io/badge/Tutorial-View-blue)](https://github.com/BHFock/git-cl/blob/main/docs/tutorial.md)
 
-
-`git-cl` is a command-line tool that offers Git changelist support, inspired by Subversion. It allows users to assign working directory files to named changelists, helping organise work by intent and manage partial commits more easily.
+`git-cl` is a command-line tool that offers Git changelist support, inspired by Subversion. It allows users to assign working directory files to named changelists, helping organise work by intent, manage partial commits, and create branches directly from a changelist.
 
 Perfect for developers who prefer to organise their work logically from the start, rather than managing complex commit history afterward.
 
@@ -18,6 +17,7 @@ Perfect for developers who prefer to organise their work logically from the star
 - Work on multiple features on a single branch
 - Stage and commit changes by intent
 - Stash changelists and resume work later
+- Create a new branch directly from a changelist
 - Local-only metadata (`.git/cl.json`)
 - Simple CLI: `git cl <command>`
 
@@ -68,6 +68,9 @@ git cl delete docs-fix
 git cl stash docs-fix
 git checkout -b docs-fix-work
 git cl unstash docs-fix
+
+# Create and switch to a new branch from a changelist (auto-stash/unstash)
+git cl br docs-fix
 ```
 
 ## Example Output
@@ -88,14 +91,9 @@ git cl unstash docs-fix
   
 ## Project status
 
-`git-cl` is developed as a personal side project. Future updates may happen as time and interest allow, but no ongoing development or community involvement is planned.
+`git-cl` is now feature complete. All planned functionality has been implemented, including changelist creation, staging, committing, stashing, and branching. Future updates will focus on code refactoring, bug fixes, and usability improvements — no major new features are planned.
 
 Use, fork, or adapt freely under the BSD license.
-
-
-## Future Ideas
-
-Some ideas for features are outlined in [`docs/FUTURE.md`](docs/FUTURE.md).
 
 ## License
 

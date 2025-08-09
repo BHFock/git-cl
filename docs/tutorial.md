@@ -404,7 +404,7 @@ What happens under the hood:
 2. Creates and checks out the new branch.
 3. Restores only the chosen changelist on that branch — the other changelists remain stashed and can be restored with `git cl unstash` later.
 
-See also: [4.2](#42-branching-mid-feature-with-git-cl-branch) for a worked example.
+See [Section 4.2](#42-branching-mid-feature-with-git-cl-branch) for a worked example.
 
 [↑ Back to top](#git-cl-a-git-subcommand-for-changelist-management)
 

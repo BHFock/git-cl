@@ -1931,7 +1931,8 @@ def clutil_validate_unstash_environment(
 # BRANCH WORKFLOW UTILITIES (branch-specific utilities)
 # =============================================================================
 
-def clutil_validate_branch_preconditions(changelist_name: str, changelists: dict, stashes: dict) -> str:
+def clutil_validate_branch_preconditions(
+        changelist_name: str, changelists: dict, stashes: dict) -> str:
     """Validate preconditions for branch creation workflow."""
     if changelist_name not in changelists:
         error_msg = f"Error: Changelist '{changelist_name}' not found."
@@ -3037,7 +3038,8 @@ def main() -> None:
     branch_parser.add_argument('branch_name', metavar='BRANCH', nargs='?',
                                help='Name of the new branch (defaults to changelist name)')
     branch_parser.add_argument('--from', dest='from_branch', metavar='BASE_BRANCH',
-                               help='Create branch from specified base branch (default: current branch)')
+                               help=("Create branch from specified base "
+                                     "branch (default: current branch)"))
     branch_parser.set_defaults(func=cl_branch)
 
     # help command

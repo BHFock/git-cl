@@ -88,10 +88,9 @@ git cl unstash docs-fix
   
 ## Project status
 
-`git-cl` is developed as a personal side project. Future updates may happen as time and interest allow, but no ongoing development or community involvement is planned.
+`git-cl` is now feature complete. All planned functionality has been implemented, including changelist creation, staging, committing, stashing, and branching. Future updates will focus on code refactoring, bug fixes, and usability improvements — no major new features are planned.
 
 Use, fork, or adapt freely under the BSD license.
-
 
 ## License
 

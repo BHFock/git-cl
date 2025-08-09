@@ -2737,7 +2737,7 @@ def cl_branch(args: argparse.Namespace) -> None:
     # Check if branch already exists
     if clutil_check_branch_exists(branch_name):
         print(f"Error: Branch '{branch_name}' already exists.")
-        print(f"Use a different branch name: git cl br"
+        print(f"Use a different branch name: git cl br "
               f"{changelist_name} <new-branch-name>")
         return
 

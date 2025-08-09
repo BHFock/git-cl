@@ -262,7 +262,7 @@ git cl stage docs
 git commit -m "Refactor docs"
 ```
 
-Tip: Run `git cl diff` first if you want to review the changes before staging.
+Tip: Run [git cl diff](#23-diff-a-changelist) first if you want to review changes.
 
 #### Unstage a changelist
 

@@ -554,11 +554,10 @@ Yes. If the changelist was deleted after a stage or commit, you can create a new
 
 ### 6.1 Command Summary Table
 
-| Task                                      | Command                                         | Alias         | 
-| ----------------------------------------- | ----------------------------------------------- | ------------- |
+| Task                            | Command                                                   | Alias         | 
+| ------------------------------- | --------------------------------------------------------- | ------------- |
 | Add files to a changelist       | `git cl add <name> <files...>`                            | `git cl a`    |
-| View grouped status             | `git cl status` / `git cl st`                             | `git cl st`   | 
-| View all statuses, no color     | `git cl status --all --no-color`                          |               |
+| View grouped status             | `git cl status [--all] [--no-color] `                     | `git cl st`   | 
 | Show diff for changelist(s)     | `git cl diff <name1> [<name2> ...] [--staged]`            |               |
 | Stage a changelist              | `git cl stage <name> [--delete]`                          |               |
 | Unstage a changelist            | `git cl unstage <name> [--delete]`                        |               |
@@ -567,9 +566,7 @@ Yes. If the changelist was deleted after a stage or commit, you can create a new
 | Revert changelist to HEAD	      | `git cl checkout <name>`                                  | `git cl co`   |
 | Remove files from changelists   | `git cl remove <file1> <file2> ...`                       | `git cl rm`   |
 | Delete changelists              | `git cl delete <name1> <name2> ...`                       | `git cl del`  | 
-| Delete all changelists          | `git cl delete --all`                                     |               |
 | Stash a changelist              | `git cl stash <name>`                                     |               |
-| Stash all changelists           | `git cl stash --all`                                      |               |
 | Unstash a changelist            | `git cl unstash <name> [--force]`                         |               |
 | Create branch from changelist   | `git cl branch <name> [<branch>] [--from <base>]`         | `git cl br`   |
 | Show help                       | `git cl help`                                             |               |

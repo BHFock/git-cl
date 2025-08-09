@@ -359,6 +359,8 @@ git cl co <changelist-name>
 
  ## 3. Advanced Commands
 
+These commands build on the [Basic Commands](#2-basic-commands) - make sure you're familiar with [adding files](#21-add-files-to-a-changelist) and [viewing status](#22-view-status-by-changelist) first.
+
 ### 3.1 Stash and Unstash Changelists
 
 Sometimes you’re in the middle of a changelist but need to switch branches or pause your work — without committing it.

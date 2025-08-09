@@ -412,7 +412,7 @@ See [Section 4.2](#42-branching-mid-feature-with-git-cl-branch) for a worked exa
 
 ### 4.1 Changelists as Named Staging Areas
 
-`git-cl` changelists function as named pre-staging areas. Instead of staging files directly, you organise them into changelists — then selectively stage or commit based on those names.
+`git-cl` changelists function as named pre-staging areas. Instead of staging files directly, you organise them into changelists — then selectively [stage](#stage-a-changelist) or [commit](#25-commit-a-changelist) based on those names.
 
 Let’s say you're working on a feature that involves several types of changes. You can group your work like this:
 

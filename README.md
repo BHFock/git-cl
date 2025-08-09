@@ -93,10 +93,6 @@ git cl unstash docs-fix
 Use, fork, or adapt freely under the BSD license.
 
 
-## Future Ideas
-
-Some ideas for features are outlined in [`docs/FUTURE.md`](docs/FUTURE.md).
-
 ## License
 
 BSD 3-Clause License — see [LICENSE](./LICENSE) for details.

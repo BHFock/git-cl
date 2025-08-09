@@ -404,16 +404,7 @@ What happens under the hood:
 2. Creates and checks out the new branch.
 3. Restores only the chosen changelist on that branch — the other changelists remain stashed and can be restored with `git cl unstash` later.
 
-#### Example
-
-```
-git cl add feature-x src/app.py src/utils.py
-git cl branch feature-x
-```
-
-Now you’re on a branch named feature-x with those edits ready to go.
-
-Tip: If you don’t specify <branch-name>, it uses the changelist name by default. No work is lost — stashed changes can be restored anytime with git cl unstash.
+See also: [4.2](#42-branching-mid-feature-with-git-cl-branch) for a worked example.
 
 [↑ Back to top](#git-cl-a-git-subcommand-for-changelist-management)
 

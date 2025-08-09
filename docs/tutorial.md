@@ -510,7 +510,7 @@ git cl commit my-list -m "WIP" --keep
 
 Because `git cl` only stages or commits files already tracked by Git.
 
-If a file is [untracked](https://git-scm.com/docs/git-status#_short_format) (`[??]`), it will show up in `git cl st`, but won’t be included when staging or committing.
+If a file is untracked (`[??]`), it will show up in `git cl st`, but won’t be included when staging or committing.
 
 To include it:
 

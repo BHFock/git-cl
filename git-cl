@@ -2233,14 +2233,6 @@ def cl_status(args: argparse.Namespace) -> None:
             for file in sorted(no_cl_files):
                 print(clutil_format_file_status(file, st_map, git_root, use_color))
 
-    # Clean up any old-style stashed entries from changelists
-    old_stashed_entries = [name for name in changelists.keys() if name.endswith('_stashed')]
-    if old_stashed_entries:
-        for old_name in old_stashed_entries:
-            del changelists[old_name]
-        clutil_save(changelists)
-        print(f"\nCleaned up {len(old_stashed_entries)} old stashed changelist entries.")
-
 
 def cl_diff(args: argparse.Namespace) -> None:
     """

@@ -2058,7 +2058,8 @@ def clutil_handle_branch_creation_failure() -> None:
         temp_unstash_args.all = True
         temp_unstash_args.force = True
         cl_unstash(temp_unstash_args)
-    except Exception as restore_error:
+    except (OSError, subprocess.CalledProcessError,
+            json.JSONDecodeError) as restore_error:
         print(f"Error restoring stashes: {restore_error}")
         print("You may need to manually unstash: git cl unstash --all")
 

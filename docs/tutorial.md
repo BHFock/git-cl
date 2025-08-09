@@ -536,7 +536,7 @@ git cl delete old-list
 
 ### How do I pause work in progress without committing?
 
-Use `git cl stash <name>`, then switch branches and [git cl unstash](#31-stash-and-unstash-changelists) when ready. See [Section 4.2](#42-branching-mid-feature-with-git-cl-branch) for a complete example.
+Use `git cl stash <name>`, then switch branches and [git cl unstash](#31-stash-and-unstash-changelists) when ready.
 
 ### Why don’t I see all files in git cl status?
 

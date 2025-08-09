@@ -197,7 +197,7 @@ git cl st docs --include-no-cl
 
 #### Showing all Git status codes
 
-By default, git cl status shows only the most common status codes (like [M ], [??], [ D], etc.) for clarity.
+By default, git cl status shows only the most [common status codes](#common-status-codes) (like [M ], [??], [ D], etc.) for clarity.
 
 To include all Git status codes — including merge conflicts and type changes — use the `--all` flag:
 

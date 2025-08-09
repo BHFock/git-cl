@@ -1569,13 +1569,12 @@ def clutil_check_and_report_conflicts(
         missing_files = []
         for file_path in safe_files:
             status_desc = file_status_info.get(file_path, "")
-
-        if "staged" in status_desc:
-            staged_files.append(file_path)
-        elif "clean" in status_desc:
-            clean_files.append(file_path)
-        elif "missing" in status_desc:
-            missing_files.append(file_path)
+            if "staged" in status_desc:
+                staged_files.append(file_path)
+            elif "clean" in status_desc:
+                clean_files.append(file_path)
+            elif "missing" in status_desc:
+                missing_files.append(file_path)
 
         status_summary = []
         if clean_files:

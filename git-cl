@@ -2285,7 +2285,7 @@ def cl_checkout(args: argparse.Namespace) -> None:
     # Perform the checkout
     try:
         subprocess.run(["git", "checkout", "HEAD", "--"] + checkout_files,
-                      check=True)
+                       check=True)
         print(f"Successfully reverted {len(checkout_files)} file(s) to HEAD state.")
 
         # Show summary by changelist
@@ -2293,8 +2293,8 @@ def cl_checkout(args: argparse.Namespace) -> None:
         for name in args.names:
             if name in changelists and changelists[name]:
                 reverted_count = sum(1 for f in changelists[name]
-                                   if f in all_files and
-                                   (git_root / f).resolve().exists())
+                                     if f in all_files and
+                                     (git_root / f).resolve().exists())
                 if reverted_count > 0:
                     print(f"  {name}: {reverted_count} files")
 
@@ -2600,7 +2600,7 @@ def clutil_check_branch_exists(branch_name: str) -> bool:
     """Check if a branch already exists."""
     try:
         result = subprocess.run(["git", "show-ref", "--verify", f"refs/heads/{branch_name}"],
-                               capture_output=True, text=True, check=False)
+                                capture_output=True, text=True, check=False)
         return result.returncode == 0
     except subprocess.CalledProcessError:
         return False
@@ -2907,9 +2907,9 @@ def main() -> None:
                                                 " confirmation before "
                                                 "proceeding."))
     checkout_parser.add_argument('names', metavar='CHANGELIST', nargs='+',
-                                help='One or more changelists to checkout')
+                                 help='One or more changelists to checkout')
     checkout_parser.add_argument('--force', '-f', action='store_true',
-                                help='Skip confirmation prompt')
+                                 help='Skip confirmation prompt')
     checkout_parser.set_defaults(func=cl_checkout)
 
     # stage
@@ -3020,20 +3020,20 @@ def main() -> None:
 
     # branch
     branch_parser = subparsers.add_parser('branch', aliases=['br'],
-                                      help='Create branch from changelist workflow',
-                                      description=(
-                                          "Automate the changelist-to-branch workflow: "
-                                          "stash all active changelists, create a new "
-                                          "branch, and unstash the specified changelist "
-                                          "to the new branch. This provides a clean "
-                                          "way to move changelist work to a dedicated "
-                                          "feature branch."))
+                                          help='Create branch from changelist workflow',
+                                          description=(
+                                              "Automate the changelist-to-branch workflow: "
+                                              "stash all active changelists, create a new "
+                                              "branch, and unstash the specified changelist "
+                                              "to the new branch. This provides a clean "
+                                              "way to move changelist work to a dedicated "
+                                              "feature branch."))
     branch_parser.add_argument('changelist_name', metavar='CHANGELIST',
-                          help='Name of the changelist to create branch for')
+                               help='Name of the changelist to create branch for')
     branch_parser.add_argument('branch_name', metavar='BRANCH', nargs='?',
-                          help='Name of the new branch (defaults to changelist name)')
+                               help='Name of the new branch (defaults to changelist name)')
     branch_parser.add_argument('--from', dest='from_branch', metavar='BASE_BRANCH',
-                          help='Create branch from specified base branch (default: current branch)')
+                               help='Create branch from specified base branch (default: current branch)')
     branch_parser.set_defaults(func=cl_branch)
 
     # help command

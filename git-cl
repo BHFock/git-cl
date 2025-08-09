@@ -2353,11 +2353,12 @@ def cl_checkout(args: argparse.Namespace) -> None:
 
     This discards local changes in the working directory for the specified files,
     reverting them to their last committed state. Useful for undoing unwanted
-    local modifications.
+    local modifications. Optionally deletes the changelist(s) after checkout.
 
     Args:
         args: argparse.Namespace with 'names' list of changelist names,
-              and optional 'force' flag for confirmation.
+              optional 'force' flag for confirmation, and optional 'delete'
+              flag to remove changelist(s) after checkout.
     """
     changelists = clutil_load()
     git_root = clutil_get_git_root()
@@ -2446,6 +2447,18 @@ def cl_checkout(args: argparse.Namespace) -> None:
                                      (git_root / f).resolve().exists())
                 if reverted_count > 0:
                     print(f"  {name}: {reverted_count} files")
+
+        # Delete changelists if --delete flag is set
+        if args.delete:
+            deleted_any = False
+            for name in args.names:
+                if name in changelists:
+                    del changelists[name]
+                    print(f"Deleted changelist '{name}'")
+                    deleted_any = True
+
+            if deleted_any:
+                clutil_save(changelists)
 
     except subprocess.CalledProcessError as error:
         print(f"Error during checkout: {error}")
@@ -2971,6 +2984,8 @@ def main() -> None:
                                                 "proceeding."))
     checkout_parser.add_argument('names', metavar='CHANGELIST', nargs='+',
                                  help='One or more changelists to checkout')
+    checkout_parser.add_argument('--delete', action='store_true',
+                                 help='Delete the changelist after checkout')
     checkout_parser.add_argument('--force', '-f', action='store_true',
                                  help='Skip confirmation prompt')
     checkout_parser.set_defaults(func=cl_checkout)

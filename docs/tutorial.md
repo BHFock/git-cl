@@ -357,7 +357,7 @@ git cl co <changelist-name>
 [↑ Back to top](#git-cl-a-git-subcommand-for-changelist-management)
 
 
- ## 3. Advanced Commands
+## 3. Advanced Commands
 
 These commands build on the [Basic Commands](#2-basic-commands) - make sure you're familiar with [adding files](#21-add-files-to-a-changelist) and [viewing status](#22-view-status-by-changelist) first.
 

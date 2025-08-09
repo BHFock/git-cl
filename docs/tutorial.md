@@ -66,7 +66,7 @@ Changelists are saved locally in `.git/cl.json`. They’re private to your works
 
 ## How changelists fit into Git workflows
 
-Changelists act as a layer above Git's staging area — helping you group related edits before deciding what to stage or commit:
+Changelists act as a layer above Git's [staging area](https://git-scm.com/about/staging-area) — helping you group related edits before deciding what to stage or commit:
 
 ```
 Working Directory

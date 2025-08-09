@@ -179,7 +179,7 @@ git cl status
 git cl st
 ```
 
-- Like `git status --porcelain`, but grouped by changelist.
+- Like [`git status --porcelain`](https://git-scm.com/docs/git-status), but grouped by changelist.
 - Shows Git’s precise two-letter status codes, grouped under each changelist.
 - Files not assigned to any changelist appear under No Changelist.
 

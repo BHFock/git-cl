@@ -95,11 +95,11 @@ math.py
 They work alongside Git's core concepts, not in place of them:
 
 
-| Concept          | Description                                 | Role in Workflow                    |
-|------------------|---------------------------------------------|-------------------------------------|
-| **Changelist**   | A named group of modified files             | Organise uncommitted work           |
-| **Staging Area** | Selects what goes into the next commit      | Prepare commit content              |
-| **Branch**       | A line of development with commit history   | Isolate long-running or shared work |
+| Concept          | Description                                                                                 | Role in Workflow                    |
+|------------------|---------------------------------------------------------------------------------------------|-------------------------------------|
+| **Changelist**   | A named group of modified files                                                             | Organise uncommitted work           |
+| **Staging Area** | Selects what goes into the next commit ([Git docs](https://git-scm.com/docs/git-add))       | Prepare commit content              |
+| **Branch**       | A line of development with commit history ([Git docs](https://git-scm.com/docs/git-branch)) | Isolate long-running or shared work |
 
 Use changelists to track your intent, keep unrelated edits separate, or manage overlapping work — all without affecting Git history.
 

@@ -402,7 +402,7 @@ What happens under the hood:
 
 1. Saves (stashes) all active changelists.
 2. Creates and checks out the new branch.
-3. Restores only the chosen changelist on that branch — the rest stay stashed.
+3. Restores only the chosen changelist on that branch — the other changelists remain stashed and can be restored with `git cl unstash` later.
 
 #### Example
 

@@ -179,7 +179,7 @@ git cl status
 git cl st
 ```
 
-- Like [`git status --porcelain`](https://git-scm.com/docs/git-status), but grouped by changelist.
+- Like [git status --porcelain](https://git-scm.com/docs/git-status), but grouped by changelist.
 - Shows Git’s precise two-letter status codes, grouped under each changelist.
 - Files not assigned to any changelist appear under No Changelist.
 
@@ -231,7 +231,7 @@ git cl diff <changelist1> <changelist2>
 git cl diff <changelist-name> --staged
 ```
 
-- Shows a unified diff (`git diff`) of the files in the changelist.
+- Shows a unified diff ([git diff](https://git-scm.com/docs/git-diff))) of the files in the changelist.
 - When you specify multiple changelists, shows a combined diff of all files from those changelists.
 - Uses `git diff --cached` when `--staged` is provided.
 

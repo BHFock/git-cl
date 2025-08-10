@@ -86,9 +86,10 @@ git cl br docs-fix
 - Designed for single-user workflows, concurrent operations may conflict
 - Always inspect downloaded scripts before executing. See [git-cl](https://github.com/BHFock/git-cl/blob/main/git-cl) for source.
 
-📘 See the full [git-cl tutorial](https://github.com/BHFock/git-cl/blob/main/docs/tutorial.md).
+📘 Read the full [git-cl tutorial](https://github.com/BHFock/git-cl/blob/main/docs/tutorial.md).  
 
-  
+📘 Read the [background essay](docs/why-git-cl.md) on changelists in Git.
+
 ## Project status
 
 `git-cl` is now feature complete. All planned functionality has been implemented, including changelist creation, staging, committing, stashing, and branching. Future updates will focus on code refactoring, bug fixes, and usability improvements — no major new features are planned.

@@ -100,9 +100,9 @@ It brings SVN-style changelists to Git, nothing more. This focused scope is inte
 
 I maintain git-cl in my spare time. I'll do my best to:
 
-- Respond to bug reports
-- Fix genuine bugs as time permits
-- Consider documentation improvements
+- **Respond** to bug reports
+- **Fix** genuine bugs as time permits
+- **Consider** documentation improvements
 
 I may not respond to feature requests or questions already covered in the documentation.
 

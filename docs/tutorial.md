@@ -128,6 +128,7 @@ Clone the complete [git-cl project](https://github.com/BHFock/git-cl) including 
 
 ```
 git clone https://github.com/BHFock/git-cl.git ~/opt/git-cl
+chmod +x ~/opt/git-cl/git-cl
 ```
 
 Add the cloned directory to your `$PATH`:

@@ -63,7 +63,7 @@ This helps when:
 - Wanting to break down a messy working directory into logical units
 - Staging or committing changes by intent rather than file
 
-Changelists are saved locally in `.git/cl.json`. They’re private to your workspace and not shared or committed.
+Changelists are saved locally in `.git/cl.json`. They’re private to your workspace and not shared or committed. Think of them as quick labels on piles of work.
 
 ## How changelists fit into Git workflows
 
@@ -102,7 +102,7 @@ They work alongside Git's core concepts, not in place of them:
 | **Staging Area** | Selects what goes into the next commit ([Git docs](https://git-scm.com/docs/git-add))       | Prepare commit content              |
 | **Branch**       | A line of development with commit history ([Git docs](https://git-scm.com/docs/git-branch)) | Isolate long-running or shared work |
 
-Use changelists to track your intent, keep unrelated edits separate, or manage overlapping work — all without affecting Git history.
+Use changelists as your own labelled workspace, keep unrelated edits separate, or manage overlapping work — all without affecting Git history.
 
 ## 1. Installation
 
@@ -540,7 +540,7 @@ git cl stage my-changelist
 
 ### Are changelists shared between team members?
 
-No. Changelists are stored locally in `.git/cl.json` and are not version-controlled or shared via Git. They're like personal to-do lists for your working directory.
+No. Changelists are stored locally in `.git/cl.json` and are not version-controlled or shared via Git. They’re like personal sticky notes on your working directory and visible only to you.
 
 ### Do changelists persist when switching branches?
 

@@ -1,6 +1,6 @@
 # Contributing to git-cl
 
-Thanks for your interest in git-cl! This project is **feature complete** — all planned functionality has been implemented. Future development focuses on **maintenance, bug fixes, and usability improvements** rather than new features.
+Thanks for your interest in [git-cl](https://github.com/BHFock/git-cl)! This project is **feature complete** — all planned functionality has been implemented. Future development focuses on **maintenance, bug fixes, and usability improvements** rather than new features.
 
 ## Project Status
 git-cl is a stable, focused tool with a clear scope. While I appreciate feature ideas, I'm **not actively seeking new functionality**. The tool does what it was designed to do well, and I prefer to keep it that way.
@@ -101,4 +101,4 @@ I maintain git-cl in my spare time. I'll do my best to:
 
 However, I may not respond to feature requests or questions already covered in the documentation.
 
-Thanks for helping keep git-cl stable and useful!
+Thanks for helping keep [git-cl](https://github.com/BHFock/git-cl) stable and useful!

@@ -44,7 +44,7 @@ To keep the project focused and maintainable:
 
 ## Before Opening an Issue
 
-- **Read the documentation:** Check the tutorial and FAQ section
+- **Read the documentation:** Check the [tutorial](docs/tutorial.md) and FAQ section
 - **Try the latest version:** Download the current script to rule out already-fixed issues
 - **Search existing issues:** Your question might already be answered
 

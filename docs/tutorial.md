@@ -22,6 +22,7 @@ git-cl: A Git subcommand to manage changelists in Git. Group files by intent, ma
   - [2.6 Remove files from changelists](#26-remove-files-from-changelists)
   - [2.7 Delete changelists](#27-delete-changelists)
   - [2.8 Checkout a changelist](#28-checkout-a-changelist)
+  - [2.9 Getting help from the command line](#29-getting-help-from-the-command-line)
 - [3. Advanced Commands](#3-advanced-commands)
   - [3.1 Stash and Unstash changelists](#31-stash-and-unstash-changelists)
   - [3.2 Create a branch from a changelist](#32-create-a-branch-from-a-changelist)
@@ -353,6 +354,22 @@ git cl co <changelist-name>
 - Prompts for confirmation before proceeding.
 - Shows a summary of reverted files.
 
+### 2.9 Getting Help from the Command Line
+
+You can explore all available commands directly from your terminal:
+
+```
+git cl help
+```
+
+To see help for a specific command add -h after the command name:
+
+```
+git cl commit -h
+git cl branch -h
+```
+
+This is the fastest way to refresh your memory without coming back to the full tutorial.
 
 [↑ Back to top](#git-cl-a-git-subcommand-for-changelist-management)
 

@@ -362,7 +362,7 @@ You can explore all available commands directly from your terminal:
 git cl help
 ```
 
-To see help for a specific command add -h after the command name:
+To see help for a specific command — including its available options — add -h after the command name:
 
 ```
 git cl commit -h

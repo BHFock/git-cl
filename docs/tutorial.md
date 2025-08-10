@@ -329,7 +329,7 @@ git cl delete <changelist1> <changelist2> ...
 ```
 
 - Deletes one or more named changelists.
-- Files remain in the working directory and will appear under “No Changelist” next time you run `git cl st`.
+- Files remain in the working directory and will appear under “No Changelist” next time you run [git cl st](#22-view-status-by-changelist).
 
 You can also delete all changelists at once with:
 

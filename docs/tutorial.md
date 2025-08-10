@@ -561,7 +561,7 @@ Use `git cl stash <name>`, then switch branches and [git cl unstash](#31-stash-a
 
 ### Why don’t I see all files in git cl status?
 
-By default, `git cl status` filters out files with uncommon Git status codes (e.g. merge conflicts or type changes) to keep the output clean.
+By default, [git cl status](#22-view-status-by-changelist) filters out files with uncommon Git status codes (e.g. merge conflicts or type changes) to keep the output clean.
 
 If you want to include everything, use the `--all` flag:
 

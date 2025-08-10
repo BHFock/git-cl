@@ -44,9 +44,11 @@ To keep the project focused and maintainable:
 
 ## Before Opening an Issue
 
-- **Read the documentation:** Check the [tutorial](docs/tutorial.md) and [FAQ](docs/tutorial.md#5-faq--common-pitfalls) section
-- **Try the latest version:** Download the current script to rule out already-fixed [issues](https://github.com/BHFock/git-cl/issues)
-- **Search existing issues:** Your question might already be answered
+**1. Read the documentation:** Check the [tutorial](docs/tutorial.md) and [FAQ](docs/tutorial.md#5-faq--common-pitfalls) section
+
+**2. Try the latest version:** Download the current script to rule out already-fixed [issues](https://github.com/BHFock/git-cl/issues)
+
+**3. Search existing issues:** Your question might already be answered
 
 ## Issue Templates
 

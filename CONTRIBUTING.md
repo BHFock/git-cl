@@ -14,7 +14,7 @@ git-cl is a stable, focused tool with a clear scope. While I appreciate feature 
 - Check existing GitHub issues first
 - Include your Python version, OS, and git-cl version (`git cl --version`)
 - Provide steps to reproduce the problem
-- Include relevant error messages or unexpected behavior
+- Include relevant error messages or unexpected behaviour
 
 ### Documentation Improvements
 
@@ -67,10 +67,10 @@ Brief description of what's not working
 2. 
 3. 
 
-**Expected behavior:**
+**Expected behaviour:**
 What should have happened
 
-**Actual behavior:**
+**Actual behaviour:**
 What actually happened (include error messages)
 ```
 

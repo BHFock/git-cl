@@ -88,7 +88,7 @@ git cl br docs-fix
 
 📘 Read the full [git-cl tutorial](https://github.com/BHFock/git-cl/blob/main/docs/tutorial.md).  
 
-📘 Read [why git-cl exists](docs/why-git-cl.md) — a personal history of changelists in Git.
+📘 Read [why git-cl exists](docs/why-git-cl.md).
 
 ## Project status
 

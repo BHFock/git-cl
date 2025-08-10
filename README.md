@@ -86,7 +86,7 @@ git cl br docs-fix
 - Designed for single-user workflows, concurrent operations may conflict
 - Always inspect downloaded scripts before executing. See [git-cl](https://github.com/BHFock/git-cl/blob/main/git-cl) for source.
 
-📘 Read [why git-cl exists](docs/why-git-cl.md).
+📘 Read [why git-cl exists](docs/why-git-cl.md#changelists-in-git-a-personal-history).
 
 📘 Read the full [git-cl tutorial](https://github.com/BHFock/git-cl/blob/main/docs/tutorial.md).  
 

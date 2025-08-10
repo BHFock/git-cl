@@ -1,5 +1,7 @@
 # Changelists in Git: A Personal History
 
+### Why git-cl exists
+
 Back in university, our research group used a homegrown [version control system](https://en.wikipedia.org/wiki/Version_control) built around [RCS](https://en.wikipedia.org/wiki/Revision_Control_System). When it started showing its age, I began reading [Version Control with Subversion](https://svnbook.red-bean.com/) during my train commutes, and it was eye-opening. I began migrating our model code into [Subversion](https://subversion.apache.org), and for the first time, I felt I truly understood what a version control system could offer.
 
 The cool kids were already experimenting with [Git](https://git-scm.com), but I was drawn to the stability of Subversion – and honestly, [Mercurial](https://www.mercurial-scm.org) looked more user-friendly anyway.

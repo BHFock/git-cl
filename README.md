@@ -94,7 +94,7 @@ git cl br docs-fix
 
 `git-cl` is now feature complete. All planned functionality has been implemented, including changelist creation, staging, committing, stashing, and branching. Future updates will focus on code refactoring, bug fixes, and usability improvements — no major new features are planned.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on bug reports and documentation improvements.
+See [CONTRIBUTING](CONTRIBUTING.md) for guidelines on bug reports and documentation improvements.
 
 Use, fork, or adapt freely under the BSD license.
 

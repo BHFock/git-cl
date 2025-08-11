@@ -19,4 +19,4 @@ This tool includes some basic safeguards by design:
 
 While it's not security-critical software, care has been taken to avoid common footguns and insecure patterns. If something looks off — even if you're not sure — feel free to reach out.
 
-Thanks for helping keep things safe and clean!
+Thanks for helping keep [git-cl](https://github.com/BHFock/git-cl) safe and clean!

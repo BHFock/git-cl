@@ -523,7 +523,7 @@ This automatically reassigns the file to new-list.
 [git cl commit](#25-Commit-a-changelist) always deletes the changelist after committing, unless you explicitly use the `--keep` flag:
 
 ```
-git cl commit my-list -m "WIP" --keep
+git cl commit my-list -m "Implement my feature" --keep
 ```
 
 [git cl stage](#24-stage-and-unstage-a-changelist), [git cl unstage](#unstage-a-changelist), and [git cl checkout](#28-checkout-a-changelist) behave differently — they keep the changelist by default. If you want to remove it in those cases, pass `--delete`:

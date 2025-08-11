@@ -510,7 +510,7 @@ It keeps unrelated changes isolated and easy to review later.
 
 ### How do I move a file from one changelist to another?
 
-Just run `git cl add` with the new changelist name. You don't need to remove it from the old one manually.
+Just run [git cl add](#21-add-files-to-a-changelist) with the new changelist name. You don't need to remove it from the old one manually.
 
 ```
 git cl add new-list path/to/file

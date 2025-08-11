@@ -808,6 +808,62 @@ def clutil_get_current_branch() -> Optional[str]:
         return None
 
 
+@contextmanager
+def clutil_safe_stash_context(git_root: Path, files_for_git: list[str]):
+    """
+    Context manager to handle directory changes during stash operations.
+    Recalculates file paths relative to git root.
+    
+    Args:
+        git_root: Path to git repository root
+        files_for_git: Original file paths relative to current directory
+        
+    Yields:
+        list[str]: File paths relative to git root
+    """
+    original_cwd = Path.cwd()
+    
+    # Convert paths to be relative to git root before changing directory
+    git_root_relative_files = []
+    for file_path in files_for_git:
+        if file_path.startswith('../') or file_path.startswith('./'):
+            # Convert relative path to absolute, then to git-root-relative
+            abs_path = (original_cwd / file_path).resolve()
+            try:
+                git_root_relative = abs_path.relative_to(git_root)
+                git_root_relative_files.append(git_root_relative.as_posix())
+            except ValueError:
+                # Path is outside git root - should not happen with your validation
+                git_root_relative_files.append(file_path)
+        else:
+            # Already relative to current directory, convert to git root relative
+            abs_path = (original_cwd / file_path).resolve()
+            try:
+                git_root_relative = abs_path.relative_to(git_root)
+                git_root_relative_files.append(git_root_relative.as_posix())
+            except ValueError:
+                git_root_relative_files.append(file_path)
+    
+    # Change to git root
+    os.chdir(git_root)
+    
+    try:
+        yield git_root_relative_files
+    finally:
+        # Try to restore original directory
+        if original_cwd.exists():
+            os.chdir(original_cwd)
+        else:
+            # Directory was deleted - warn user and stay in git root
+            try:
+                rel_path = os.path.relpath(original_cwd, git_root)
+                print(f"Note: Directory '{rel_path}' was removed by git stash.")
+                print(f"You are now in the repository root.")
+            except (ValueError, OSError):
+                print("Note: Your working directory was removed by git stash.")
+                print("You are now in the repository root.")
+
+    
 def clutil_get_stash_source_branch(stash_data: dict) -> Optional[str]:
     """
     Extract the branch name from stash metadata if stored.
@@ -2664,13 +2720,14 @@ def cl_stash(args: argparse.Namespace, quiet: bool = False) -> None:
         stashable_files, file_categories, git_root, quiet=quiet
     )
 
-    # Execute git stash
+    # Execute git stash with safe directory handling
     try:
-        stash_ref = clutil_execute_git_stash(name, files_for_git,
-                                             untracked_files_for_git)
+        with clutil_safe_stash_context(git_root, files_for_git) as safe_files:
+            stash_ref = clutil_execute_git_stash(name, safe_files,
+                                                 untracked_files_for_git)
     except (subprocess.CalledProcessError, ValueError):
         return
-
+    
     # Save metadata atomically
     original_changelists = changelists.copy()
 

@@ -55,6 +55,8 @@ To keep `git-cl` simple and maintainable, I don’t plan to add:
 
 ### Bug Report
 
+- [Report a bug](https://github.com/BHFock/git-cl/issues/new?template=bug_report.md)
+
 ```
 **Environment:**
 - OS: 
@@ -78,6 +80,8 @@ What actually happened (include error messages)
 ```
 
 ### Documentation Issue
+
+- [Report a Documentation issue](https://github.com/BHFock/git-cl/issues/new?template=documentation-issue.md)
 
 ```
 **Location:** 

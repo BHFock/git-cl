@@ -24,8 +24,41 @@ This documnets aims to describe the design of git-cl to make future maintance mo
 
 ### File Structure
 
-- Changelists are stored in .git/cl.json.
+#### Meta Data Structure
+
+Changelists are stored in .git/cl.json. The human readable [JSON](https://en.wikipedia.org/wiki/JSON) format allows easy review on how changelist are are stored. For example this ´git cl st´: 
+
+```
+list1:
+  [  ] ../LICENSE
+  [ M] ../README.md
+list2:
+  [A ] file1.txt
+```
+
+is stored in .git/cl.json as 
+
+```
+{
+  "list1": [
+    "LICENSE",
+    "README.md"
+  ],
+  "list2": [
+    "folder1/file1.txt"
+  ]
+}
+```
+
+Storing `cl.json` ain `.git/` allows to move the repository arround locally while keeping the changelists intact. This is helped by the fact that file paths are stored relative to the repository root. 
+
+`.git/cl.json`is not part of the git history. That keeps changelists conceptiually as a 'pre staging functionality' which is not mixed up with git's version control.
+  
 - Stash metadata is stored in .git/cl-stashes.json.
+
+
+#### Code Structure
+
 - Code stored in one single file to make installation easy.
 
 ### Concurrency and Locking

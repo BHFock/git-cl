@@ -26,7 +26,7 @@ This documnets aims to describe the design of git-cl to make future maintance mo
 
 #### Meta Data Structure
 
-Changelists are stored in .git/cl.json. The human readable [JSON](https://en.wikipedia.org/wiki/JSON) format allows easy review on how changelist are are stored. For example this ´git cl st´: 
+Changelists are stored in `.git/cl.json`. The human readable [JSON](https://en.wikipedia.org/wiki/JSON) format allows easy review on how changelist are are stored. For example this ´git cl st´: 
 
 ```
 list1:

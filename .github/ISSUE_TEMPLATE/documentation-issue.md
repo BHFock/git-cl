@@ -2,7 +2,7 @@
 name: Documentation Issue
 about: Create a report about a documentation issue
 title: ''
-labels: ''
+labels: documentation
 assignees: ''
 
 ---

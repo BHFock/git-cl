@@ -80,4 +80,7 @@ Supports a branch workflow:
   - Conflict detection
   - Metadata handling
 - CLI commands are mapped to functions for easy extension.
-  
+
+## Future direction
+
+- Avoid expansion of functionality to keep code size under control and to keep the help/documentation readable

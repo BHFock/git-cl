@@ -819,10 +819,12 @@ def clutil_safe_stash_context(git_root: Path,
     Args:
         git_root: Path to git repository root
         files_for_git: Original file paths relative to current directory
-        untracked_files_for_git: Original untracked file paths relative to current directory
+        untracked_files_for_git: Original untracked file paths
+                                 relative to current directory
 
     Yields:
-        tuple[list[str], list[str]]: (files_for_git, untracked_files_for_git) relative to git root
+        tuple[list[str], list[str]]: (files_for_git, untracked_files_for_git)
+                                     relative to git root
     """
     original_cwd = Path.cwd()
 
@@ -986,7 +988,8 @@ def clutil_rollback_stash(stash_ref: str, changelist_name: str) -> bool:
         return False
 
 
-def clutil_stash_all_changelists(changelists: dict[str, list[str]], quiet: bool = False) -> None:
+def clutil_stash_all_changelists(changelists: dict[str, list[str]],
+                                 quiet: bool = False) -> None:
     """
     Helper function to stash all active changelists.
 

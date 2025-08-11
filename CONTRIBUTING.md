@@ -47,9 +47,9 @@ To keep `git-cl` simple and maintainable, I don’t plan to add:
 
 **1. Read** the [tutorial](docs/tutorial.md) and [FAQ](docs/tutorial.md#5-faq--common-pitfalls)
 
-**2. Try** the [latest version](https://raw.githubusercontent.com/BHFock/git-cl/main/git-cl) to rule out already-fixed [issues](https://github.com/BHFock/git-cl/issues)
+**2. Try** the [latest version](https://raw.githubusercontent.com/BHFock/git-cl/main/git-cl) to rule out already-fixed issues
 
-**3. Search** existing issues — your question might already be answered
+**3. Search** existing [issues](https://github.com/BHFock/git-cl/issues) — your question might already be answered
 
 **4. Use issue templates** to [report a bug](https://github.com/BHFock/git-cl/issues/new?template=bug_report.md) or to [report a documentation issue](https://github.com/BHFock/git-cl/issues/new?template=documentation-issue.md).
 

@@ -856,11 +856,14 @@ def clutil_safe_stash_context(git_root: Path,
             # Directory was deleted - warn user and stay in git root
             try:
                 rel_path = os.path.relpath(original_cwd, git_root)
+                rel_to_git_root = os.path.relpath(git_root, original_cwd.parent)
                 print(f"Note: Directory '{rel_path}' was removed by git stash.")
-                print("You are now in the repository root.")
+                print(f"Your shell is still pointing to the deleted directory.")
+                print(f"Please run: cd {rel_to_git_root}")
             except (ValueError, OSError):
                 print("Note: Your working directory was removed by git stash.")
-                print("You are now in the repository root.")
+                print("Your shell is still pointing to the deleted directory.")
+                print("Please run: cd ..")  # Simple fallback
 
 
 def clutil_get_stash_source_branch(stash_data: dict) -> Optional[str]:

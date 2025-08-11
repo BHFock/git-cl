@@ -55,7 +55,7 @@ To keep `git-cl` simple and maintainable, I don’t plan to add:
 
 ## Development Philosophy
 
-git-cl follows the Unix philosophy: **do one thing well**. 
+[git-cl](https://github.com/BHFock/git-cl) follows the Unix philosophy: **do one thing well**. 
 
 It brings SVN-style changelists to Git, nothing more. This focused scope is intentional and helps keep the tool reliable and understandable.
 

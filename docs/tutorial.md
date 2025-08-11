@@ -373,7 +373,7 @@ git cl commit -h
 git cl branch -h
 ```
 
-Note: `git help cl` does not work — because `git-cl` is an external subcommand, not part of Git's built-in help system. Always use `git cl help` instead.
+Note: `git help cl` does not work — because `git-cl` is an external subcommand and not part of Git's built-in help system. Always use `git cl help` instead.
 
 [↑ Back to top](#git-cl-a-git-subcommand-for-changelist-management)
 

@@ -51,48 +51,7 @@ To keep `git-cl` simple and maintainable, I don’t plan to add:
 
 **3. Search** existing issues — your question might already be answered
 
-## Issue Templates
-
-### Bug Report
-
-- [Report a bug](https://github.com/BHFock/git-cl/issues/new?template=bug_report.md)
-
-```
-**Environment:**
-- OS: 
-- Python version: 
-- Git version:
-- git-cl version:
-
-**Problem:**
-Brief description of what's not working
-
-**Steps to reproduce:**
-1. 
-2. 
-3. 
-
-**Expected behaviour:**
-What should have happened
-
-**Actual behaviour:**
-What actually happened (include error messages)
-```
-
-### Documentation Issue
-
-- [Report a Documentation issue](https://github.com/BHFock/git-cl/issues/new?template=documentation-issue.md)
-
-```
-**Location:** 
-Link to the specific documentation section
-
-**Issue:** 
-What's unclear, incorrect, or missing
-
-**Suggested improvement:** 
-How it could be better (optional)
-```
+**4. Use issue templates** to [report a bug](https://github.com/BHFock/git-cl/issues/new?template=bug_report.md) or to [report a documentation issue](https://github.com/BHFock/git-cl/issues/new?template=documentation-issue.md).
 
 ## Development Philosophy
 

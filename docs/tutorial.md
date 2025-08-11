@@ -518,16 +518,22 @@ git cl add new-list path/to/file
 
 This automatically reassigns the file to new-list.
 
-### Why are changelists deleted after I stage or commit?
+### Why are changelists deleted after I commit?
 
-This is the default behaviour — `git cl stage` and git `cl commit` clean up after themselves.
-
-If you want to keep the changelist after the operation, use the `--keep` flag:
+[git cl commit](#25-Commit-a-changelist) always deletes the changelist after committing, unless you explicitly use the `--keep` flag:
 
 ```
-git cl stage my-list --keep
 git cl commit my-list -m "WIP" --keep
 ```
+
+`git cl stage` and `git cl checkout` behave differently — they keep the changelist by default. If you want to remove it in those cases, pass `--delete`:
+
+```
+git cl stage my-list --delete
+git cl checkout my-list --delete
+```
+
+This way, you can choose whether the changelist sticks around after staging or reverting.
 
 ### Why aren’t untracked files included when I stage or commit a changelist?
 

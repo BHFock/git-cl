@@ -10,7 +10,7 @@ Future development focuses on **maintenance, bug fixes, and usability improvemen
 
 ## Project Status
 
-git-cl is a stable, focused tool with a clear scope. While I appreciate feature ideas, I'm **not actively seeking new functionality** — the tool already does what it was designed to do.
+git-cl is a feature complete, focused tool with a clear scope. While I appreciate feature ideas, I'm **not actively seeking new functionality** — the tool already does what it was designed to do.
 
 ## How You Can Help
 

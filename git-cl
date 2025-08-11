@@ -54,7 +54,7 @@ Features:
 This tool is intended for use within Git repositories.
 """
 
-__version__ = "0.3.3"
+__version__ = "0.3.4"
 
 import argparse
 import json
@@ -808,6 +808,63 @@ def clutil_get_current_branch() -> Optional[str]:
         return None
 
 
+@contextmanager
+def clutil_safe_stash_context(git_root: Path,
+                              files_for_git: list[str],
+                              untracked_files_for_git: list[str]):
+    """
+    Context manager to handle directory changes during stash operations.
+    Recalculates file paths relative to git root.
+
+    Args:
+        git_root: Path to git repository root
+        files_for_git: Original file paths relative to current directory
+        untracked_files_for_git: Original untracked file paths relative to current directory
+
+    Yields:
+        tuple[list[str], list[str]]: (files_for_git, untracked_files_for_git) relative to git root
+    """
+    original_cwd = Path.cwd()
+
+    def convert_to_git_root_relative(file_paths: list[str]) -> list[str]:
+        """Convert file paths to be relative to git root."""
+        result = []
+        for file_path in file_paths:
+            abs_path = (original_cwd / file_path).resolve()
+            try:
+                git_root_relative = abs_path.relative_to(git_root)
+                result.append(git_root_relative.as_posix())
+            except ValueError:
+                # Path is outside git root - should not happen with validation
+                result.append(file_path)
+        return result
+
+    # Convert both file lists
+    safe_files = convert_to_git_root_relative(files_for_git)
+    safe_untracked_files = convert_to_git_root_relative(untracked_files_for_git)
+
+    # Change to git root
+    os.chdir(git_root)
+
+    try:
+        yield safe_files, safe_untracked_files
+    finally:
+        # Try to restore original directory
+        if original_cwd.exists():
+            os.chdir(original_cwd)
+        else:
+            # Directory was deleted - warn user and stay in git root
+            try:
+                rel_path = os.path.relpath(original_cwd, git_root)
+                print(f"Note: Directory '{rel_path}' was removed by git stash.")
+                print("Your shell is still pointing to the deleted directory.")
+                print("Please run: cd ..")
+            except (ValueError, OSError):
+                print("Note: Your working directory was removed by git stash.")
+                print("Your shell is still pointing to the deleted directory.")
+                print("Please run: cd ..")
+
+
 def clutil_get_stash_source_branch(stash_data: dict) -> Optional[str]:
     """
     Extract the branch name from stash metadata if stored.
@@ -927,6 +984,7 @@ def clutil_rollback_stash(stash_ref: str, changelist_name: str) -> bool:
         print(f"You may need to manually clean up stash for changelist "
               f"'{changelist_name}'")
         return False
+
 
 def clutil_stash_all_changelists(changelists: dict[str, list[str]], quiet: bool = False) -> None:
     """
@@ -2664,10 +2722,12 @@ def cl_stash(args: argparse.Namespace, quiet: bool = False) -> None:
         stashable_files, file_categories, git_root, quiet=quiet
     )
 
-    # Execute git stash
+    # Execute git stash with safe directory handling
     try:
-        stash_ref = clutil_execute_git_stash(name, files_for_git,
-                                             untracked_files_for_git)
+        with clutil_safe_stash_context(
+                git_root, files_for_git, untracked_files_for_git) as (safe_files,
+                                                                      safe_untracked_files):
+            stash_ref = clutil_execute_git_stash(name, safe_files, safe_untracked_files)
     except (subprocess.CalledProcessError, ValueError):
         return
 
@@ -2688,6 +2748,7 @@ def cl_stash(args: argparse.Namespace, quiet: bool = False) -> None:
             json.JSONDecodeError) as error:
         clutil_handle_stash_failure(error, name, stash_ref,
                                     original_changelists, stashes)
+
 
 def cl_unstash(args: argparse.Namespace, quiet: bool = False) -> None:
     """
@@ -2727,7 +2788,8 @@ def cl_unstash(args: argparse.Namespace, quiet: bool = False) -> None:
 
     # Check for conflicts (suppress verbose output in quiet mode)
     if not clutil_check_and_report_conflicts(files, git_root, base_name,
-                                             getattr(args, 'force', False), quiet=quiet):
+                                             getattr(args, 'force', False),
+                                             quiet=quiet):
         return
 
     # Verify stash still exists and update reference
@@ -2839,7 +2901,8 @@ def cl_branch(args: argparse.Namespace) -> None:
 
     except Exception as error:
         print(f"Error unstashing changelist: {error}")
-        print(f"Branch '{branch_name}' was created but changelist restore failed.")
+        print(f"Branch '{branch_name}' was created but"
+              "changelist restore failed.")
         print(f"Try manually: git cl unstash {changelist_name}")
 
 

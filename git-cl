@@ -809,7 +809,7 @@ def clutil_get_current_branch() -> Optional[str]:
 
 
 @contextmanager
-def clutil_safe_stash_context(git_root: Path, files_for_git: list[str]):
+def clutil_safe_stash_context(git_root: Path, files_for_git: list[str], untracked_files_for_git: list[str]):
     """
     Context manager to handle directory changes during stash operations.
     Recalculates file paths relative to git root.
@@ -817,38 +817,35 @@ def clutil_safe_stash_context(git_root: Path, files_for_git: list[str]):
     Args:
         git_root: Path to git repository root
         files_for_git: Original file paths relative to current directory
+        untracked_files_for_git: Original untracked file paths relative to current directory
         
     Yields:
-        list[str]: File paths relative to git root
+        tuple[list[str], list[str]]: (files_for_git, untracked_files_for_git) relative to git root
     """
     original_cwd = Path.cwd()
     
-    # Convert paths to be relative to git root before changing directory
-    git_root_relative_files = []
-    for file_path in files_for_git:
-        if file_path.startswith('../') or file_path.startswith('./'):
-            # Convert relative path to absolute, then to git-root-relative
+    def convert_to_git_root_relative(file_paths: list[str]) -> list[str]:
+        """Convert file paths to be relative to git root."""
+        result = []
+        for file_path in file_paths:
             abs_path = (original_cwd / file_path).resolve()
             try:
                 git_root_relative = abs_path.relative_to(git_root)
-                git_root_relative_files.append(git_root_relative.as_posix())
+                result.append(git_root_relative.as_posix())
             except ValueError:
-                # Path is outside git root - should not happen with your validation
-                git_root_relative_files.append(file_path)
-        else:
-            # Already relative to current directory, convert to git root relative
-            abs_path = (original_cwd / file_path).resolve()
-            try:
-                git_root_relative = abs_path.relative_to(git_root)
-                git_root_relative_files.append(git_root_relative.as_posix())
-            except ValueError:
-                git_root_relative_files.append(file_path)
+                # Path is outside git root - should not happen with validation
+                result.append(file_path)
+        return result
+    
+    # Convert both file lists
+    safe_files = convert_to_git_root_relative(files_for_git)
+    safe_untracked_files = convert_to_git_root_relative(untracked_files_for_git)
     
     # Change to git root
     os.chdir(git_root)
     
     try:
-        yield git_root_relative_files
+        yield safe_files, safe_untracked_files
     finally:
         # Try to restore original directory
         if original_cwd.exists():
@@ -2722,9 +2719,8 @@ def cl_stash(args: argparse.Namespace, quiet: bool = False) -> None:
 
     # Execute git stash with safe directory handling
     try:
-        with clutil_safe_stash_context(git_root, files_for_git) as safe_files:
-            stash_ref = clutil_execute_git_stash(name, safe_files,
-                                                 untracked_files_for_git)
+        with clutil_safe_stash_context(git_root, files_for_git, untracked_files_for_git) as (safe_files, safe_untracked_files):
+            stash_ref = clutil_execute_git_stash(name, safe_files, safe_untracked_files)
     except (subprocess.CalledProcessError, ValueError):
         return
     

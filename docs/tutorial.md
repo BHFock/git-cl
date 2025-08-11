@@ -152,7 +152,7 @@ git cl --version
 git cl help
 ```
 
-Git will recognise `git-cl` as a [subcommand]( https://git.github.io/htmldocs/howto/new-command.htm): you can now run `git cl` just like `git commit` or `git status`.
+Git will recognise `git-cl` as a [subcommand]( https://git.github.io/htmldocs/howto/new-command.html): you can now run `git cl` just like `git commit` or `git status`.
 
 
 [↑ Back to top](#git-cl-a-git-subcommand-for-changelist-management)

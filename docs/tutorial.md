@@ -457,7 +457,7 @@ This separates clean changes from experimental ones. You can check your progress
 git cl status
 ```
 
-Once you're satisfied with the files in `ok`, you stage and commit them:
+Once you're satisfied with the files in the changelist `ok`, you stage and commit them:
 
 ```
 git cl stage ok

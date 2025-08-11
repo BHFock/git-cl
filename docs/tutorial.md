@@ -529,7 +529,8 @@ git cl commit my-list -m "WIP" --keep
 [git cl stage](#24-stage-and-unstage-a-changelist), [git cl unstage](#unstage-a-changelist), and [git cl checkout](#28-checkout-a-changelist) behave differently — they keep the changelist by default. If you want to remove it in those cases, pass `--delete`:
 
 ```
-git cl stage my-list --delete
+git cl stage my-list
+git cl unstage my-list 
 git cl checkout my-list --delete
 ```
 

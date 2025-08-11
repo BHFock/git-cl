@@ -373,7 +373,7 @@ git cl commit -h
 git cl branch -h
 ```
 
-This is the fastest way to refresh your memory without coming back to the full tutorial.
+Note: `git help cl` does not work — because `git-cl` is an external subcommand, not part of Git's built-in help system. Always use `git cl help` instead.
 
 [↑ Back to top](#git-cl-a-git-subcommand-for-changelist-management)
 

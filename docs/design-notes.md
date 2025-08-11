@@ -26,7 +26,7 @@ This documnets aims to describe the design of git-cl to make future maintance mo
 
 #### Meta Data Structure
 
-Changelists are stored in `.git/cl.json`. The human readable [JSON](https://en.wikipedia.org/wiki/JSON) format allows easy review on how changelist are are stored. For example this ´git cl st´ (executed from the folder ´~git-cl_test/folder1´): 
+Changelists are stored in `.git/cl.json`. The human readable [JSON](https://en.wikipedia.org/wiki/JSON) format allows easy review on how changelist are are stored. For example this `git cl st` (executed from the folder `~git-cl_test/folder1`): 
 
 ```
 list1:
@@ -36,7 +36,7 @@ list2:
   [A ] file1.txt
 ```
 
-is stored in .git/cl.json as 
+is stored in `.git/cl.json` as 
 
 ```
 {
@@ -50,16 +50,16 @@ is stored in .git/cl.json as
 }
 ```
 
-Storing `cl.json` ain `.git/` allows to move the repository arround locally while keeping the changelists intact. This is helped by the fact that file paths are stored relative to the repository root in `cl.json`. While the paths shown in `cl.json` are relative to the the git root directory, the path in shown by the `git cl st` output are relative to the current working directory which is expected for executing normal Git command like `git add ../README.md`. `git cl`converts paths depening on the context in paths relative to the git root, relative to the current working directory and in aboslute paths. All three representations are needed.   
+Storing `cl.json` in `.git/` allows to move the repository around locally while keeping the changelists intact. This is helped by the fact that file paths are stored relative to the repository root in `cl.json`. While the paths shown in `cl.json` are relative to the git root directory, the paths shown by the `git cl st` output are relative to the current working directory which is expected for executing normal Git commands like `git add ../README.md`. `git cl` converts paths depending on the context in paths relative to the git root, relative to the current working directory and in absolute paths. All three representations are needed.
 
 `.git/cl.json`is not part of the git history. That keeps changelists conceptiually as a 'pre staging functionality' which is not mixed up with git's version control.
   
-- Stash metadata is stored in .git/cl-stashes.json.
-
+Stash metadata is stored in .git/cl-stashes.json. This keeps the stashes seperate from the namelist files and allowed an implementation of the more adavneced `git cl stash` and `git cl unstash` without impacting the implementation of the basis functions. 
 
 #### Code Structure
 
-- Code stored in one single file to make installation easy.
+Code stored in one single file to make installation easy. The disatvantage of more difficult code navidagtion is mitigated by separtion into blocks of different functionlity.
+ 
 
 ### Concurrency and Locking
 

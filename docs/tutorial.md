@@ -186,7 +186,7 @@ git cl st
 
 - Like [git status --porcelain](https://git-scm.com/docs/git-status), but grouped by changelist.
 - Shows Git’s precise two-letter status codes, grouped under each changelist.
-- Files not assigned to any changelist appear under No Changelist.
+- Files not assigned to any changelist appear under 'No Changelist'.
 
 ##### Filtering by changelist name
 
@@ -196,7 +196,7 @@ You can pass one or more changelist names to show only those specific groups:
 git cl st docs tests
 ```
 
-This limits the output to the specified changelists. By default, unassigned files (those in “No Changelist”) are hidden in this mode.
+This limits the output to the specified changelists. By default, unassigned files (those in 'No Changelist') are hidden in this mode.
 
 If you want to include unassigned files alongside named changelists, use the `--include-no-cl` flag:
 

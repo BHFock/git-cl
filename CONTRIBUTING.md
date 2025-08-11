@@ -35,7 +35,7 @@ git-cl is a stable, focused tool with a clear scope. While I appreciate feature 
 
 ## What I'm Not Looking For
 
-To keep `git-cl` simple and maintainable, I don’t plan to add:
+To keep git-cl simple and maintainable, I don’t plan to add:
 
 - New features or commands
 - Major architectural changes

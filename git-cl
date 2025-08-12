@@ -77,10 +77,10 @@ except ImportError:
 
     # pylint: disable=too-few-public-methods
     class _DummyColorama:
-        CYAN = ""
+        BLUE = ""
         GREEN = ""
-        YELLOW = ""
         MAGENTA = ""
+        RED = ""
         RESET_ALL = ""
     Fore = _DummyColorama()
     Style = _DummyColorama()

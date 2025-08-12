@@ -102,7 +102,7 @@ This section includes the [main function](https://github.com/BHFock/git-cl/blob/
 
 ### Colour Output
 
-Output of `git cl st` is coloured by default. This uses [colorama](https://pypi.org/project/colorama/). The output is uncoloured if colorama is not available, if the output is redirected/piped or if coloured output is switched of via flag or environment variable. 
+Output of `git cl st` is coloured by default. This uses [colorama](https://pypi.org/project/colorama/). The output is uncoloured if colorama is not available, if the output is redirected/piped or if coloured output is switched off via flag or environment variable. 
 
 ### Command Parsing
 

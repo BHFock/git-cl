@@ -812,7 +812,8 @@ def clutil_get_current_branch() -> Optional[str]:
 def clutil_safe_stash_context(
         git_root: Path,
         files_for_git: list[str],
-        untracked_files_for_git: list[str]) -> Iterator[tuple[list[str],  list[str]]]:
+        untracked_files_for_git: list[str]) -> Iterator[tuple[list[str],
+                                                              list[str]]]:
     """
     Context manager to handle directory changes during stash operations.
     Recalculates file paths relative to git root.
@@ -1259,7 +1260,8 @@ def clutil_prepare_files_for_git_stash(
             rel_to_cwd = os.path.relpath(git_root / stored_path, Path.cwd())
             files_for_git.append(rel_to_cwd)
 
-    # Handle untracked files specially - they need to be added to git first for stashing
+    # Handle untracked files specially
+    # - they need to be added to git first for stashing
     untracked_files_for_git = []
     if file_categories['untracked']:
         if not quiet:
@@ -1271,7 +1273,8 @@ def clutil_prepare_files_for_git_stash(
 
         try:
             # Add untracked files to git index
-            subprocess.run(["git", "add", "--"] + untracked_files_for_git, check=True)
+            subprocess.run(["git", "add", "--"] + untracked_files_for_git,
+                           check=True)
         except subprocess.CalledProcessError as error:
             print(f"Error adding untracked files: {error}")
             raise
@@ -1469,7 +1472,8 @@ def clutil_handle_stash_failure(
         rollback_success = False
 
     if rollback_success:
-        print(f"Rollback completed successfully. Changelist '{name}' remains active.")
+        print(f"Rollback completed successfully. "
+              f"Changelist '{name}' remains active.")
     else:
         print("Partial rollback failure. Manual cleanup may be required:")
         print(f"  - Check 'git stash list' for orphaned stash: {stash_ref}")
@@ -1517,11 +1521,13 @@ def clutil_unstash_all_changelists(
             # Note: cl_unstash is called later in the module
             cl_unstash(temp_args)
             success_count += 1
-        except (OSError, subprocess.CalledProcessError, json.JSONDecodeError) as error:
+        except (OSError,
+                subprocess.CalledProcessError, json.JSONDecodeError) as error:
             print(f"Failed to unstash '{stash_name}': {error}")
             continue
 
-    print(f"\nUnstashed {success_count}/{len(stash_items)} changelists successfully.")
+    print(f"\nUnstashed {success_count}/{len(stash_items)} "
+          f"changelists successfully.")
 
 
 def clutil_resolve_unstash_name(name: str) -> tuple[str, str]:
@@ -1722,7 +1728,8 @@ def clutil_verify_and_update_stash_ref(
         print(f"Error: Stash for changelist '{base_name}' no longer exists.")
         print("The stash may have been manually dropped. Available stashes:")
         try:
-            stash_list = subprocess.check_output(["git", "stash", "list"], text=True)
+            stash_list = subprocess.check_output(["git", "stash", "list"],
+                                                 text=True)
             if stash_list.strip():
                 for line in stash_list.strip().split('\n'):
                     print(f"  {line}")
@@ -2086,7 +2093,8 @@ def clutil_check_branch_exists(branch_name: str) -> bool:
         return False
 
 
-def clutil_check_unassigned_changes(changelists: dict, git_root: Path) -> list[str]:
+def clutil_check_unassigned_changes(changelists: dict,
+                                    git_root: Path) -> list[str]:
     """Check for uncommitted changes not in any changelist."""
     status_map = clutil_get_file_status_map(show_all=True)
 
@@ -2118,7 +2126,8 @@ def clutil_create_branch(branch_name: str,
     """Create new branch from base."""
     if base_branch != current_branch:
         # Create branch from specified base
-        subprocess.run(["git", "checkout", "-b", branch_name, base_branch], check=True)
+        subprocess.run(["git", "checkout", "-b", branch_name, base_branch],
+                       check=True)
     else:
         # Create branch from current HEAD
         subprocess.run(["git", "checkout", "-b", branch_name], check=True)
@@ -2321,7 +2330,8 @@ def cl_unstage(args: argparse.Namespace) -> None:
 
 def cl_status(args: argparse.Namespace) -> None:
     """
-    Displays git status grouped by changelist membership, including stashed changelists.
+    Displays git status grouped by changelist membership,
+    including stashed changelists.
 
     Shows active changelists first, then a separate "Stashed Changelists" section,
     then unassigned files. Filtering by changelist names applies only to active
@@ -2729,9 +2739,10 @@ def cl_stash(args: argparse.Namespace, quiet: bool = False) -> None:
     # Execute git stash with safe directory handling
     try:
         with clutil_safe_stash_context(
-                git_root, files_for_git, untracked_files_for_git) as (safe_files,
-                                                                      safe_untracked_files):
-            stash_ref = clutil_execute_git_stash(name, safe_files, safe_untracked_files)
+                git_root, files_for_git,
+                untracked_files_for_git) as (safe_files, safe_untracked_files):
+            stash_ref = clutil_execute_git_stash(name, safe_files,
+                                                 safe_untracked_files)
     except (subprocess.CalledProcessError, ValueError):
         return
 

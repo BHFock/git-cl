@@ -2885,7 +2885,8 @@ def cl_branch(args: argparse.Namespace) -> None:
     # Step 1: Stash all active changelists (quietly)
     try:
         clutil_stash_all_changelists(active_changelists, quiet=True)
-    except Exception as error:
+    except (subprocess.CalledProcessError,
+            OSError, json.JSONDecodeError) as error:
         print(f"Error during stash operation: {error}")
         print("Branch creation aborted.")
         return
@@ -2909,7 +2910,8 @@ def cl_branch(args: argparse.Namespace) -> None:
         print(f"Restored changelist '{changelist_name}' ({file_count} files)")
         print("Ready to work on your feature!")
 
-    except Exception as error:
+    except (subprocess.CalledProcessError,
+            OSError, json.JSONDecodeError) as error:
         print(f"Error unstashing changelist: {error}")
         print(f"Branch '{branch_name}' was created but"
               "changelist restore failed.")

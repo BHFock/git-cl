@@ -1,6 +1,6 @@
 # git-cl Design Notes - DRAFT
 
-This document aims to describe the design of git-cl to make future maintenance more easy.
+This document aims to describe the design of git-cl to make future maintenance more easy. Note that links to code examples are pinned to certain version of the code and that the code may have evolved since creating the links.
 
 ## Core Architecture Components
 

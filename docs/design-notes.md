@@ -6,9 +6,8 @@ This document aims to describe the design of git-cl to make future maintenance m
 
 ### Purpose and Scope
 
-- git-cl is a Git subcommand for managing named changelists within a Git working directory.
-- It allows grouping files into logical changelists before staging or committing.
-
+`git-cl` is a Git subcommand for managing named changelists within a Git working directory. It allows grouping files into logical changelists before staging or committing. The main design goal is that this helps to review code changes with `git cl status`, but the functinality also support staching and branching based on changelists.
+  
 ### Repository and Maintenance
 
 - Hosted at: https://github.com/BHFock/git-cl

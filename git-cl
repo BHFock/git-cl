@@ -57,24 +57,24 @@ This tool is intended for use within Git repositories.
 __version__ = "0.3.4"
 
 import argparse
+import datetime
+import fcntl
 import json
-import sys
 import os
 import subprocess
-import fcntl
-import datetime
-from typing import Optional, Iterator
-from pathlib import Path
+import sys
 from contextlib import contextmanager
+from pathlib import Path
+from typing import Optional, Iterator
 
-# Try to import colorama for colored output
+# Try to import colorama for colored output of 'git cl st'
+# use dummy objects if coloram is not availble to avoid NameError
 try:
     from colorama import Fore, Style
     COLORAMA_AVAILABLE = True
 except ImportError:
     COLORAMA_AVAILABLE = False
 
-    # Define dummy objects to avoid NameError
     # pylint: disable=too-few-public-methods
     class _DummyColorama:
         CYAN = ""
@@ -82,9 +82,9 @@ except ImportError:
         YELLOW = ""
         MAGENTA = ""
         RESET_ALL = ""
-
     Fore = _DummyColorama()
     Style = _DummyColorama()
+
 
 # =============================================================================
 # INTERNAL UTILITIES

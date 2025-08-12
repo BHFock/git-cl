@@ -63,7 +63,7 @@ import os
 import subprocess
 import fcntl
 import datetime
-from typing import Optional
+from typing import Optional, Iterator
 from pathlib import Path
 from contextlib import contextmanager
 
@@ -809,9 +809,10 @@ def clutil_get_current_branch() -> Optional[str]:
 
 
 @contextmanager
-def clutil_safe_stash_context(git_root: Path,
-                              files_for_git: list[str],
-                              untracked_files_for_git: list[str]):
+def clutil_safe_stash_context(
+        git_root: Path,
+        files_for_git: list[str],
+        untracked_files_for_git: list[str]) -> Iterator[tuple[list[str],  list[str]]]:
     """
     Context manager to handle directory changes during stash operations.
     Recalculates file paths relative to git root.

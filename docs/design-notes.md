@@ -67,6 +67,21 @@ Utility functions only used by the [cl_branch](https://github.com/BHFock/git-cl/
 
 This section includes the definition of the main functions callable in git-cl. The functions provides interactions with the changelist metadata and the git repository.
 
+| Change List Command Function                                            | Type of Command                  |
+|-------------------------------------------------------------------------|----------------------------------|
+| [cl_add](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2150)      | Changelist Organistaion Commands |
+| [cl_remove](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2526)   |                                  |
+| [cl_delete](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2559)   |                                  |
+| [cl_status](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2318)   | Display Commands                 |
+| [cl_diff](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2356)     |                                  |
+| [cl_stage](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2206)    | State Changing Commands          |
+|  [cl_unstage](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2258) |                                  |
+| [cl_checkout](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2408) |                                  |
+| [cl_commit](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2596)   |                                  |
+| [cl_stash](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2655)    | Advanced Workflow Commands       |
+| [cl_unstash](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2753)  |                                  |
+| [cl_branch](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2809)   |                                  |
+
 ##### [# MAIN ENTRY POINT](https://github.com/BHFock/git-cl/blob/e0bd57f450762f752e13483c1d2ae383f5ba79e3/git-cl#L2921)
 
 This section includes the main function which serves as entry point. It uses [argparse](https://docs.python.org/3/library/argparse.html) to define the user interface for the subcommands like [add](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L2950), [remove](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L2965), [stage](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L3056), [commit](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L3093), [stash](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L3119), [branch](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L3162), etc. This section includes the definition of the command line help. 

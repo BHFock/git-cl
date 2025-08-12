@@ -63,7 +63,7 @@ Helper functions needed to keep the [CLI functions](https://github.com/BHFock/gi
 
 ##### [# BRANCH WORKFLOW UTILITIES](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2048)
 
-Utility functions only used by the [cl_branch](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L2809) function are grouped in this section. In parts these are quite small functionsm, intended to make `cl_branch` more readbale with a complexity which is seen by [pylint](https://www.pylint.org/) as recommended. These functions include:
+Utility functions only used by the [cl_branch](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L2809) function are grouped in this section. In parts these are quite small functions, intended to make `cl_branch` more readable with a complexity which is seen by [pylint](https://www.pylint.org/) as recommended. These functions include:
 
 - [clutil_validate_branch_preconditions](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L2051)
 - [clutil_check_branch_exists](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L2074)
@@ -79,7 +79,7 @@ This section includes the definition of the main functions callable in git-cl. T
 
 | Changelist Command Function                                             | Tutorial                                                  | Type of Command                  |
 |-------------------------------------------------------------------------|-----------------------------------------------------------|----------------------------------|
-| [cl_add](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2150)      | [cl add](tutorial.md#21-add-files-to-a-changelist)        | Changelist Organistaion Commands |
+| [cl_add](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2150)      | [cl add](tutorial.md#21-add-files-to-a-changelist)        | Changelist Organisation Commands |
 | [cl_remove](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2526)   | [cl rm](tutorial.md#26-remove-files-from-changelists)     |                                  |
 | [cl_delete](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2559)   | [cl del](tutorial.md#27-delete-changelists)               |                                  |
 | [cl_status](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2318)   | [cl st](tutorial.md#22-view-status-by-changelist)         | Display Commands                 |
@@ -94,15 +94,15 @@ This section includes the definition of the main functions callable in git-cl. T
 
 ##### [# MAIN ENTRY POINT](https://github.com/BHFock/git-cl/blob/e0bd57f450762f752e13483c1d2ae383f5ba79e3/git-cl#L2921)
 
-This section includes the [main function](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2916) which serves as entry point. It uses [argparse](https://docs.python.org/3/library/argparse.html) to define the user interface for the subcommands like [add](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L2950), [status](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2992), [commit](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L3093), [branch](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L3162), etc. This section includes the definition of the command line help. Define the help via `argparse` means that the main help command id availble via `git cl help` but not via  `git help cl`. Defining the help via `git help cl` would need creation of man pages to be installed with git. This has been left out for simplicity. 
+This section includes the [main function](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2916) which serves as entry point. It uses [argparse](https://docs.python.org/3/library/argparse.html) to define the user interface for the subcommands like [add](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L2950), [status](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2992), [commit](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L3093), [branch](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L3162), etc. This section includes the definition of the command line help. Define the help via `argparse` means that the main help command id available via `git cl help` but not via  `git help cl`. Defining the help via `git help cl` would need creation of man pages to be installed with git. This has been left out for simplicity. 
 
 ### Concurrency and Locking
 
-- Uses [fcntl](https://docs.python.org/3/library/fcntl.html) to lock metadata files during read/write operations to prevent race conditions caused by simultanious use of git-cl by multiple processes. This is intended to prevent unexpexted changes of chagelists. However, it should be noticed that `git-cl` is designed for single user interactive use and not for shared accounts or integration into scripts.
+- Uses [fcntl](https://docs.python.org/3/library/fcntl.html) to lock metadata files during read/write operations to prevent race conditions caused by simultaneous use of git-cl by multiple processes. This is intended to prevent unexpected changes of changelists. However, it should be noticed that `git-cl` is designed for single user interactive use and not for shared accounts or integration into scripts.
 
 ### Colour Output
 
-Output of `git cl st` is coloured by default. This uses [colorama](https://pypi.org/project/colorama/). The output is uncoloured if colorama is not availble, if the output is redirected/piped or if coloured output is switched of via flag or enviroment variable. 
+Output of `git cl st` is coloured by default. This uses [colorama](https://pypi.org/project/colorama/). The output is uncoloured if colorama is not available, if the output is redirected/piped or if coloured output is switched of via flag or environment variable. 
 
 ### Command Parsing
 
@@ -153,4 +153,4 @@ Supports a branch workflow:
 
 ## Future direction
 
-The aim is to avoid expansion of functionality to keep the code size under control and the help/documentation readable. The code may need some extensions to cover more edge cases, platform compatability, etc. General refactoring may help with maintability and addition of tests would be benifitial. It would be desirable to keep the single file structure of the script to simplify deployment.
+The aim is to avoid expansion of functionality to keep the code size under control and the help/documentation readable. The code may need some extensions to cover more edge cases, platform compatibility, etc. General refactoring may help with maintainability and addition of tests would be beneficial. It would be desirable to keep the single file structure of the script to simplify deployment.

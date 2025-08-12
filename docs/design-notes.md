@@ -6,7 +6,7 @@ This document aims to describe the design of git-cl to make future maintenance m
 
 ### Purpose and Scope
 
-`git-cl` is a Git subcommand for managing named changelists within a Git working directory. It allows grouping files into logical changelists before staging or committing. The main design goal is that this helps to review code changes with `git cl status`, but the functinality also support staching and branching based on changelists.
+`git-cl` is a Git subcommand for managing named changelists within a Git working directory. It allows grouping files into logical changelists before staging or committing. The main design goal is that this helps to review code changes with `git cl status`, but the functionality also support stashing and branching based on changelists.
   
 Repository hosted at: https://github.com/BHFock/git-cl
 
@@ -49,9 +49,9 @@ is stored in `.git/cl.json` as
 
 Storing `cl.json` in `.git/` allows to move the repository around locally while keeping the changelists intact. This is helped by the fact that file paths are stored relative to the repository root in `cl.json`. While the paths shown in `cl.json` are relative to the git root directory, the paths shown by the `git cl st` output are relative to the current working directory which is expected for executing normal Git commands like `git add ../README.md`. `git cl` converts paths depending on the context in paths relative to the git root, relative to the current working directory and in absolute paths. All three representations are needed.
 
-`.git/cl.json`is not part of the git history. That keeps changelists conceptiually as a 'pre staging functionality' which is not mixed up with git's version control.
+`.git/cl.json`is not part of the git history. That keeps changelists conceptually as a 'pre staging functionality' which is not mixed up with git's version control.
   
-Stash metadata is stored in .git/cl-stashes.json. This keeps the stashes separate from the namelist files and allowed an implementation of the more advanced `git cl stash` and `git cl unstash` without impacting the implementation of the basis functions. 
+Stash metadata is stored in .git/cl-stashes.json. This keeps the stashes separate from the changelist files and allowed an implementation of the more advanced `git cl stash` and `git cl unstash` without impacting the implementation of the basic functions. 
 
 #### Code Structure
 
@@ -63,11 +63,11 @@ Code stored in one single file to make installation easy. The disadvantage of mo
 
 ##### [# CLI COMMANDS](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2146)
 
-This section includes the definition of the main functions callable in git-cl. The functions provides interactions with the namelist metadata and the git repository.
+This section includes the definition of the main functions callable in git-cl. The functions provides interactions with the changelist metadata and the git repository.
 
 ##### [# MAIN ENTRY POINT](https://github.com/BHFock/git-cl/blob/e0bd57f450762f752e13483c1d2ae383f5ba79e3/git-cl#L2921)
 
-This section includes the main function which servces as entry point. It uses argpars to define the user interface for the subcommands like [add](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L2950), [remove](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L2965), [stage](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L3056), [commit](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L3093), [stash](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L3119), [branch](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L3162), etc. This section includes the definition of the command line help. 
+This section includes the main function which serves as entry point. It uses argparse to define the user interface for the subcommands like [add](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L2950), [remove](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L2965), [stage](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L3056), [commit](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L3093), [stash](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L3119), [branch](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L3162), etc. This section includes the definition of the command line help. 
 
 ### Concurrency and Locking
 

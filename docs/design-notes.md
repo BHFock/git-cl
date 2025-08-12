@@ -90,11 +90,11 @@ This section includes the [main function](https://github.com/BHFock/git-cl/blob/
 
 ### Concurrency and Locking
 
-- Uses fcntl to lock files during read/write operations to prevent race conditions but tool intended for single user interactive mode.
+- Uses [fcntl](https://docs.python.org/3/library/fcntl.html) to lock metadata files during read/write operations to prevent race conditions caused by simultanious use of git-cl by multiple processes. This is intended to prevent unexpexted changes of chagelists. However, it should be noticed that `git-cl` is designed for single user interactive use and not for shared accounts or integration into scripts.
 
 ### Colour Output
 
-- Optional coloured CLI output via colorama, with fallbacks if unavailable.
+Output of `git cl st` is coloured by default. This uses [colorama](https://pypi.org/project/colorama/). The output is uncoloured if colorama is not availble, if the output is redirected/piped or if coloured output is switched of via flag or enviroment variable. 
 
 ### Command Parsing
 
@@ -131,6 +131,8 @@ Supports a branch workflow:
 - Detects and reports conflicts.
 - Applies stash and updates metadata.
 
+### Branching Workflow
+
 ## Extensibility and Modularity
 
 - Modular design with utility functions (clutil_*) for:
@@ -143,4 +145,4 @@ Supports a branch workflow:
 
 ## Future direction
 
-- Avoid expansion of functionality to keep code size under control and to keep the help/documentation readable
+The aim is to avoid expansion of functionality to keep the code size under control and the help/documentation readable. The code may need some extensions to cover more edge cases, platform compatability, etc. General refactoring may help with maintability and addition of tests would be benifitial. It would be desirable to keep the single file structure of the script to simplify deployment.

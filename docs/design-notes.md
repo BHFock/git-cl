@@ -60,12 +60,13 @@ Stash metadata is stored in .git/cl-stashes.json. This keeps the stashes seperat
 
 Code stored in one single file to make installation easy. The disatvantage of more difficult code navidagtion is mitigated by separtion into blocks of different functionality with clear header comments:
 
-|  Section                    | Code line                                                                                                   |
-| --------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| # INTERNAL UTILITIES        | [0.3.4/git-cl#L90](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L90)                                  | 
-| # BRANCH WORKFLOW UTILITIES | [0.3.4/git-cl#L2048](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2048)                              |
-| # CLI COMMANDS              | [0.3.4/git-cl#L2146](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2146)                              | 
-| # ADD (parser), ...         | [git-cl#L2954](https://github.com/BHFock/git-cl/blob/221d2cab8c9f33ed27a59369496d681dbe21344b/git-cl#L2954) |
+##### [# INTERNAL UTILITIES](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L90)
+
+##### [# BRANCH WORKFLOW UTILITIES](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2048)
+
+##### [# CLI COMMANDS](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2146)
+
+##### [# MAIN ENTRY POINT](https://github.com/BHFock/git-cl/blob/e0bd57f450762f752e13483c1d2ae383f5ba79e3/git-cl#L2921)
 
 ### Concurrency and Locking
 

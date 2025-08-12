@@ -61,6 +61,8 @@ Code stored in one single file to make installation easy. The disadvantage of mo
 
 ##### [# BRANCH WORKFLOW UTILITIES](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2048)
 
+Utility functions only used by the [cl_branch](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L2809) function are grouped in this section.  
+
 ##### [# CLI COMMANDS](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2146)
 
 This section includes the definition of the main functions callable in git-cl. The functions provides interactions with the changelist metadata and the git repository.

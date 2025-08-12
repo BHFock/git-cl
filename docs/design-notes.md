@@ -69,20 +69,20 @@ Utility functions only used by the [cl_branch](https://github.com/BHFock/git-cl/
 
 This section includes the definition of the main functions callable in git-cl. The functions provides interactions with the changelist metadata and the git repository.
 
-| Changelist Command Function                                             | Tutorial                                            |   Type of Command               |
-|-------------------------------------------------------------------------|-----------------------------------------------------|---------------------------------|
-| [cl_add](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2150)      | [cl add](tutorial.md#21-add-files-to-a-changelist)  | Changelist Organistaion Commands |
-| [cl_remove](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2526)   |  |                                 |
-| [cl_delete](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2559)   |  |                                 |
-| [cl_status](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2318)   | [cl st] (tutorial.md#22-view-status-by-changelist)  | Display Commands                 |
-| [cl_diff](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2356)     | [cl diff](tutorial.md#23-diff-a-changelist)         |                                  |
-| [cl_stage](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2206)    | [cl stage] (tutorial.md#stage-a-changelist)         | State Changing Commands          |
-|  [cl_unstage](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2258) | [cl unstage](tutorial.md#unstage-a-changelist)      |                                  |
-| [cl_checkout](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2408) |  |                                |
-| [cl_commit](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2596)   |  |                                |
-| [cl_stash](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2655)    |  | Advanced Workflow Commands       |
-| [cl_unstash](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2753)  |  |                                |
-| [cl_branch](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2809)   |  |                                |
+| Changelist Command Function                                             | Tutorial                                                  | Type of Command                  |
+|-------------------------------------------------------------------------|-----------------------------------------------------------|----------------------------------|
+| [cl_add](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2150)      | [cl add](tutorial.md#21-add-files-to-a-changelist)        | Changelist Organistaion Commands |
+| [cl_remove](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2526)   | [cl rm](tutorial.md#26-remove-files-from-changelists)     |                                  |
+| [cl_delete](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2559)   | [cl del](tutorial.md#27-delete-changelists)               |                                  |
+| [cl_status](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2318)   | [cl st](tutorial.md#22-view-status-by-changelist)         | Display Commands                 |
+| [cl_diff](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2356)     | [cl diff](tutorial.md#23-diff-a-changelist)               |                                  |
+| [cl_stage](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2206)    | [cl stage](tutorial.md#stage-a-changelist)                | State Changing Commands          |
+|  [cl_unstage](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2258) | [cl unstage](tutorial.md#unstage-a-changelist)            |                                  |
+| [cl_checkout](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2408) | [cl co](tutorial.md#28-checkout-a-changelist)             |                                  |
+| [cl_commit](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2596)   | [cl ci](tutorial.md#25-commit-a-changelist)               |                                  |
+| [cl_stash](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2655)    | [cl stash](tutorial.md#stash-a-changelist)                | Advanced Workflow Commands       |
+| [cl_unstash](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2753)  | [cl unstash](tutorial.md#unstash-a-changelist)            |                                  |
+| [cl_branch](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2809)   | [cl br](tutorial.md#32-create-a-branch-from-a-changelist) |                                  |
 
 ##### [# MAIN ENTRY POINT](https://github.com/BHFock/git-cl/blob/e0bd57f450762f752e13483c1d2ae383f5ba79e3/git-cl#L2921)
 

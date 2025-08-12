@@ -1,6 +1,6 @@
 # git-cl Design Notes - DRAFT
 
-This document aims to describe the design of git-cl to make future maintenance more easy. Note that links to code examples are pinned to certain version of the code and that the code may have evolved since creating the links.
+This document aims to describe the design of [git-cl](https://github.com/BHFock/git-cl) to make future maintenance more easy. Note that links to code examples are pinned to certain version of the code and that the code may have evolved since creating the links.
 
 ## Core Architecture Components
 
@@ -12,10 +12,10 @@ Repository hosted at: https://github.com/BHFock/git-cl
 
 ### Key Features
 
-- Add/remove files to/from changelists.
-- Stage or commit all files in a changelist.
+- Add/remove files to/from changelists. 
 - Show status grouped by changelists.
-- Delete changelists when done.
+- Stage or commit all files in a changelist.
+- Stash changelists and create branches from changelists.
 
 ## Technical Architecture
 

@@ -1,6 +1,6 @@
 # git-cl Design Notes - DRAFT
 
-This document aims to describe the design of git-cl to make future maintance more easy.
+This document aims to describe the design of git-cl to make future maintenance more easy.
 
 ## Core Architecture Components
 
@@ -24,9 +24,9 @@ This document aims to describe the design of git-cl to make future maintance mor
 
 ### File Structure
 
-#### Meta Data Structure
+#### Metadata Structure
 
-Changelists are stored in `.git/cl.json`. The human readable [JSON](https://en.wikipedia.org/wiki/JSON) format allows easy review on how changelist are are stored. For example this `git cl st` (executed from the folder `~git-cl_test/folder1`): 
+Changelists are stored in `.git/cl.json`. The human readable [JSON](https://en.wikipedia.org/wiki/JSON) format allows easy review on how changelist are stored. For example this `git cl st` (executed from the folder `~git-cl_test/folder1`): 
 
 ```
 list1:
@@ -54,11 +54,11 @@ Storing `cl.json` in `.git/` allows to move the repository around locally while 
 
 `.git/cl.json`is not part of the git history. That keeps changelists conceptiually as a 'pre staging functionality' which is not mixed up with git's version control.
   
-Stash metadata is stored in .git/cl-stashes.json. This keeps the stashes seperate from the namelist files and allowed an implementation of the more adavneced `git cl stash` and `git cl unstash` without impacting the implementation of the basis functions. 
+Stash metadata is stored in .git/cl-stashes.json. This keeps the stashes separate from the namelist files and allowed an implementation of the more advanced `git cl stash` and `git cl unstash` without impacting the implementation of the basis functions. 
 
 #### Code Structure
 
-Code stored in one single file to make installation easy. The disatvantage of more difficult code navidagtion is mitigated by separtion into blocks of different functionality with clear header comments:
+Code stored in one single file to make installation easy. The disadvantage of more difficult code navigation is mitigated by separation into blocks of different functionality with clear header comments:
 
 ##### [# INTERNAL UTILITIES](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L90)
 

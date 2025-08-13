@@ -706,7 +706,7 @@ def clutil_analyze_file_status_for_unstash(status: str) -> tuple[bool, str]:
     if staged in ['A', 'M', 'D', 'R']:
         stage_desc = {
             'A': "staged for addition (safe)",
-            'M': "staged modifications (safe)", 
+            'M': "staged modifications (safe)",
             'D': "staged for deletion (safe)",
             'R': "staged rename (safe)"
         }

@@ -51,7 +51,7 @@ Stash metadata is stored in `.git/cl-stashes.json`. This keeps the stashes separ
 
 #### Code Structure
 
-Code is organized in a single file for simple installation. Code navigation is facilitated by clear section headers that group related functionality
+The code is organized in a single file for simple installation. Code navigation is facilitated by clear section headers that group related functionality
 
 ##### [# INTERNAL UTILITIES](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L90)
 

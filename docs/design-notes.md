@@ -12,6 +12,8 @@ This document aims to describe the design of [git-cl](https://github.com/BHFock/
 - [Data Flow and Operations](#data-flow-and-operations)
 - [Implementation Details](#implementation-details)
 - [Troubleshooting and Edge Cases](#troubleshooting-and-edge-cases)
+  - [Common Issues](#common-issues)
+  - [Design Decisions FAQ](#design-decisions-faq)
 - [Future Direction](#future-direction)
 
 ## Overview

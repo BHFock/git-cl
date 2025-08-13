@@ -188,18 +188,6 @@ Supports a branch workflow:
 - Conflict detection
 - Branch state management
 
-### Stashing Workflow
-
-- Files are categorised (e.g., unstaged changes, staged additions, untracked).
-- Only stashable files are processed.
-- Metadata is saved atomically to prevent corruption.
-
-### Unstashing Workflow
-
-- Validates environment and branch state.
-- Detects and reports conflicts.
-- Applies stash and updates metadata.
-
 ### Branching Workflow
 
 - **Validate preconditions** using [`clutil_validate_branch_preconditions`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2051) and [`clutil_check_branch_exists`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2074) to ensure the changelist exists and no conflicting branch is present.  

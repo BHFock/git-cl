@@ -47,7 +47,8 @@ is stored in `.git/cl.json` as
 }
 ```
 
-Storing `cl.json` in `.git/` allows to move the repository around locally while keeping the changelists intact. This is helped by the fact that file paths are stored relative to the repository root in `cl.json`. While the paths shown in `cl.json` are relative to the git root directory, the paths shown by the `git cl st` output are relative to the current working directory which is expected for executing normal Git commands like `git add ../README.md`. `git cl` converts paths depending on the context in paths relative to the git root, relative to the current working directory and in absolute paths. All three representations are needed.
+
+Storing `cl.json` in `.git/` allows moving the repository locally while keeping changelists intact, because file paths in `cl.json` are stored relative to the repository root. `git cl st` displays paths relative to the current working directory. The details of how these paths are transformed for display or Git operations are described in the [Path Conversion](#path-conversion) section.
 
 `.git/cl.json`is not part of the git history. That keeps changelists conceptually as a 'pre staging functionality' which is not mixed up with git's version control.
   

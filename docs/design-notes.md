@@ -1,6 +1,6 @@
 # git-cl Design Notes - DRAFT
 
-This document aims to describe the design of [git-cl](https://github.com/BHFock/git-cl) to make future maintenance more easy. Note that links to code examples are pinned to certain version of the code and that the code may have evolved since creating the links.
+This document aims to describe the design of [git-cl](https://github.com/BHFock/git-cl) to help future maintenance. Note that links to code examples are pinned to certain versions of the code and that the code may have evolved since creating the links.
 
 ## Table of Contents
 - [Overview](#overview)

@@ -116,17 +116,11 @@ This section includes the [main function](https://github.com/BHFock/git-cl/blob/
 
 #### Concurrency and Locking
 
-`git-cl` uses [fcntl](https://docs.python.org/3/library/fcntl.html) to lock metadata files during read/write operations to prevent race conditions caused by simultaneous use of git-cl by multiple processes. This is intended to prevent unexpected changes of changelists. However, it should be noticed that `git-cl` is designed for single user interactive use and not for shared accounts or integration into scripts.
+`git-cl` uses [fcntl](https://docs.python.org/3/library/fcntl.html) to lock metadata files preventing race conditions. It is designed for single-user interactive use rather than shared accounts or scripts.
 
 #### Path Conversion
 
-`git-cl` works with three path representations:
-
-- **Repo-root relative** — used for storage in `.git/cl.json`
-- **CWD relative** — used for Git CLI commands (`git add ../README.md`)
-- **Absolute** — used internally for file existence checks and normalisation
-
-Utility functions handle conversions between these forms, ensuring that paths are always correct regardless of the user’s current working directory. This is essential for features like showing `git cl status` from a subfolder while still storing metadata in `.git/cl.json` relative to the repository root.
+`git-cl` works with three path representations: repo-root relative (storage), CWD relative (Git commands), and absolute (internal checks). Utility functions handle conversions ensuring paths work from any directory
 
 #### Error Handling and Exit Codes
 

@@ -1408,6 +1408,7 @@ def clutil_build_stash_metadata(
     }
 
 
+# pylint: disable-next=too-many-arguments
 def clutil_save_stash_metadata_atomic(
     name: str,
     stash_ref: str,

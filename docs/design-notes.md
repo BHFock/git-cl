@@ -209,7 +209,7 @@ The process follows a multi-stage pipeline:
 
 4. **Display Formatting** – [`clutil_format_file_status`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L461) converts repo-relative paths back to CWD-relative for user display, applying color coding via [`clutil_should_use_color`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L142).
 
-5. **Color Classification** – Status codes are mapped to colors: untracked files (blue), staged-only changes (green), unstaged-only changes (red), mixed staged+unstaged (magenta), with graceful degradation when colorama is unavailable.
+5. **Color Classification** – Status codes are [mapped](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L464) to colors: untracked files (blue), staged-only changes (green), unstaged-only changes (red), mixed staged+unstaged (magenta), with graceful degradation when colorama is unavailable.
 
 This pipeline ensures consistent Git state interpretation across all commands while providing user-friendly, colorized output that matches Git conventions.
 

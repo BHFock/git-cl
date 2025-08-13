@@ -19,9 +19,9 @@ Repository hosted at: https://github.com/BHFock/git-cl
 
 ## Technical Architecture
 
-### File Structure
+### Code and Data Organisation
 
-#### Metadata Structure
+#### File Structure 
 
 Changelists are stored in `.git/cl.json`. The human readable [JSON](https://en.wikipedia.org/wiki/JSON) format allows easy review on how changelist are stored. For example this `git cl st` (executed from the folder `~git-cl_test/folder1`): 
 
@@ -97,11 +97,13 @@ This section includes the definition of the main functions callable in git-cl. T
 
 This section includes the [main function](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2916) which serves as entry point. It uses [argparse](https://docs.python.org/3/library/argparse.html) to define the user interface for the subcommands like [add](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L2950), [status](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2992), [commit](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L3093), [branch](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L3162), etc. This section includes the definition of the command line help. Define the help via `argparse` means that the main help command is available via `git cl help` but not via  `git help cl`. Defining the help via `git help cl` would need creation of man pages to be installed with git. This has been left out for simplicity. 
 
-### Concurrency and Locking
+### Runtime Behaviour
 
-- Uses [fcntl](https://docs.python.org/3/library/fcntl.html) to lock metadata files during read/write operations to prevent race conditions caused by simultaneous use of git-cl by multiple processes. This is intended to prevent unexpected changes of changelists. However, it should be noticed that `git-cl` is designed for single user interactive use and not for shared accounts or integration into scripts.
+#### Concurrency and Locking
 
-### Path Conversion
+`git-cl` uses [fcntl](https://docs.python.org/3/library/fcntl.html) to lock metadata files during read/write operations to prevent race conditions caused by simultaneous use of git-cl by multiple processes. This is intended to prevent unexpected changes of changelists. However, it should be noticed that `git-cl` is designed for single user interactive use and not for shared accounts or integration into scripts.
+
+#### Path Conversion
 
 `git-cl` works with three path representations:
 
@@ -111,38 +113,65 @@ This section includes the [main function](https://github.com/BHFock/git-cl/blob/
 
 Utility functions handle conversions between these forms, ensuring that paths are always correct regardless of the user’s current working directory. This is essential for features like showing `git cl status` from a subfolder while still storing metadata in `.git/cl.json` relative to the repository root.
 
-### Colour Output
-
-Output of `git cl st` is coloured by default. This uses [colorama](https://pypi.org/project/colorama/). The output is uncoloured if colorama is not available, if the output is redirected/piped or if coloured output is switched off via flag or environment variable. 
-
-### Command Parsing
-
-- Uses argparse to define subcommands like add, remove, stage, commit, stash, unstash, branch, etc.
-
-
-### Error Handling and Exit Codes
+#### Error Handling and Exit Codes
 
 `git-cl` exits with code `0` on success and non-zero codes on errors. Error messages are printed to `stderr`. Some functions terminate execution immediately on fatal errors using [sys.exit()](https://docs.python.org/3/library/sys.html#sys.exit), ensuring no partial metadata changes are written.
 
+#### Colour Output
 
-### Workflow Support
+Output of `git cl st` is coloured by default. This uses [colorama](https://pypi.org/project/colorama/). The output is uncoloured if colorama is not available, if the output is redirected/piped or if coloured output is switched off via flag or environment variable. 
+
+### User Interface 
+
+#### Command Parsing
+
+- Uses argparse to define subcommands like add, remove, stage, commit, stash, unstash, branch, etc.
+
+#### Workflow Support
 
 Supports a branch workflow:
 - Stash all changelists.
 - Create a new branch.
 - Unstash a specific changelist.
 
-### Validation and Safety
+#### Validation and Safety
 
 - Validates changelist names against reserved Git terms.
 - Sanitises file paths and checks for dangerous characters.
 - Handles edge cases like missing files, untracked files, and merge conflicts.
 
+## Common Implementation Patterns
+
+### Utility Function Convention
+- All utilities use `clutil_` prefix
+- Path sanitization pattern
+- Atomic metadata operations
+
+### Error Handling Strategies
+- Immediate exit on fatal errors
+- Rollback on partial failures
+- User-friendly error messages
+
+### Git Integration Patterns
+- Status parsing
+- Path conversion workflows
+- Safe git command execution
+
 ## Data Flow and Operations
 
-### Changelist Lifecycle
+### File Lifecycle Management
+- File addition/removal patterns
+- Path normalization workflow
 
-- Creation → Modification → Staging → Committing → Deletion.
+### Metadata Operations
+- JSON structure evolution
+- Locking strategies
+- Backup/recovery approaches
+
+### Git Integration Points
+- Status synchronization
+- Conflict detection
+- Branch state management
 
 ### Stashing Workflow
 
@@ -165,16 +194,35 @@ Supports a branch workflow:
 - **Unstash the target changelist** onto the new branch via [`clutil_unstash_changelist`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2123).  
 - **Handle failures** in branch creation or unstashing with [`clutil_handle_branch_creation_failure`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2132) to restore the original state.  
 
+## Implementation Details
 
-## Extensibility and Modularity
+### Key Algorithms
+- Path resolution algorithm
+- Conflict detection logic
+- Stash categorization rules
 
-- Modular design with utility functions (clutil_*) for:
-  - File locking
-  - Git status parsing
-  - Path sanitisation
-  - Conflict detection
-  - Metadata handling
-- CLI commands are mapped to functions for easy extension.
+### Platform Considerations
+- Windows vs Unix path handling
+- Terminal color detection
+- File locking differences
+
+### Performance Considerations
+- Large repository handling
+- Memory usage patterns
+- Git command optimization
+
+## Troubleshooting and Edge Cases
+
+### Common Issues
+- Path-related problems
+- Merge conflict scenarios
+- Metadata corruption recovery
+
+### Design Decisions FAQ
+- Why single file?
+- Why JSON metadata?
+- Why .git/ storage?
+
 
 ## Future direction
 

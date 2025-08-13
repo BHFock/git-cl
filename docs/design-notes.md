@@ -57,7 +57,7 @@ is stored in `.git/cl.json` as
 
 Storing `cl.json` in `.git/` allows moving the repository locally while keeping changelists intact, because file paths in `cl.json` are stored relative to the repository root. `git cl st` displays paths relative to the current working directory. The details of how these paths are transformed for display or Git operations are described in the [Path Resolution Algorithm](#path-resolution-algorithm) section.
 
-`.git/cl.json`is not part of the Git history. That keeps changelists conceptually as a 'pre staging functionality' which is not mixed up with Git's version control.
+`.git/cl.json`is not part of the Git history. This keeps changelists as a "pre-staging" layer separate from Git's version control.
   
 Stash metadata is stored in `.git/cl-stashes.json`. This keeps the stashes separate from the changelist files and allowed an implementation of the more advanced `git cl stash` and `git cl unstash` without impacting the implementation of the basic functions. 
 
@@ -71,7 +71,7 @@ Utility functions needed to keep the [CLI functions](https://github.com/BHFock/g
 
 ##### [# BRANCH WORKFLOW UTILITIES](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2048)
 
-Utility functions only used by the [cl_branch](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L2809) function are grouped in this section. In parts these are quite small functions, intended to make `cl_branch` more readable with a complexity which is seen by [pylint](https://www.pylint.org/) as recommended.
+Utility functions only used by the [cl_branch](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L2809) function are grouped in this section. These functions break down `cl_branch` into manageable components to maintain code readability and reduce complexity.
 
 ##### [# CLI COMMANDS](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2146)
 

@@ -122,7 +122,7 @@ Output of `git cl st` is coloured by default. This uses [colorama](https://pypi.
 
 ### Error Handling and Exit Codes
 
-`git-cl` exits with code `0` on success and non-zero codes on errors. Error messages are printed to `stderr`. Some functions terminate execution immediately on fatal errors using sys.exit(), ensuring no partial metadata changes are written.
+`git-cl` exits with code `0` on success and non-zero codes on errors. Error messages are printed to `stderr`. Some functions terminate execution immediately on fatal errors using [sys.exit()](https://docs.python.org/3/library/sys.html#sys.exit), ensuring no partial metadata changes are written.
 
 
 ### Workflow Support

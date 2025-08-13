@@ -197,12 +197,10 @@ Supports a branch workflow:
 
 #### Path Resolution Algorithm
 
-The path conversion system handles three representations:
+The path conversion system handles three representations: repo-root relative (storage), CWD relative (Git commands), and absolute (internal checks). 
 
-1. **Input sanitization** via [clutil_sanitize_path()](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L358) - Takes user-provided file paths, resolves relative components and symlinks, ensures paths are within the Git repository, and rejects dangerous characters that could cause security issues. Returns paths normalized to repo-root relative format or None if invalid.
-2. **Storage normalization** to repo-root relative paths - All paths in .git/cl.json are stored relative to the repository root, enabling repository portability and providing a canonical representation regardless of where commands are run. This ensures changelists survive repository moves.
-3. **Display conversion** to CWD-relative for user commands via [clutil_format_file_status()](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L461) - Converts stored repo-relative paths to current-working-directory relative paths for display, making output compatible with standard Git commands. Shows paths as users expect to see them so they can copy-paste into git add commands.
-  
+[clutil_sanitize_path()](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L358) validates user input, resolves relative components, and ensures paths are within the Git repository while rejecting dangerous characters. All paths in `.git/cl.json` are stored relative to the repository root for portability. [clutil_format_file_status()](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L461) converts stored paths to CWD-relative paths for display, making output compatible with standard Git commands.
+
 #### Unstash Conflict Detection
 
 Git allows many state changes of a repository which means that it is difficult to design advanced version control workflows which always work from a well defined state in the expected way. This is especially true if more advanced features like shelving changed files with [git stash](https://git-scm.com/docs/git-stash) are used. To prevent unexpected behaviour `git-cl` attempts to put some conflict detection logic in place. Core is here to expect a "clean" workflow where users start from modified files, put them into changelists, stash those changelists to move sets of the changes to feature branches, where changes get restored via [git cl unstash](tutorial.md#unstash-a-changelist). It is expected that not too many other state operations are done in between which could lead to conflicts.

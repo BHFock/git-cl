@@ -250,9 +250,17 @@ Files must have unstaged changes, be newly added to the index, or be untracked (
 
 
 ### Platform Considerations
-- Windows vs Unix path handling
-- Terminal color detection
-- File locking differences
+
+#### Path Handling Differences
+`git-cl` normalizes all paths to forward slashes (Git standard) via `.as_posix()` for consistent storage across platforms. The [pathlib.Path](https://docs.python.org/3/library/pathlib.html#pathlib.Path) module abstracts away OS-specific path handling differences.
+
+#### Terminal Color Detection  
+Color output depends on [colorama](https://pypi.org/project/colorama/) for cross-platform compatibility. The implementation gracefully degrades to plain text when color support is unavailable.
+
+#### File Locking Differences
+Uses Unix-specific [fcntl](https://docs.python.org/3/library/fcntl.html) module for metadata locking. Alternative implementations would be needed for Windows compatibility, though single-user interactive usage makes race conditions unlikely.
+
+
 
 ### Performance Considerations
 - Large repository handling

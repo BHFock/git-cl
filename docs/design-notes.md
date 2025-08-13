@@ -72,7 +72,7 @@ Utility functions needed to keep the [CLI functions](https://github.com/BHFock/g
 
 ##### [# BRANCH WORKFLOW UTILITIES](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2048)
 
-Utility functions only used by the [cl_branch](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L2809) function are grouped in this section. In parts these are quite small functions, intended to make `cl_branch` more readable with a complexity which is seen by [pylint](https://www.pylint.org/) as recommended. These functions include:
+Utility functions only used by the [cl_branch](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L2809) function are grouped in this section. In parts these are quite small functions, intended to make `cl_branch` more readable with a complexity which is seen by [pylint](https://www.pylint.org/) as recommended.
 
 ##### [# CLI COMMANDS](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2146)
 

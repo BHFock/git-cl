@@ -3,7 +3,7 @@
 This document aims to describe the design of [git-cl](https://github.com/BHFock/git-cl) to make future maintenance more easy. Note that links to code examples are pinned to certain version of the code and that the code may have evolved since creating the links.
 
 ## Table of Contents
-- [Core Architecture Components](#core-architecture-components)
+- [Overview](#overview)
 - [Technical Architecture](#technical-architecture)
   - [Code and Data Organisation](#code-and-data-organisation)
   - [Runtime Behaviour](#runtime-behaviour)
@@ -14,7 +14,7 @@ This document aims to describe the design of [git-cl](https://github.com/BHFock/
 - [Troubleshooting and Edge Cases](#troubleshooting-and-edge-cases)
 - [Future Direction](#future-direction)
 
-## Core Architecture Components
+## Overview
 
 ### Purpose and Scope
 

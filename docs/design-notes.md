@@ -152,11 +152,13 @@ Supports a branch workflow:
 
 ### Branching Workflow
 
-- Validates that the specified changelist exists and meets preconditions (e.g., no unassigned changes that would be lost).
-- Stashes all changelists to preserve the current working state.
-- Creates and checks out a new branch using the supplied branch name.
-- Unstashes only the specified changelist onto the new branch, restoring its files and changes.
-- Handles branch creation failures by restoring the original state from the stashes
+- **Validate preconditions** using [`clutil_validate_branch_preconditions`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2051) and [`clutil_check_branch_exists`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2074) to ensure the changelist exists and no conflicting branch is present.  
+- **Check for unassigned changes** via [`clutil_check_unassigned_changes`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2085) to avoid unintentionally losing work.  
+- **Stash all changelists** with [`clutil_execute_stash_all`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2105) to preserve the current working state.  
+- **Create and check out** the new branch using [`clutil_create_branch`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2112).  
+- **Unstash the target changelist** onto the new branch via [`clutil_unstash_changelist`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2123).  
+- **Handle failures** in branch creation or unstashing with [`clutil_handle_branch_creation_failure`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2132) to restore the original state.  
+
 
 ## Extensibility and Modularity
 

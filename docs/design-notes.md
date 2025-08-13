@@ -120,9 +120,6 @@ Supports a branch workflow:
 - Sanitises file paths and checks for dangerous characters.
 - Handles edge cases like missing files, untracked files, and merge conflicts.
 
-
-## Data Flow and Operations
-
 ## Implementation Details
 
 ### Git Status Parsing

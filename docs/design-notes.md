@@ -74,14 +74,6 @@ Helper functions needed to keep the [CLI functions](https://github.com/BHFock/gi
 
 Utility functions only used by the [cl_branch](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L2809) function are grouped in this section. In parts these are quite small functions, intended to make `cl_branch` more readable with a complexity which is seen by [pylint](https://www.pylint.org/) as recommended. These functions include:
 
-- [clutil_validate_branch_preconditions](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L2051)
-- [clutil_check_branch_exists](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L2074)
-- [clutil_check_unassigned_changes](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L2085)
-- [clutil_execute_stash_all](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L2105C5-L2105C29)
-- [clutil_create_branch](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L2112C5-L2112C25)
-- [clutil_unstash_changelist](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L2123C5-L2123C30)
-- [clutil_handle_branch_creation_failure](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L2132C5-L2132C42)
-
 ##### [# CLI COMMANDS](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2146)
 
 This section includes the definition of the main functions callable in git-cl. The functions provide interactions with the changelist metadata and the git repository.

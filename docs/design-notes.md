@@ -9,7 +9,6 @@ This document describes the design of `git-cl` to help future maintenance. Note 
 - [Technical Architecture](#technical-architecture)
   - [Code and Data Organisation](#code-and-data-organisation)
   - [Runtime Behaviour](#runtime-behaviour)
-  - [User Interface](#user-interface)
 - [Data Flow and Operations](#data-flow-and-operations)
 - [Implementation Details](#implementation-details)
 - [Design Decisions FAQ](#design-decisions-faq)
@@ -99,26 +98,6 @@ This section includes the [main function](https://github.com/BHFock/git-cl/blob/
 #### Error Handling and Exit Codes
 
 `git-cl` exits with code `0` on success and non-zero codes on errors. Error messages are printed to `stderr`. Some functions terminate execution immediately on fatal errors using [sys.exit()](https://docs.python.org/3/library/sys.html#sys.exit), ensuring no partial metadata changes are written.
- 
-
-### User Interface 
-
-#### Command Parsing
-
-- Uses argparse to define subcommands like add, remove, stage, commit, stash, unstash, branch, etc.
-
-#### Workflow Support
-
-Supports a branch workflow:
-- Stash all changelists.
-- Create a new branch.
-- Unstash a specific changelist.
-
-#### Validation and Safety
-
-- Validates changelist names against reserved Git terms.
-- Sanitises file paths and checks for dangerous characters.
-- Handles edge cases like missing files, untracked files, and merge conflicts.
 
 ## Implementation Details
 

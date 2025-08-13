@@ -6,7 +6,7 @@ This document describes the design of `git-cl` to help future maintenance. Note 
 
 ## Table of Contents
 - [Technical Architecture](#technical-architecture)
-- [Implementation Details](#implementation-details)
+- [Core Algorithms](#core-algorithms)
 - [Design Decisions FAQ](#design-decisions-faq)
 - [Future Direction](#future-direction)
 
@@ -95,7 +95,7 @@ This section includes the [main function](https://github.com/BHFock/git-cl/blob/
 
 `git-cl` exits with code `0` on success and non-zero codes on errors. Error messages are printed to `stderr`. Some functions terminate execution immediately on fatal errors using [sys.exit()](https://docs.python.org/3/library/sys.html#sys.exit), ensuring no partial metadata changes are written.
 
-## Implementation Details
+## Core Algorithms
 
 ### Git Status Parsing
 

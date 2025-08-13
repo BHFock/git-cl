@@ -7,9 +7,6 @@ This document describes the design of `git-cl` to help future maintenance. Note 
 ## Table of Contents
 - [Overview](#overview)
 - [Technical Architecture](#technical-architecture)
-  - [Code and Data Organisation](#code-and-data-organisation)
-  - [Runtime Behaviour](#runtime-behaviour)
-- [Data Flow and Operations](#data-flow-and-operations)
 - [Implementation Details](#implementation-details)
 - [Design Decisions FAQ](#design-decisions-faq)
 - [Future Direction](#future-direction)

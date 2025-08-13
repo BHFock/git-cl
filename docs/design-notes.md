@@ -5,7 +5,7 @@
 This document describes the design of `git-cl` to help future maintenance. Note that links to code examples are pinned to certain versions of the code and may have evolved since creating the links.
 
 ## Table of Contents
-- [Conceptual Model]#conceptual-model)
+- [Conceptual Model](#conceptual-model)
 - [Technical Architecture](#technical-architecture)
 - [Core Algorithms](#core-algorithms)
 - [Design Decisions FAQ](#design-decisions-faq)

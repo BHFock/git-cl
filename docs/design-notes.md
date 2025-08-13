@@ -180,7 +180,7 @@ Supports a branch workflow:
 
 ### Key Algorithms
 
-### Git Status Parsing
+#### Git Status Parsing
 
 `git-cl` transforms Git's repository state into structured, colorized output for changelist-based workflows. This is the foundation for all display and conflict detection operations.
 

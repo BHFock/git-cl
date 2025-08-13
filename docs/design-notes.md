@@ -100,6 +100,16 @@ This section includes the [main function](https://github.com/BHFock/git-cl/blob/
 
 - Uses [fcntl](https://docs.python.org/3/library/fcntl.html) to lock metadata files during read/write operations to prevent race conditions caused by simultaneous use of git-cl by multiple processes. This is intended to prevent unexpected changes of changelists. However, it should be noticed that `git-cl` is designed for single user interactive use and not for shared accounts or integration into scripts.
 
+### Path Conversion
+
+`git-cl` works with three path representations:
+
+- **Repo-root relative** — used for storage in `.git/cl.json`
+- **CWD relative** — used for Git CLI commands (`git add ../README.md`)
+- **Absolute** — used internally for file existence checks and normalisation
+
+Utility functions handle conversions between these forms, ensuring that paths are always correct regardless of the user’s current working directory. This is essential for features like showing `git cl status` from a subfolder while still storing metadata in `.git/cl.json` relative to the repository root.
+
 ### Colour Output
 
 Output of `git cl st` is coloured by default. This uses [colorama](https://pypi.org/project/colorama/). The output is uncoloured if colorama is not available, if the output is redirected/piped or if coloured output is switched off via flag or environment variable. 

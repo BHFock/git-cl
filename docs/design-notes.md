@@ -5,11 +5,18 @@
 This document describes the design of `git-cl` to help future maintenance. Note that links to code examples are pinned to certain versions of the code and may have evolved since creating the links.
 
 ## Table of Contents
+- [Conceptual Model]#conceptual-model)
 - [Technical Architecture](#technical-architecture)
 - [Core Algorithms](#core-algorithms)
 - [Design Decisions FAQ](#design-decisions-faq)
 - [Future Direction](#future-direction)
 
+
+## Conceptual Model
+
+`git-cl` adds a layer of changelist metadata alongside Git’s staging and commit mechanisms. While Git’s index reflects staged changes, cl.json records logical groupings of files regardless of their Git status. This separation allows changelists to persist across staging, stashing, and branching.
+
+The changelist layer supports intentional workflows: grouping related changes for review, isolating work before staging, and enabling targeted operations without relying on Git’s index or history. By decoupling file organisation from Git’s internal state, `git-cl` offers a stable and portable way to manage work-in-progress
 
 ## Technical Architecture
 

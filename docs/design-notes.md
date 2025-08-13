@@ -248,4 +248,4 @@ Leverages Git's native commands (`git status`, `git stash`, etc.) rather than re
 
 ## Future direction
 
-The aim is to avoid expansion of functionality to keep the code size under control and the help/documentation readable. The code may need some extensions to cover more edge cases, platform compatibility, etc. General refactoring may help with maintainability and addition of tests would be beneficial. It would be desirable to keep the single file structure of the script to simplify deployment.
+The aim is to keep functionality focused while improving code quality. Priority areas include handling edge cases, platform compatibility improvements, general refactoring for maintainability, and adding tests. The single-file structure should be preserved for deployment simplicity.

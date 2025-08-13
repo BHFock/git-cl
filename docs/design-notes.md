@@ -129,20 +129,6 @@ Supports a branch workflow:
 
 ## Data Flow and Operations
 
-### File Lifecycle Management
-- File addition/removal patterns
-- Path normalization workflow
-
-### Metadata Operations
-- JSON structure evolution
-- Locking strategies
-- Backup/recovery approaches
-
-### Git Integration Points
-- Status synchronization
-- Conflict detection
-- Branch state management
-
 ### Branching Workflow
 
 - **Validate preconditions** using [`clutil_validate_branch_preconditions`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2051) and [`clutil_check_branch_exists`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2074) to ensure the changelist exists and no conflicting branch is present.  

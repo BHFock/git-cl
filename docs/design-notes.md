@@ -102,17 +102,10 @@ This section includes the [main function](https://github.com/BHFock/git-cl/blob/
 
 `git-cl` uses [fcntl](https://docs.python.org/3/library/fcntl.html) to lock metadata files preventing race conditions. It is designed for single-user interactive use rather than shared accounts or scripts.
 
-#### Path Conversion
-
-`git-cl` works with three path representations: repo-root relative (storage), CWD relative (Git commands), and absolute (internal checks). Utility functions handle conversions ensuring paths work from any directory
-
 #### Error Handling and Exit Codes
 
 `git-cl` exits with code `0` on success and non-zero codes on errors. Error messages are printed to `stderr`. Some functions terminate execution immediately on fatal errors using [sys.exit()](https://docs.python.org/3/library/sys.html#sys.exit), ensuring no partial metadata changes are written.
-
-#### Colour Output
-
-Output of `git cl st` is coloured by default. This uses [colorama](https://pypi.org/project/colorama/). The output is uncoloured if colorama is not available, if the output is redirected/piped or if coloured output is switched off via flag or environment variable. 
+ 
 
 ### User Interface 
 

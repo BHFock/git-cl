@@ -210,12 +210,12 @@ def clutil_load() -> dict[str, list[str]]:
     Returns:
         dict: A mapping of changelist names to lists of file paths.
     """
-    cl_file = clutil_get_file()
-    lock_file = cl_file.with_suffix('.lock')
-    if cl_file.exists():
+    changelist_file = clutil_get_file()
+    lock_file = changelist_file.with_suffix('.lock')
+    if changelist_file.exists():
         with clutil_file_lock(lock_file):
             try:
-                with open(cl_file, "r", encoding="utf-8") as file_handle:
+                with open(changelist_file, "r", encoding="utf-8") as file_handle:
                     return json.load(file_handle)
             except (json.JSONDecodeError, OSError) as error:
                 print(f"Error reading changelists: {error}")
@@ -230,12 +230,12 @@ def clutil_save(data: dict[str, list[str]]) -> None:
     Args:
         data (dict): Mapping of changelist names to lists of files.
     """
-    cl_file = clutil_get_file()
-    lock_file = cl_file.with_suffix('.lock')
+    changelist_file = clutil_get_file()
+    lock_file = changelist_file.with_suffix('.lock')
     cleaned = {k: v for k, v in data.items() if v}
     with clutil_file_lock(lock_file):
         try:
-            with open(cl_file, "w", encoding="utf-8") as file_handle:
+            with open(changelist_file, "w", encoding="utf-8") as file_handle:
                 json.dump(cleaned, file_handle, indent=2)
         except OSError as error:
             print(f"Error saving changelists: {error}")

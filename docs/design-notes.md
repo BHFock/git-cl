@@ -226,6 +226,13 @@ Git allows many state changes of a repository which means that it is difficult t
 
 The logic in [clutil_check_unstash_conflicts_optimized](https://github.com/BHFock/git-cl/blob/19576c5a9eed0749aec9a344a0a70614caeb9b50/git-cl#L718) helps to mitigate opportunities for conflicts during unstash operations. It is designed for the expected use case "stash→branch→unstash" and should only flag conflicst that would actually prevent [git stash pop](https://git-scm.com/docs/git-stash#Documentation/git-stash.txt-pop--index-q--quietstash) from succeeding.
 
+Technically this is achieved by asking for Git status codes and comparing them against a lookup table ([UNSTASH_STATUS_ANALYSIS](link)) of allowed states. The function [clutil_analyze_file_status_for_unstash()](link) uses this table to categorize each 2-character Git status code as either safe or conflicting, with fallback logic for edge cases not covered in the table.
+
+A key insight is that missing files are actually *ideal* for unstashing since `git stash pop` will restore them without conflict. This counterintuitive logic distinguishes git-cl's conflict detection from general Git conflict checkers that might flag missing files as problems.
+
+The algorithm differentiates between actual blocking conflicts (untracked files that would be overwritten, working directory modifications) and safe states (staged changes, clean files) that won't prevent unstash operations. For example, files with staged changes are considered safe because `git stash pop` can merge with staged content, while untracked files are flagged as conflicts because they would block file restoration.
+
+When conflicts are detected, [clutil_suggest_workflow_actions()](link) provides actionable suggestions tailored to the git-cl workflow rather than generic Git advice. This helps users understand how to resolve issues in the specific context of the stash→branch→unstash pattern, offering concrete commands for different conflict types.
 
 ##### Stash categorization rules
 

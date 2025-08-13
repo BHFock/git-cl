@@ -10,7 +10,6 @@ This document aims to describe the design of [git-cl](https://github.com/BHFock/
   - [User Interface](#user-interface)
 - [Data Flow and Operations](#data-flow-and-operations)
 - [Implementation Details](#implementation-details)
-  - [Key Algorithms](#key-algorithms)
 - [Troubleshooting and Edge Cases](#troubleshooting-and-edge-cases)
   - [Common Issues](#common-issues)
   - [Design Decisions FAQ](#design-decisions-faq)
@@ -131,9 +130,7 @@ Supports a branch workflow:
 
 ## Implementation Details
 
-### Key Algorithms
-
-#### Git Status Parsing
+### Git Status Parsing
 
 `git-cl` transforms Git's repository state into structured, colorized output for changelist-based workflows. This is the foundation for all display and conflict detection operations.
 
@@ -151,13 +148,13 @@ The process follows a multi-stage pipeline:
 
 This pipeline ensures consistent Git state interpretation across all commands while providing user-friendly, colorized output that matches Git conventions.
 
-#### Path Resolution Algorithm
+### Path Resolution Algorithm
 
 The path conversion system handles three representations: repo-root relative (storage), CWD relative (Git commands), and absolute (internal checks). 
 
 [clutil_sanitize_path()](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L358) validates user input, resolves relative components, and ensures paths are within the Git repository while rejecting dangerous characters. All paths in `.git/cl.json` are stored relative to the repository root for portability. [clutil_format_file_status()](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L461) converts stored paths to CWD-relative paths for display, making output compatible with standard Git commands.
 
-#### Unstash Conflict Detection
+### Unstash Conflict Detection
 
 Git's many possible repository states make it difficult to design reliable workflows. `git-cl` uses targeted conflict detection optimized for the "stash→branch→unstash" workflow rather than general-purpose checking.
 
@@ -179,7 +176,7 @@ The categorization logic groups files into distinct categories based on their Gi
 Files must have unstaged changes, be newly added to the index, or be untracked (but explicitly included in the changelist) to be stashable. This matches `git stash push` behavior, which cannot stash files that only have staged modifications without unstaged changes.
 
 
-#### Branching Workflow
+### Branching Workflow
 
 - **Validate preconditions** using [`clutil_validate_branch_preconditions`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2051) and [`clutil_check_branch_exists`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2074) to ensure the changelist exists and no conflicting branch is present.  
 - **Check for unassigned changes** via [`clutil_check_unassigned_changes`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2085) to avoid unintentionally losing work.  
@@ -187,7 +184,6 @@ Files must have unstaged changes, be newly added to the index, or be untracked (
 - **Create and check out** the new branch using [`clutil_create_branch`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2112).  
 - **Unstash the target changelist** onto the new branch via [`clutil_unstash_changelist`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2123).  
 - **Handle failures** in branch creation or unstashing with [`clutil_handle_branch_creation_failure`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2132) to restore the original state.  
-
 
 
 ### Platform Considerations

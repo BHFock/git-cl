@@ -5,7 +5,6 @@
 This document describes the design of `git-cl` to help future maintenance. Note that links to code examples are pinned to certain versions of the code and may have evolved since creating the links.
 
 ## Table of Contents
-- [Overview](#overview)
 - [Technical Architecture](#technical-architecture)
 - [Implementation Details](#implementation-details)
 - [Design Decisions FAQ](#design-decisions-faq)
@@ -18,7 +17,7 @@ This document describes the design of `git-cl` to help future maintenance. Note 
 
 #### File Structure 
 
-Changelists are stored in `.git/cl.json`. The human readable [JSON](https://en.wikipedia.org/wiki/JSON) format allows easy review on how changelist are stored. For example this `git cl st` (executed from the folder `~git-cl_test/folder1`): 
+Changelists are stored in `.git/cl.json`. The human readable [JSON](https://en.wikipedia.org/wiki/JSON) format allows easy review of how changelists are stored. For example this `git cl st` (executed from the folder `~git-cl_test/folder1`): 
 
 ```
 list1:
@@ -43,19 +42,19 @@ is stored in `.git/cl.json` as
 ```
 
 
-Storing `cl.json` in `.git/` allows moving the repository locally while keeping changelists intact, because file paths in `cl.json` are stored relative to the repository root. `git cl st` displays paths relative to the current working directory. The details of how these paths are transformed for display or Git operations are described in the [Path Resolution Algorithm](#path-resolution-algorithm) section.
+Storing `cl.json` in `.git/` allows moving the repository locally whilst keeping changelists intact, because file paths in `cl.json` are stored relative to the repository root. `git cl st` displays paths relative to the current working directory. The details of how these paths are transformed for display or Git operations are described in the [Path Resolution Algorithm](#path-resolution-algorithm) section.
 
-`.git/cl.json`is not part of the Git history. This keeps changelists as a "pre-staging" layer separate from Git's version control.
+`.git/cl.json` is not part of the Git history. This keeps changelists as a "pre-staging" layer separate from Git's version control.
   
 Stash metadata is stored in `.git/cl-stashes.json`. This keeps the stashes separate from the changelist files and allowed an implementation of the more advanced `git cl stash` and `git cl unstash` without impacting the implementation of the basic functions. 
 
 #### Code Structure
 
-The code is organized in a single file for simple installation. Code navigation is facilitated by clear section headers that group related functionality
+The code is organised in a single file for simple installation. Code navigation is facilitated by clear section headers that group related functionality.
 
 ##### [# INTERNAL UTILITIES](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L90)
 
-Utility functions needed to keep the [CLI functions](https://github.com/BHFock/git-cl/blob/main/docs/design-notes.md#-cli-commands) at reasonable length use the name convention `clutil_function_name` and are stored together at the begin of the script in the `INTERNAL UTILITIES` section.
+Utility functions needed to keep the [CLI functions](https://github.com/BHFock/git-cl/blob/main/docs/design-notes.md#-cli-commands) at reasonable length use the name convention `clutil_function_name` and are stored together at the beginning of the script in the `INTERNAL UTILITIES` section.
 
 ##### [# BRANCH WORKFLOW UTILITIES](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2048)
 
@@ -82,7 +81,7 @@ This section includes the definition of the main functions callable in git-cl. T
 
 ##### [# MAIN ENTRY POINT](https://github.com/BHFock/git-cl/blob/e0bd57f450762f752e13483c1d2ae383f5ba79e3/git-cl#L2921)
 
-This section includes the  [main function](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2916) which serves as the entry point. It uses [argparse](https://docs.python.org/3/library/argparse.html) to define the user interface for subcommands like [add](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L2950), [status](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2992), [commit](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L3093), [branch](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L3162), etc. This section also includes the definition of the command line help. Defining the help via `argparse` means that the main help command is available via `git cl help` but not via `git help cl`. Defining the help via `git help cl` would require creating man pages to be installed with git. This has been left out for simplicity.
+This section includes the [main function](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2916) which serves as the entry point. It uses [argparse](https://docs.python.org/3/library/argparse.html) to define the user interface for subcommands like [add](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L2950), [status](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2992), [commit](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L3093), [branch](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L3162), etc. This section also includes the definition of the command line help. Defining the help via `argparse` means that the main help command is available via `git cl help` but not via `git help cl`. Defining the help via `git help cl` would require creating man pages to be installed with git. This has been left out for simplicity.
 
 ### Runtime Behaviour
 
@@ -100,7 +99,7 @@ This section includes the  [main function](https://github.com/BHFock/git-cl/blob
 
 ### Git Status Parsing
 
-`git-cl` transforms Git's repository state into structured, colorized output for changelist-based workflows. This is the foundation for all display and conflict detection operations.
+`git-cl` transforms Git's repository state into structured, colourised output for changelist-based workflows. This is the foundation for all display and conflict detection operations.
 
 The process follows a multi-stage pipeline:
 
@@ -108,40 +107,40 @@ The process follows a multi-stage pipeline:
 
 2. **Parsing and Filtering** – [`clutil_get_file_status_map`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L387) processes each status line, extracting 2-character Git status codes and file paths. Known status codes from `INTERESTING_CODES` are separated from uncommon ones, with warnings for filtered files unless `--all` is specified.
 
-3. **Path Normalization** – File paths are converted to repo-root relative format for consistent internal representation, handling renamed files by extracting the target path from `old -> new` syntax.
+3. **Path Normalisation** – File paths are converted to repo-root relative format for consistent internal representation, handling renamed files by extracting the target path from `old -> new` syntax.
 
-4. **Display Formatting** – [`clutil_format_file_status`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L461) converts repo-relative paths back to CWD-relative for user display, applying color coding via [`clutil_should_use_color`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L142).
+4. **Display Formatting** – [`clutil_format_file_status`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L461) converts repo-relative paths back to CWD-relative for user display, applying colour coding via [`clutil_should_use_color`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L142).
 
-5. **Color Classification** – Status codes are [mapped](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L464) to colors: untracked files (blue), staged-only changes (green), unstaged-only changes (red), mixed staged+unstaged (magenta), with graceful degradation when colorama is unavailable.
+5. **Colour Classification** – Status codes are [mapped](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L464) to colours: untracked files (blue), staged-only changes (green), unstaged-only changes (red), mixed staged+unstaged (magenta), with graceful degradation when colorama is unavailable.
 
-This pipeline ensures consistent Git state interpretation across all commands while providing user-friendly, colorized output that matches Git conventions.
+This pipeline ensures consistent Git state interpretation across all commands whilst providing user-friendly, colourised output that matches Git conventions.
 
 ### Path Resolution Algorithm
 
 The path conversion system handles three representations: repo-root relative (storage), CWD relative (Git commands), and absolute (internal checks). 
 
-[clutil_sanitize_path()](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L358) validates user input, resolves relative components, and ensures paths are within the Git repository while rejecting dangerous characters. All paths in `.git/cl.json` are stored relative to the repository root for portability. [clutil_format_file_status()](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L461) converts stored paths to CWD-relative paths for display, making output compatible with standard Git commands.
+[clutil_sanitize_path()](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L358) validates user input, resolves relative components, and ensures paths are within the Git repository whilst rejecting dangerous characters. All paths in `.git/cl.json` are stored relative to the repository root for portability. [clutil_format_file_status()](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L461) converts stored paths to CWD-relative paths for display, making output compatible with standard Git commands.
 
 ### Unstash Conflict Detection
 
-Git's many possible repository states make it difficult to design reliable workflows. `git-cl` uses targeted conflict detection optimized for the "stash→branch→unstash" workflow rather than general-purpose checking.
+Git's many possible repository states make it difficult to design reliable workflows. `git-cl` uses targeted conflict detection optimised for the "stash→branch→unstash" workflow rather than general-purpose checking.
 
-[clutil_check_unstash_conflicts_optimized](https://github.com/BHFock/git-cl/blob/19576c5a9eed0749aec9a344a0a70614caeb9b50/git-cl#L718) only flags conflicts that would actually prevent [git stash pop](https://git-scm.com/docs/git-stash#Documentation/git-stash.txt-pop--index-q--quietstash) from succeeding. It uses a lookup table ([UNSTASH_STATUS_ANALYSIS](https://github.com/BHFock/git-cl/blob/c64e92b15bc8d85caf5390ca2fc327d4eb04e193/git-cl#L667)) to categorize Git status codes, with missing files treated as ideal for unstashing since they'll be restored without conflict.
+[clutil_check_unstash_conflicts_optimized](https://github.com/BHFock/git-cl/blob/19576c5a9eed0749aec9a344a0a70614caeb9b50/git-cl#L718) only flags conflicts that would actually prevent [git stash pop](https://git-scm.com/docs/git-stash#Documentation/git-stash.txt-pop--index-q--quietstash) from succeeding. It uses a lookup table ([UNSTASH_STATUS_ANALYSIS](https://github.com/BHFock/git-cl/blob/c64e92b15bc8d85caf5390ca2fc327d4eb04e193/git-cl#L667)) to categorise Git status codes, with missing files treated as ideal for unstashing since they'll be restored without conflict.
 
 The algorithm distinguishes real blocking conflicts (untracked files, working directory modifications) from safe states (staged changes, clean files). [clutil_suggest_workflow_actions()](https://github.com/BHFock/git-cl/blob/c64e92b15bc8d85caf5390ca2fc327d4eb04e193/git-cl#L767) provides actionable suggestions tailored to the git-cl workflow.
 
-### Stash categorization rules
+### Stash categorisation rules
 
 Similar to the repository state checking for unstashing, a pre-check is done for `git cl stash`. This is handled by [clutil_categorize_files_for_stash](https://github.com/BHFock/git-cl/blob/cb5ca1923e1ee7acf4b942b5f259f3e5ce0db98c/git-cl#L1110C4-L1110C38) which determines if files are "stashable".
 
-The categorization logic groups files into distinct categories based on their Git status:
+The categorisation logic groups files into distinct categories based on their Git status:
 - **Unstaged changes** (modified/deleted in working directory) - stashable
 - **Staged additions** (newly added to index) - stashable  
 - **Untracked files** (if explicitly in changelist) - stashable
 - **Staged modifications** (only staged changes, no unstaged) - not stashable
 - **Clean files** (no changes) - not stashable
 
-Files must have unstaged changes, be newly added to the index, or be untracked (but explicitly included in the changelist) to be stashable. This matches `git stash push` behavior, which cannot stash files that only have staged modifications without unstaged changes.
+Files must have unstaged changes, be newly added to the index, or be untracked (but explicitly included in the changelist) to be stashable. This matches `git stash push` behaviour, which cannot stash files that only have staged modifications without unstaged changes.
 
 
 ### Branching Workflow
@@ -157,10 +156,10 @@ Files must have unstaged changes, be newly added to the index, or be untracked (
 ### Platform Considerations
 
 #### Path Handling Differences
-`git-cl` normalizes all paths to forward slashes (Git standard) via `.as_posix()` for consistent storage across platforms. The [pathlib.Path](https://docs.python.org/3/library/pathlib.html#pathlib.Path) module abstracts away OS-specific path handling differences.
+`git-cl` normalises all paths to forward slashes (Git standard) via `.as_posix()` for consistent storage across platforms. The [pathlib.Path](https://docs.python.org/3/library/pathlib.html#pathlib.Path) module abstracts away OS-specific path handling differences.
 
-#### Terminal Color Detection  
-Color output depends on [colorama](https://pypi.org/project/colorama/) for cross-platform compatibility. The implementation gracefully degrades to plain text when color support is unavailable.
+#### Terminal Colour Detection  
+Colour output depends on [colorama](https://pypi.org/project/colorama/) for cross-platform compatibility. The implementation gracefully degrades to plain text when colour support is unavailable.
 
 #### File Locking Differences
 Uses Unix-specific [fcntl](https://docs.python.org/3/library/fcntl.html) module for metadata locking. Alternative implementations would be needed for Windows compatibility, though single-user interactive usage makes race conditions unlikely.
@@ -173,8 +172,8 @@ Uses Unix-specific [fcntl](https://docs.python.org/3/library/fcntl.html) module 
 #### Memory Usage Patterns
 Memory usage scales with the number of files in active changelists rather than total repository size. Metadata is stored in lightweight JSON files and loaded only when needed. The largest memory consumers are Git subprocess calls and status parsing, which are handled efficiently by the standard library.
 
-#### Git Command Optimization
-Leverages Git's native commands (`git status`, `git stash`, etc.) rather than reimplementing Git functionality. File operations are batched where possible (e.g., `git add` with multiple files) to minimize subprocess overhead. Path conversion caching could be added for very large changelists if needed.
+#### Git Command Optimisation
+Leverages Git's native commands (`git status`, `git stash`, etc.) rather than reimplementing Git functionality. File operations are batched where possible (e.g., `git add` with multiple files) to minimise subprocess overhead. Path conversion caching could be added for very large changelists if needed.
 
 
 
@@ -182,7 +181,7 @@ Leverages Git's native commands (`git status`, `git stash`, etc.) rather than re
 
 ### Why store metadata in .git/ instead of tracked files?
 - Keeps changelists separate from version control as a "pre staging area"
-- Survives repository moves while staying private to local development
+- Survives repository moves whilst staying private to local development
 
 ### Why use a single file instead of a Python package?
 - Zero-dependency installation and easy deployment
@@ -208,4 +207,4 @@ Leverages Git's native commands (`git status`, `git stash`, etc.) rather than re
 
 ## Future direction
 
-The aim is to keep functionality focused while improving code quality. Priority areas include handling edge cases, platform compatibility improvements, general refactoring for maintainability, and adding tests. The single-file structure should be preserved for deployment simplicity.
+The aim is to keep functionality focused whilst improving code quality. Priority areas include handling edge cases, platform compatibility improvements, general refactoring for maintainability, and adding tests. The single-file structure should be preserved for deployment simplicity.

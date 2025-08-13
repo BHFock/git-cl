@@ -101,6 +101,8 @@ This section includes the [main function](https://github.com/BHFock/git-cl/blob/
 
 `git-cl` uses [fcntl](https://docs.python.org/3/library/fcntl.html) to lock metadata files preventing race conditions. It is designed for single-user interactive use rather than shared accounts or scripts.
 
+[`clutil_file_lock`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L90) implements a context manager that creates temporary `.lock` files (e.g., `cl.json.lock`) with exclusive locks. All metadata read/write operations are wrapped in these locks, with automatic cleanup on exit or exception.
+
 #### Error Handling and Exit Codes
 
 `git-cl` exits with code `0` on success and non-zero codes on errors. Error messages are printed to `stderr`. Some functions terminate execution immediately on fatal errors using [sys.exit()](https://docs.python.org/3/library/sys.html#sys.exit), ensuring no partial metadata changes are written.

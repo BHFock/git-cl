@@ -193,37 +193,25 @@ Supports a branch workflow:
 
 ## Implementation Details
 
-
-### Git Status Parsing Pipeline
-
-A central part of `git-cl` is translating the raw output from Git into structured data that workflows can consume.  
-This parsing layer isolates workflow logic from Git’s porcelain format, making it easier to adapt if Git changes its output.
-
-1. **Run Git**  
-   - Uses `git status --porcelain -z` for machine-readable, null-separated output.
-   - The `-z` flag ensures filenames with spaces or special characters are handled safely.
-
-2. **Parse lines**  
-   - [`clutil_parse_status_output`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L630) splits the null-separated output into tuples `(status_code, file_path)`.
-   - Status codes follow Git’s porcelain format (e.g., `M`, `A`, `??`).
-
-3. **Normalise paths**  
-   - All parsed paths are converted to repo-root-relative form for storage in `.git/cl.json`.
-   - Path sanitisation is applied via [`clutil_sanitize_path`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L358) to reject invalid or dangerous inputs.
-
-4. **Map status codes**  
-   - Lookup tables such as [`UNSTASH_STATUS_ANALYSIS`](https://github.com/BHFock/git-cl/blob/c64e92b15bc8d85caf5390ca2fc327d4eb04e193/git-cl#L667) classify each file’s state.
-   - These mappings are used for stash eligibility, conflict detection, and display formatting.
-
-5. **Dispatch to workflows**  
-   - **Display:** [`clutil_format_file_status`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L461) converts stored paths to CWD-relative and applies colour coding.
-   - **Stash:** [`clutil_categorize_files_for_stash`](https://github.com/BHFock/git-cl/blob/cb5ca1923e1ee7acf4b942b5f259f3e5ce0db98c/git-cl#L1110) determines if a file is stashable.
-   - **Conflict detection:** [`clutil_check_unstash_conflicts_optimized`](https://github.com/BHFock/git-cl/blob/19576c5a9eed0749aec9a344a0a70614caeb9b50/git-cl#L718) checks for blocking conditions before unstashing.
-
-This pipeline is a key abstraction in `git-cl` and is the single point where Git’s raw state is transformed into structured, safe, and portable data for higher-level operations.
-
-
 ### Key Algorithms
+
+### Git Status Parsing
+
+`git-cl` transforms Git's repository state into structured, colorized output for changelist-based workflows. This is the foundation for all display and conflict detection operations.
+
+The process follows a multi-stage pipeline:
+
+1. **Status Collection** – [`clutil_get_git_status`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L335) executes `git status --porcelain` with optional `--untracked-files=all` for comprehensive file state detection.
+
+2. **Parsing and Filtering** – [`clutil_get_file_status_map`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L387) processes each status line, extracting 2-character Git status codes and file paths. Known status codes from `INTERESTING_CODES` are separated from uncommon ones, with warnings for filtered files unless `--all` is specified.
+
+3. **Path Normalization** – File paths are converted to repo-root relative format for consistent internal representation, handling renamed files by extracting the target path from `old -> new` syntax.
+
+4. **Display Formatting** – [`clutil_format_file_status`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L461) converts repo-relative paths back to CWD-relative for user display, applying color coding via [`clutil_should_use_color`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L142).
+
+5. **Color Classification** – Status codes are mapped to colors: untracked files (blue), staged-only changes (green), unstaged-only changes (red), mixed staged+unstaged (magenta), with graceful degradation when colorama is unavailable.
+
+This pipeline ensures consistent Git state interpretation across all commands while providing user-friendly, colorized output that matches Git conventions.
 
 #### Path Resolution Algorithm
 

@@ -8,7 +8,6 @@ This document aims to describe the design of [git-cl](https://github.com/BHFock/
   - [Code and Data Organisation](#code-and-data-organisation)
   - [Runtime Behaviour](#runtime-behaviour)
   - [User Interface](#user-interface)
-- [Common Implementation Patterns](#common-implementation-patterns)
 - [Data Flow and Operations](#data-flow-and-operations)
 - [Implementation Details](#implementation-details)
   - [Key Algorithms](#key-algorithms)
@@ -134,22 +133,6 @@ Supports a branch workflow:
 - Sanitises file paths and checks for dangerous characters.
 - Handles edge cases like missing files, untracked files, and merge conflicts.
 
-## Common Implementation Patterns
-
-### Utility Function Convention
-- All utilities use `clutil_` prefix
-- Path sanitization pattern
-- Atomic metadata operations
-
-### Error Handling Strategies
-- Immediate exit on fatal errors
-- Rollback on partial failures
-- User-friendly error messages
-
-### Git Integration Patterns
-- Status parsing
-- Path conversion workflows
-- Safe git command execution
 
 ## Data Flow and Operations
 

@@ -152,6 +152,12 @@ Supports a branch workflow:
 
 ### Branching Workflow
 
+- Validates that the specified changelist exists and meets preconditions (e.g., no unassigned changes that would be lost).
+- Stashes all changelists to preserve the current working state.
+- Creates and checks out a new branch using the supplied branch name.
+- Unstashes only the specified changelist onto the new branch, restoring its files and changes.
+- Handles branch creation failures by restoring the original state from the stashes
+
 ## Extensibility and Modularity
 
 - Modular design with utility functions (clutil_*) for:

@@ -662,6 +662,59 @@ def clutil_check_files_unstaged(files: list[str],
     return unstaged_files, staged_files
 
 
+# Git status analysis for unstash conflicts
+# Maps (staged_char, unstaged_char) -> (is_conflict, description)
+UNSTASH_STATUS_ANALYSIS = {
+    ('?', '?'): (True, "untracked file blocking stash restoration"),
+    (' ', 'M'): (True, "modified in working directory"),
+    (' ', 'D'): (True, "deleted in working directory"),
+    ('A', ' '): (False, "staged for addition (safe)"),
+    ('M', ' '): (False, "staged modifications (safe)"),
+    ('D', ' '): (False, "staged for deletion (safe)"),
+    ('R', ' '): (False, "staged rename (safe)"),
+    (' ', ' '): (False, "clean (ready for unstash)"),
+}
+
+
+def clutil_analyze_file_status_for_unstash(status: str) -> tuple[bool, str]:
+    """
+    Analyze a Git status code to determine unstash conflicts.
+
+    Args:
+        status: 2-character Git status code
+
+    Returns:
+        Tuple of (is_conflict, description)
+    """
+    if len(status) != 2:
+        return False, "unknown status"
+
+    staged, unstaged = status[0], status[1]
+
+    # Check direct lookup first
+    if (staged, unstaged) in UNSTASH_STATUS_ANALYSIS:
+        return UNSTASH_STATUS_ANALYSIS[(staged, unstaged)]
+
+    # Handle remaining cases with simple logic
+    if unstaged in ['M', 'D']:
+        if unstaged == 'M':
+            conflict_desc = "modified in working directory"
+        else:
+            conflict_desc = "deleted in working directory"
+        return True, conflict_desc
+
+    if staged in ['A', 'M', 'D', 'R']:
+        stage_desc = {
+            'A': "staged for addition (safe)",
+            'M': "staged modifications (safe)",
+            'D': "staged for deletion (safe)",
+            'R': "staged rename (safe)"
+        }
+        return False, stage_desc.get(staged, "staged changes (safe)")
+
+    return False, "clean (ready for unstash)"
+
+
 def clutil_check_unstash_conflicts_optimized(
         files: list[str], git_root: Path) -> tuple[list[str], dict[str, str]]:
     """
@@ -700,40 +753,13 @@ def clutil_check_unstash_conflicts_optimized(
         rel_to_git_root = abs_path.relative_to(git_root).as_posix()
         status = status_map.get(rel_to_git_root, "  ")
 
-        # Analyze what would actually prevent unstashing
-        staged, unstaged = status[0], status[1]
+        # Use the lookup table for clean analysis
+        is_conflict, description = clutil_analyze_file_status_for_unstash(status)
 
-        if status == "??":
-            # Untracked file exists where stash wants to restore a file
-            # This is a real conflict - git stash pop will fail
+        if is_conflict:
             real_conflicts.append(file_path)
-            file_status_info[file_path] = ("untracked file blocking "
-                                           "stash restoration")
 
-        elif unstaged in ['M', 'D']:
-            # Working directory modifications that would
-            # conflict with stash pop
-            real_conflicts.append(file_path)
-            if unstaged == 'M':
-                file_status_info[file_path] = "modified in working directory"
-            else:  # 'D'
-                file_status_info[file_path] = "deleted in working directory"
-
-        elif staged in ['A', 'M', 'D', 'R']:
-            # Staged changes - these usually don't conflict with stash pop
-            # but we should inform the user
-            if staged == 'A':
-                file_status_info[file_path] = "staged for addition (safe)"
-            elif staged == 'M':
-                file_status_info[file_path] = "staged modifications (safe)"
-            elif staged == 'D':
-                file_status_info[file_path] = "staged for deletion (safe)"
-            elif staged == 'R':
-                file_status_info[file_path] = "staged rename (safe)"
-
-        else:
-            # File is clean - perfect for unstashing
-            file_status_info[file_path] = "clean (ready for unstash)"
+        file_status_info[file_path] = description
 
     return real_conflicts, file_status_info
 

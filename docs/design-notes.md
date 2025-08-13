@@ -2,6 +2,18 @@
 
 This document aims to describe the design of [git-cl](https://github.com/BHFock/git-cl) to make future maintenance more easy. Note that links to code examples are pinned to certain version of the code and that the code may have evolved since creating the links.
 
+## Table of Contents
+- [Core Architecture Components](#core-architecture-components)
+- [Technical Architecture](#technical-architecture)
+  - [Code and Data Organisation](#code-and-data-organisation)
+  - [Runtime Behaviour](#runtime-behaviour)
+  - [User Interface](#user-interface)
+- [Common Implementation Patterns](#common-implementation-patterns)
+- [Data Flow and Operations](#data-flow-and-operations)
+- [Implementation Details](#implementation-details)
+- [Troubleshooting and Edge Cases](#troubleshooting-and-edge-cases)
+- [Future Direction](#future-direction)
+
 ## Core Architecture Components
 
 ### Purpose and Scope

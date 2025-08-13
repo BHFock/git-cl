@@ -10,9 +10,7 @@ This document aims to describe the design of [git-cl](https://github.com/BHFock/
   - [User Interface](#user-interface)
 - [Data Flow and Operations](#data-flow-and-operations)
 - [Implementation Details](#implementation-details)
-- [Troubleshooting and Edge Cases](#troubleshooting-and-edge-cases)
-  - [Common Issues](#common-issues)
-  - [Design Decisions FAQ](#design-decisions-faq)
+- [Design Decisions FAQ](#design-decisions-faq)
 - [Future Direction](#future-direction)
 
 ## Overview
@@ -211,38 +209,32 @@ Memory usage scales with the number of files in active changelists rather than t
 Leverages Git's native commands (`git status`, `git stash`, etc.) rather than reimplementing Git functionality. File operations are batched where possible (e.g., `git add` with multiple files) to minimize subprocess overhead. Path conversion caching could be added for very large changelists if needed.
 
 
-## Troubleshooting and Edge Cases
 
-### Common Issues
-- Path-related problems
-- Merge conflict scenarios
-- Metadata corruption recovery
+## Design Decisions FAQ
 
-### Design Decisions FAQ
-
-#### Why store metadata in .git/ instead of tracked files?
+### Why store metadata in .git/ instead of tracked files?
 - Keeps changelists separate from version control as a "pre staging area"
 - Survives repository moves while staying private to local development
 
-#### Why use a single file instead of a Python package?
+### Why use a single file instead of a Python package?
 - Zero-dependency installation and easy deployment
 - Self-contained for air-gapped systems
 
-#### Why JSON for metadata storage?
+### Why JSON for metadata storage?
 - Human readable with native Python support for [read](https://github.com/BHFock/git-cl/blob/4e75779b6c06365adaa148eb92ab7062fbdd68ba/git-cl#L219) and [write](https://github.com/BHFock/git-cl/blob/4e75779b6c06365adaa148eb92ab7062fbdd68ba/git-cl#L239) operations
 
   
-#### Why relative paths in cl.json?
+### Why relative paths in cl.json?
 - Repository portability (can move anywhere)
 - Works regardless of mount points
 - Consistent with Git's internal path handling
 
-#### Why fcntl locking instead of Git's index locking?
+### Why fcntl locking instead of Git's index locking?
 - Simpler implementation
 - Independent of Git's internal mechanisms
 - Sufficient for single-user interactive use case
 
-#### Why use argparse instead of a more modern CLI framework?
+### Why use argparse instead of a more modern CLI framework?
 - Part of Python standard library with automatic help generation
 - Sufficient for git-cl's simple command structure
 

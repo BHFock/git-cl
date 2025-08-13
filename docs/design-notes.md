@@ -233,10 +233,39 @@ Supports a branch workflow:
 - Metadata corruption recovery
 
 ### Design Decisions FAQ
-- Why single file?
-- Why JSON metadata?
-- Why .git/ storage?
 
+#### Why store metadata in .git/ instead of tracked files?
+- Keeps changelists separate from version control (concept of a "pre staging area")
+- Survives repository moves but stays private in push operations
+- No merge conflicts in changelist metadata
+
+#### Why use a single file instead of a Python package?
+- Zero-dependency installation (just copy the file)
+- No package management complexity
+- Easy deployment to different environments
+- Self-contained for air-gapped systems
+
+#### Why JSON for metadata storage?
+- Human readable for debugging
+- Easy to parse/modify if needed
+- Widely understood format
+- Python support for read and write operations
+  
+#### Why relative paths in cl.json?
+- Repository portability (can move anywhere)
+- Works regardless of mount points
+- Consistent with Git's internal path handling
+
+#### Why fcntl locking instead of Git's index locking?
+- Simpler implementation
+- Independent of Git's internal mechanisms
+- Sufficient for single-user interactive use case
+
+#### Why use argparse instead of a more modern CLI framework?
+- Part of Python standard library (no external dependencies)
+- Sufficient for git-cl's command structure
+- Familiar to most Python developers
+- Automatic help generation matches git-cl's simplicity goals
 
 ## Future direction
 

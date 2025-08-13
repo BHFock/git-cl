@@ -24,8 +24,10 @@ git-cl is a feature complete, focused tool with a clear scope. While I appreciat
 ### Documentation Improvements
 
 - **Fix** typos, broken links, unclear explanations
-- **Add** missing examples for existing features
+- **Add** missing examples for existing features  
 - **Suggest** FAQ additions based on real user questions
+- **Review** the [tutorial](docs/tutorial.md) for clarity and completeness
+- **Review** the DRAFT [design documentation](docs/design-notes.md) for technical accuracy
 
 ### Testing & Compatibility Reports
 

@@ -211,9 +211,18 @@ Supports a branch workflow:
 ## Implementation Details
 
 ### Key Algorithms
-- Path resolution algorithm
-- Conflict detection logic
-- Stash categorization rules
+
+#### Path Resolution Algorithm
+
+The path conversion system handles three representations:
+
+1. **Input sanitization** via [clutil_sanitize_path()](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L358) - Takes user-provided file paths, resolves relative components and symlinks, ensures paths are within the Git repository, and rejects dangerous characters that could cause security issues. Returns paths normalized to repo-root relative format or None if invalid.
+2. **Storage normalization** to repo-root relative paths - All paths in .git/cl.json are stored relative to the repository root, enabling repository portability and providing a canonical representation regardless of where commands are run. This ensures changelists survive rep
+3. **Display conversion** to CWD-relative for user commands via [clutil_format_file_status()](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L461) - Converts stored repo-relative paths to current-working-directory relative paths for display, making output compatible with standard Git commands. Shows paths as users expect to see them so they can copy-paste into git add commands.
+  
+##### Conflict detection logic
+
+##### Stash categorization rules
 
 ### Platform Considerations
 - Windows vs Unix path handling

@@ -58,7 +58,7 @@ is stored in `.git/cl.json` as
 
 Storing `cl.json` in `.git/` allows moving the repository locally while keeping changelists intact, because file paths in `cl.json` are stored relative to the repository root. `git cl st` displays paths relative to the current working directory. The details of how these paths are transformed for display or Git operations are described in the [Path Conversion](#path-conversion) section.
 
-`.git/cl.json`is not part of the git history. That keeps changelists conceptually as a 'pre staging functionality' which is not mixed up with git's version control.
+`.git/cl.json`is not part of the Git history. That keeps changelists conceptually as a 'pre staging functionality' which is not mixed up with Git's version control.
   
 Stash metadata is stored in `.git/cl-stashes.json`. This keeps the stashes separate from the changelist files and allowed an implementation of the more advanced `git cl stash` and `git cl unstash` without impacting the implementation of the basic functions. 
 

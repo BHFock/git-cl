@@ -222,6 +222,9 @@ The path conversion system handles three representations:
   
 ##### Conflict detection logic
 
+Git allows many state changes of a repository which means that it is difficult to design advanced version control workflows which always work from a well defined state in the expected way. This is especially true if more advanced features like shelving changed files with [git stash](https://git-scm.com/docs/git-stash) are used. To prevent unexpected behaviour `git-cl` attempts to put some conflict detection logic in place. Core is here to expect a "clean" workflow where users start from modified files, put them into changelists, stash those changelists to move sets of the changes to feature branches, where changes get restored via [git cl unstash](tutorial.md#unstash-a-changelist). It is expected that not too many other state operations are done in between which could lead to conflicts. The logic in [clutil_check_unstash_conflicts_optimized](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L665) helps to mitigate opportunities for conflicts during unstash operations.
+
+
 ##### Stash categorization rules
 
 ### Platform Considerations

@@ -81,11 +81,11 @@ git cl br docs-fix
 
 ## Documentation
 
-📘 Read the full **[git-cl tutorial](docs/tutorial.md#git-cl-a-git-subcommand-for-changelist-management)** as a user guide.
+📘 Read the full **[git-cl tutorial](docs/tutorial.md#git-cl-a-git-subcommand-for-changelist-management)**.
 
-📘 Read [why git-cl exists](docs/why-git-cl.md#changelists-in-git-a-personal-history) for project motivation. 
+📘 Read [why git-cl exists](docs/why-git-cl.md#changelists-in-git-a-personal-history). 
 
-📘 Read the [design notes](docs/design-notes.md) for implementation details.
+📘 Read the [design notes](docs/design-notes.md).
 
 ## Notes
 

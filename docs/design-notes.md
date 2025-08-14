@@ -172,7 +172,7 @@ The status display system transforms Git's repository state into changelist-grou
 - Applies color coding via clutil_should_use_color and colorama constants
 - Returns formatted string with [XX] status prefix
 
-**Color Logic:** Status codes are [mapped](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L464) to colors in clutil_format_file_status:
+**Color Logic:** Status codes are [mapped](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L464) to colors in `clutil_format_file_status`:
 
 - `??* → Blue (untracked)
 - Staged-only (`X `) → Green

@@ -152,13 +152,13 @@ The status display system transforms Git's repository state into changelist-grou
 
 #### Processing Pipeline:
 
-**1. Status Collection** - `clutil_get_git_status` runs `git status --porcelain` with optional `--untracked-files=all` flag. Returns raw output lines as list.
+**1. Status Collection** - [clutil_get_git_status](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L307) runs `git status --porcelain` with optional `--untracked-files=all` flag. Returns raw output lines as list.
 
-**2. Parsing and Filtering** - `clutil_get_file_status_map` processes each line:
+**2. Parsing and Filtering** - [clutil_get_file_status_map](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L387) processes each line:
 
 - Extracts 2-character Git status codes and file paths
 - Handles renamed files by parsing old -> new syntax
-- Filters against [INTERESTING_CODES](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L399) allowlist (`??`, ` M`, `M `, `MM`, `A `, `AM`, ` D`, `D `, `R `, [RM])
+- Filters against [INTERESTING_CODES](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L399) allowlist (`??`, ` M`, `M `, `MM`, `A `, `AM`, ` D`, `D `, `R `, `RM`)
 - Counts and reports skipped files unless --all specified
 - Returns `dict[str, str]` mapping file paths to status codes
 

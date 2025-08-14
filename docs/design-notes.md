@@ -151,7 +151,7 @@ The status display system transforms Git's repository state into changelist-grou
 
 - Extracts 2-character Git status codes and file paths
 - Handles renamed files by parsing old -> new syntax
-- Filters against `INTERESTING_CODES` allowlist (`??`, ` M`, `M `, `MM`, `A `, `AM`, ` D`, `D `, `R `, [RM])
+- Filters against [INTERESTING_CODES](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L399) allowlist (`??`, ` M`, `M `, `MM`, `A `, `AM`, ` D`, `D `, `R `, [RM])
 - Counts and reports skipped files unless --all specified
 - Returns `dict[str, str]` mapping file paths to status codes
 

@@ -241,19 +241,18 @@ The cl_branch command automates the common "stash→branch→unstash" workflow i
 
 **6. Failure Recovery** - [clutil_handle_branch_creation_failure](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2132) attempts to restore all stashed changelists if branch creation or unstashing fails, preventing partial state corruption.
 
-####Example Flow:
+#### Example Flow:
 
 ```
-Before: Working on main branch with multiple changelists
+Before: Working on main branch with two changelists
 ├── feature-a (5 files)
-├── bugfix (3 files) 
-└── docs (2 files)
+└── bugfix (3 files) 
 
 git cl branch feature-a my-feature-branch
 
 After: Clean separation
-├── main branch: feature-a stashed, others available for unstash
-└── my-feature-branch: feature-a restored, ready for development
+├── main branch: feature-a and bugfix stashed, available for unstash
+└── my-feature-branch: feature-a unstashed, ready for development
 ```
 
 This atomic operation eliminates the manual coordination required for branching workflows while preserving changelist metadata and ensuring workspace

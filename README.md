@@ -18,7 +18,7 @@ Perfect for developers who prefer to organise their work logically from the star
 - Stage and commit changes by intent
 - Stash changelists and resume work later
 - Create a new branch directly from a changelist
-- Local-only metadata (`.git/cl.json`)
+- Local-only metadata - changelists are private to your workspace
 - Simple CLI: `git cl <command>`
 
 ## Quick Start
@@ -90,7 +90,6 @@ git cl br docs-fix
 ## Notes
 
 - Requires Python 3.9+, Git, and a Unix-like OS
-- Changelists are local and not version-controlled
 - Designed for single-user workflows, concurrent operations may conflict
 - Always inspect downloaded scripts before executing. See [git-cl](https://github.com/BHFock/git-cl/blob/main/git-cl) for source.
 

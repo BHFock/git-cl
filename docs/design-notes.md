@@ -79,6 +79,8 @@ Using `git cl stash list2` in the above example removes `list2` from `.git/cl.js
 }
 ```
 
+Note that `.git/cl-stashes.json` only contains changelist metadata - the actual file contents are stored in Git's native stash mechanism (accessible via [git stash list](https://git-scm.com/docs/git-stash#Documentation/git-stash.txt-listlog-options)). The `stash_ref` field connects git-cl's metadata to the underlying Git stash entry, enabling coordinated restoration of both file changes and changelist structure.
+
 #### Code Structure
 
 The code is organised in a single file for simple installation. Code navigation is facilitated by clear section headers that group related functionality.

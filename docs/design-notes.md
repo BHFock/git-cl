@@ -24,7 +24,7 @@ The changelist layer supports intentional workflows: grouping related changes fo
 
 #### File Structure 
 
-Changelists are stored in `.git/cl.json`. The human readable [JSON](https://en.wikipedia.org/wiki/JSON) format allows easy review of how changelists are stored. For example this `git cl st` (executed from the folder `~git-cl_test/folder1`): 
+Changelists, created with [git cl add](tutorial.md#21-add-files-to-a-changelist), are stored in `.git/cl.json`. The human readable [JSON](https://en.wikipedia.org/wiki/JSON) format allows easy review of how changelists are stored. For example this `git cl st` (executed from the folder `~git-cl_test/folder1`): 
 
 ```
 list1:

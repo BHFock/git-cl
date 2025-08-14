@@ -18,7 +18,7 @@ Perfect for developers who prefer to organise their work logically from the star
 - Stage and commit changes by intent
 - Stash changelists and resume work later
 - Create a new branch directly from a changelist
-- Local-only metadata `(.git/cl.json)`
+- Local-only metadata (`.git/cl.json`)
 - Simple CLI: `git cl <command>`
 
 ## Quick Start

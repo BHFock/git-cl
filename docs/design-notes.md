@@ -199,17 +199,9 @@ The status display system transforms Git's repository state into changelist-grou
 The system gracefully degrades when colorama is unavailable through [dummy color objects](https://github.com/BHFock/git-cl/blob/6ad06dc168da7548dfd759b224830f797df644d5/git-cl#L70).
 
 
-### Unstash Conflict Detection
-
-Git's many possible repository states make it difficult to design reliable workflows. `git-cl` uses targeted conflict detection optimised for the "stash→branch→unstash" workflow rather than general-purpose checking.
-
-[clutil_check_unstash_conflicts_optimized](https://github.com/BHFock/git-cl/blob/19576c5a9eed0749aec9a344a0a70614caeb9b50/git-cl#L718) only flags conflicts that would actually prevent [git stash pop](https://git-scm.com/docs/git-stash#Documentation/git-stash.txt-pop--index-q--quietstash) from succeeding. It uses a lookup table ([UNSTASH_STATUS_ANALYSIS](https://github.com/BHFock/git-cl/blob/c64e92b15bc8d85caf5390ca2fc327d4eb04e193/git-cl#L667)) to categorise Git status codes, with missing files treated as ideal for unstashing since they'll be restored without conflict.
-
-The algorithm distinguishes real blocking conflicts (untracked files, working directory modifications) from safe states (staged changes, clean files). [clutil_suggest_workflow_actions()](https://github.com/BHFock/git-cl/blob/c64e92b15bc8d85caf5390ca2fc327d4eb04e193/git-cl#L767) provides actionable suggestions tailored to the git-cl workflow.
-
 ### Stash categorisation rules
 
-Similar to the repository state checking for unstashing, a pre-check is done for `git cl stash`. This is handled by [clutil_categorize_files_for_stash](https://github.com/BHFock/git-cl/blob/cb5ca1923e1ee7acf4b942b5f259f3e5ce0db98c/git-cl#L1110C4-L1110C38) which determines if files are "stashable".
+Git's many possible repository states require careful analysis to determine which files can be safely stashed. `git cl stash` uses pre-validation to ensure only compatible files are included. This is handled by [clutil_categorize_files_for_stash](https://github.com/BHFock/git-cl/blob/cb5ca1923e1ee7acf4b942b5f259f3e5ce0db98c/git-cl#L1110C4-L1110C38) which determines if files are "stashable".
 
 The categorisation logic groups files into distinct categories based on their Git status:
 
@@ -223,6 +215,13 @@ The categorisation logic groups files into distinct categories based on their Gi
 
 Files must have unstaged changes, be newly added to the index, or be untracked (but explicitly included in the changelist) to be stashable. This matches `git stash push` behaviour, which cannot stash files that only have staged modifications without unstaged changes.
 
+### Unstash Conflict Detection
+
+Similar to the stash categorisation process, unstash operations require conflict detection optimised for the 'stash→branch→unstash' workflow.
+
+[clutil_check_unstash_conflicts_optimized](https://github.com/BHFock/git-cl/blob/19576c5a9eed0749aec9a344a0a70614caeb9b50/git-cl#L718) flags conflicts that would actually prevent [git stash pop](https://git-scm.com/docs/git-stash#Documentation/git-stash.txt-pop--index-q--quietstash) from succeeding. It uses a lookup table ([UNSTASH_STATUS_ANALYSIS](https://github.com/BHFock/git-cl/blob/c64e92b15bc8d85caf5390ca2fc327d4eb04e193/git-cl#L667)) to categorise Git status codes, with missing files treated as ideal for unstashing since they'll be restored without conflict.
+
+The algorithm distinguishes real blocking conflicts (untracked files, working directory modifications) from safe states (staged changes, clean files). [clutil_suggest_workflow_actions()](https://github.com/BHFock/git-cl/blob/c64e92b15bc8d85caf5390ca2fc327d4eb04e193/git-cl#L767) provides actionable suggestions tailored to the git-cl workflow.
 
 ### Branching Workflow
 

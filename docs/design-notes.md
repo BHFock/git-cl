@@ -145,7 +145,7 @@ The status display system transforms Git's repository state into changelist-grou
 
 #### Processing Pipeline:
 
-**1. Status Collection** - `clutil_get_git_status` runs git status --porcelain with optional --untracked-files=all flag. Returns raw output lines as list.
+**1. Status Collection** - `clutil_get_git_status` runs `git status --porcelain` with optional `--untracked-files=all` flag. Returns raw output lines as list.
 
 **2. Parsing and Filtering** - `clutil_get_file_status_map` processes each line:
 
@@ -157,7 +157,7 @@ The status display system transforms Git's repository state into changelist-grou
 
 **3. Path Normalization** - Converts all paths to repository-root relative format using `Path.relative_to(git_root).as_posix()` for consistent internal representation.
 
-**4. Changelist Grouping** - `cl_status` iterates through loaded changelists, checking file membership and calling display formatting for each group.
+**4. Changelist Grouping** -  [cl_status](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2318) iterates through loaded changelists, checking file membership and calling display formatting for each group.
 
 **5. Display Formatting** - `clutil_format_file_status` handles final presentation:
 

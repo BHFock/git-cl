@@ -79,18 +79,20 @@ git cl br docs-fix
   <img src="docs/git-cl.png" alt="git-cl status changelist screenshot in terminal" width="220"/>
 </p>
 
-## Notes
-
-- Requires Python 3.9+, Git, and a Unix-like OS
-- Changelists are local and not version-controlled
-- Designed for single-user workflows, concurrent operations may conflict
-- Always inspect downloaded scripts before executing. See [git-cl](https://github.com/BHFock/git-cl/blob/main/git-cl) for source.
+## Documentation
 
 📘 Read the full **[git-cl tutorial](docs/tutorial.md#git-cl-a-git-subcommand-for-changelist-management)** as a user guide.
 
 📘 Read [why git-cl exists](docs/why-git-cl.md#changelists-in-git-a-personal-history) for project motivation. 
 
 📘 Read the [design notes](docs/design-notes.md) for implementation details.
+
+## Notes
+
+- Requires Python 3.9+, Git, and a Unix-like OS
+- Changelists are local and not version-controlled
+- Designed for single-user workflows, concurrent operations may conflict
+- Always inspect downloaded scripts before executing. See [git-cl](https://github.com/BHFock/git-cl/blob/main/git-cl) for source.
 
 
 ## Project status

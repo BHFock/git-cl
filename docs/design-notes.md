@@ -247,12 +247,10 @@ The cl_branch command automates the common "stash→branch→unstash" workflow i
 Before: Working on main branch with two changelists
 ├── feature-a (5 files)
 └── bugfix (3 files) 
-
 git cl branch feature-a my-feature-branch
-
 After: Clean separation
 ├── main branch: feature-a and bugfix stashed, available for unstash
-└── my-feature-branch: feature-a unstashed, ready for development
+└── * my-feature-branch: feature-a unstashed, ready for development
 ```
 
 This atomic operation eliminates the manual coordination required for branching workflows while preserving changelist metadata and ensuring workspace

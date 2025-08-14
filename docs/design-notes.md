@@ -132,6 +132,13 @@ This section also includes the definition of the command line help. Defining the
 
 ## Core Algorithms
 
+### Path Resolution Algorithm
+
+The path conversion system handles three representations: repo-root relative (storage), CWD relative (Git commands), and absolute (internal checks). 
+
+[clutil_sanitize_path()](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L358) validates user input, resolves relative components, and ensures paths are within the Git repository while rejecting dangerous characters. All paths in `.git/cl.json` are stored relative to the repository root for portability. [clutil_format_file_status()](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L461) converts stored paths to CWD-relative paths for display, making output compatible with standard Git commands.
+
+
 ### Git Status Parsing
 
 The status display system transforms Git's repository state into changelist-grouped output through a multi-stage pipeline implemented across several utility functions.
@@ -175,11 +182,6 @@ The status display system transforms Git's repository state into changelist-grou
 
 The system gracefully degrades when colorama is unavailable through [dummy color objects](https://github.com/BHFock/git-cl/blob/6ad06dc168da7548dfd759b224830f797df644d5/git-cl#L70).
 
-### Path Resolution Algorithm
-
-The path conversion system handles three representations: repo-root relative (storage), CWD relative (Git commands), and absolute (internal checks). 
-
-[clutil_sanitize_path()](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L358) validates user input, resolves relative components, and ensures paths are within the Git repository while rejecting dangerous characters. All paths in `.git/cl.json` are stored relative to the repository root for portability. [clutil_format_file_status()](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L461) converts stored paths to CWD-relative paths for display, making output compatible with standard Git commands.
 
 ### Unstash Conflict Detection
 

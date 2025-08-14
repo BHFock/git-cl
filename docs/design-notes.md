@@ -49,7 +49,7 @@ is stored in `.git/cl.json` as
 ```
 
 
-Storing `cl.json` in `.git/` allows moving the repository locally whilst keeping changelists intact, because file paths in `cl.json` are stored relative to the repository root. `git cl st` displays paths relative to the current working directory. The details of how these paths are transformed for display or Git operations are described in the [Path Resolution Algorithm](#path-resolution-algorithm) section.
+Storing `cl.json` in `.git/` allows moving the repository locally while keeping changelists intact, because file paths in `cl.json` are stored relative to the repository root. `git cl st` displays paths relative to the current working directory. The details of how these paths are transformed for display or Git operations are described in the [Path Resolution Algorithm](#path-resolution-algorithm) section.
 
 `.git/cl.json` is not part of the Git history. This keeps changelists as a "pre-staging" layer separate from Git's version control.
   
@@ -122,13 +122,13 @@ The process follows a multi-stage pipeline:
 
 5. **Colour Classification** – Status codes are [mapped](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L464) to colours: untracked files (blue), staged-only changes (green), unstaged-only changes (red), mixed staged+unstaged (magenta), with graceful degradation when colorama is unavailable.
 
-This pipeline ensures consistent Git state interpretation across all commands whilst providing user-friendly, colourised output that matches Git conventions.
+This pipeline ensures consistent Git state interpretation across all commands while providing user-friendly, colourised output that matches Git conventions.
 
 ### Path Resolution Algorithm
 
 The path conversion system handles three representations: repo-root relative (storage), CWD relative (Git commands), and absolute (internal checks). 
 
-[clutil_sanitize_path()](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L358) validates user input, resolves relative components, and ensures paths are within the Git repository whilst rejecting dangerous characters. All paths in `.git/cl.json` are stored relative to the repository root for portability. [clutil_format_file_status()](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L461) converts stored paths to CWD-relative paths for display, making output compatible with standard Git commands.
+[clutil_sanitize_path()](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L358) validates user input, resolves relative components, and ensures paths are within the Git repository while rejecting dangerous characters. All paths in `.git/cl.json` are stored relative to the repository root for portability. [clutil_format_file_status()](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L461) converts stored paths to CWD-relative paths for display, making output compatible with standard Git commands.
 
 ### Unstash Conflict Detection
 
@@ -190,7 +190,7 @@ Leverages Git's native commands (`git status`, `git stash`, etc.) rather than re
 
 ### Why store metadata in .git/ instead of tracked files?
 - Keeps changelists separate from version control as a "pre staging area"
-- Survives repository moves whilst staying private to local development
+- Survives repository moves while staying private to local development
 
 ### Why use a single file instead of a Python package?
 - Zero-dependency installation and easy deployment
@@ -216,4 +216,4 @@ Leverages Git's native commands (`git status`, `git stash`, etc.) rather than re
 
 ## Future direction
 
-The aim is to keep functionality focused whilst improving code quality. Priority areas include handling edge cases, platform compatibility improvements, general refactoring for maintainability, and adding tests. The single-file structure should be preserved for deployment simplicity.
+The aim is to keep functionality focused while improving code quality. Priority areas include handling edge cases, platform compatibility improvements, general refactoring for maintainability, and adding tests. The single-file structure should be preserved for deployment simplicity.

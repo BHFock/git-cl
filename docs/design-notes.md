@@ -88,7 +88,9 @@ This section includes the definition of the main functions callable in git-cl. T
 
 ##### [# MAIN ENTRY POINT](https://github.com/BHFock/git-cl/blob/e0bd57f450762f752e13483c1d2ae383f5ba79e3/git-cl#L2921)
 
-This section includes the [main function](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2916) which serves as the entry point. It uses [argparse](https://docs.python.org/3/library/argparse.html) to define the user interface for subcommands like [add](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L2950), [status](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2992), [commit](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L3093), [branch](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L3162), etc. This section also includes the definition of the command line help. Defining the help via `argparse` means that the main help command is available via `git cl help` but not via `git help cl`. Defining the help via `git help cl` would require creating man pages to be installed with git. This has been left out for simplicity.
+This section includes the [main function](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2916) which serves as the entry point. It uses [argparse](https://docs.python.org/3/library/argparse.html) to define the user interface for subcommands like [add](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L2950), [status](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2992), [commit](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L3093), [branch](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L3162), etc. 
+
+This section also includes the definition of the command line help. Defining the help via `argparse` means that the main help command is available via `git cl help` but not via `git help cl`. Defining the help via `git help cl` would require creating man pages to be installed with git. This has been left out for simplicity.
 
 ### Runtime Behaviour
 

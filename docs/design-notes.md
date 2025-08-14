@@ -134,10 +134,26 @@ This section also includes the definition of the command line help. Defining the
 
 ### Path Resolution Algorithm
 
-The path conversion system handles three representations: repo-root relative (storage), CWD relative (Git commands), and absolute (internal checks). 
+The path conversion system manages file paths in three distinct representations throughout the codebase:
 
-[clutil_sanitize_path()](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L358) validates user input, resolves relative components, and ensures paths are within the Git repository while rejecting dangerous characters. All paths in `.git/cl.json` are stored relative to the repository root for portability. [clutil_format_file_status()](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L461) converts stored paths to CWD-relative paths for display, making output compatible with standard Git commands.
+- **Repo-root relative** - stored in `.git/cl.json` (e.g., `src/main.py`)
+- **CWD relative** - used for Git commands and display (e.g., `../src/main.py`)
+- **Absolute** - used for internal validation and checks
 
+#### Key Functions:
+
+- [clutil_sanitize_path()](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L358) - validates user input and converts to repo-root relative format for storage
+- [clutil_format_file_status()](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L461) - converts stored paths to CWD-relative format for display
+
+#### Conversion Pipeline:
+
+**1. Input Validation** - [clutil_sanitize_path()](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L358) takes user-provided paths, resolves relative components (like ../), ensures they're within the Git repository, and rejects dangerous characters.
+
+**2. Storage Normalization** - All validated paths are converted to repo-root relative format using Path.relative_to(git_root).as_posix() before storing in .git/cl.json.
+
+**3. Display Conversion** - clutil_format_file_status() converts stored repo-root relative paths back to CWD-relative paths using os.path.relpath() for user display and Git command compatibility.
+
+This three-stage approach ensures repository portability (paths work regardless of where the repo is moved) while maintaining compatibility with standard Git commands that expect CWD-relative paths
 
 ### Git Status Parsing
 

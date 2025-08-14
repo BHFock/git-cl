@@ -138,8 +138,8 @@ This section also includes the definition of the command line help. Defining the
 
 The process follows a multi-stage pipeline:
 
-1. **Status Collection** – [`clutil_get_git_status`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L335) executes `git status --porcelain` with optional `--untracked-files=all` for comprehensive file state detection.
-
+1. **Status Collection** – [`clutil_get_git_status`](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L307) executes `git status --porcelain` with optional `--untracked-files=all` for comprehensive file state detection.
+   
 2. **Parsing and Filtering** – [`clutil_get_file_status_map`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L387) processes each status line, extracting 2-character Git status codes and file paths. Known status codes from `INTERESTING_CODES` are separated from uncommon ones, with warnings for filtered files unless `--all` is specified.
 
 3. **Path Normalisation** – File paths are converted to repo-root relative format for consistent internal representation, handling renamed files by extracting the target path from `old -> new` syntax.

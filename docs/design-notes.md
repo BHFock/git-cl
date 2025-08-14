@@ -134,21 +134,46 @@ This section also includes the definition of the command line help. Defining the
 
 ### Git Status Parsing
 
-`git-cl` transforms Git's repository state into structured, colourised output for changelist-based workflows. This is the foundation for all display and conflict detection operations.
+The status display system transforms Git's repository state into changelist-grouped output through a multi-stage pipeline implemented across several utility functions.
 
-The process follows a multi-stage pipeline:
+#### Core Functions:
 
-1. **Status Collection** – [`clutil_get_git_status`](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L307) executes `git status --porcelain` with optional `--untracked-files=all` for comprehensive file state detection.
-   
-2. **Parsing and Filtering** – [`clutil_get_file_status_map`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L387) processes each status line, extracting 2-character Git status codes and file paths. Known status codes from `INTERESTING_CODES` are separated from uncommon ones, with warnings for filtered files unless `--all` is specified.
+- [clutil_get_git_status](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L307) - Executes git status --porcelain subprocess
+- [clutil_get_file_status_map](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L387) - Parses output into status code mapping
+- [clutil_format_file_status](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L461) - Formats individual file display lines
+- [cl_status](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2318) - Orchestrates the display workflow
 
-3. **Path Normalisation** – File paths are converted to repo-root relative format for consistent internal representation, handling renamed files by extracting the target path from `old -> new` syntax.
+#### Processing Pipeline:
 
-4. **Display Formatting** – [`clutil_format_file_status`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L461) converts repo-relative paths back to CWD-relative for user display, applying colour coding via [`clutil_should_use_color`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L142).
+**1. Status Collection** - `clutil_get_git_status` runs git status --porcelain with optional --untracked-files=all flag. Returns raw output lines as list.
 
-5. **Colour Classification** – Status codes are [mapped](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L464) to colours: untracked files (blue), staged-only changes (green), unstaged-only changes (red), mixed staged+unstaged (magenta), with graceful degradation when colorama is unavailable.
+**2. Parsing and Filtering** - `clutil_get_file_status_map` processes each line:
 
-This pipeline ensures consistent Git state interpretation across all commands while providing user-friendly, colourised output that matches Git conventions.
+- Extracts 2-character Git status codes and file paths
+- Handles renamed files by parsing old -> new syntax
+- Filters against `INTERESTING_CODES` allowlist (`??`, ` M`, `M `, `MM`, `A `, `AM`, ` D`, `D `, `R `, [RM])
+- Counts and reports skipped files unless --all specified
+- Returns `dict[str, str]` mapping file paths to status codes
+
+**3. Path Normalization** - Converts all paths to repository-root relative format using `Path.relative_to(git_root).as_posix()` for consistent internal representation.
+
+**4. Changelist Grouping** - `cl_status` iterates through loaded changelists, checking file membership and calling display formatting for each group.
+
+**5. Display Formatting** - `clutil_format_file_status` handles final presentation:
+
+- Converts repo-relative paths back to CWD-relative using os.path.relpath
+- Applies color coding via clutil_should_use_color and colorama constants
+- Returns formatted string with [XX] status prefix
+
+**Color Logic:** Status codes are [mapped](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L464) to colors in clutil_format_file_status:
+
+- `??* → Blue (untracked)
+- Staged-only (`X `) → Green
+- Unstaged-only (` X`) → Red
+- Mixed staged+unstaged (`XX`) → Magenta
+- Fallback → No color
+
+The system gracefully degrades when colorama is unavailable through [dummy color objects](https://github.com/BHFock/git-cl/blob/6ad06dc168da7548dfd759b224830f797df644d5/git-cl#L70).
 
 ### Path Resolution Algorithm
 

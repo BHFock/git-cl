@@ -212,11 +212,14 @@ The algorithm distinguishes real blocking conflicts (untracked files, working di
 Similar to the repository state checking for unstashing, a pre-check is done for `git cl stash`. This is handled by [clutil_categorize_files_for_stash](https://github.com/BHFock/git-cl/blob/cb5ca1923e1ee7acf4b942b5f259f3e5ce0db98c/git-cl#L1110C4-L1110C38) which determines if files are "stashable".
 
 The categorisation logic groups files into distinct categories based on their Git status:
-- **Unstaged changes** (modified/deleted in working directory) - stashable
-- **Staged additions** (newly added to index) - stashable  
-- **Untracked files** (if explicitly in changelist) - stashable
-- **Staged modifications** (only staged changes, no unstaged) - not stashable
-- **Clean files** (no changes) - not stashable
+
+|Git status                                                | Stashable?    |
+|----------------------------------------------------------|---------------|
+| Unstaged changes (modified/deleted in working directory) | stashable     |
+| Staged additions (newly added to index)                  | stashable     |
+| Untracked files (if explicitly in changelist)            | stashable     |
+| Staged modifications (only staged changes, no unstaged)  | not stashable |
+| Clean files (no changes)                                 | not stashable |
 
 Files must have unstaged changes, be newly added to the index, or be untracked (but explicitly included in the changelist) to be stashable. This matches `git stash push` behaviour, which cannot stash files that only have staged modifications without unstaged changes.
 

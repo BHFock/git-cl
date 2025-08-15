@@ -361,7 +361,7 @@ Leverages Git's native commands (`git status`, `git stash`, etc.) rather than re
 - Self-contained for air-gapped systems
 
 ### Why JSON for metadata storage?
-- Human readable with native Python support for [read](https://github.com/BHFock/git-cl/blob/4e75779b6c06365adaa148eb92ab7062fbdd68ba/git-cl#L219) and [write](https://github.com/BHFock/git-cl/blob/4e75779b6c06365adaa148eb92ab7062fbdd68ba/git-cl#L239) operations
+- Human readable with native [Python support](https://docs.python.org/3/library/json.html) for [read](https://github.com/BHFock/git-cl/blob/4e75779b6c06365adaa148eb92ab7062fbdd68ba/git-cl#L219) and [write](https://github.com/BHFock/git-cl/blob/4e75779b6c06365adaa148eb92ab7062fbdd68ba/git-cl#L239) operations
 
   
 ### Why relative paths in cl.json?

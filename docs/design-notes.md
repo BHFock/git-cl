@@ -206,18 +206,22 @@ File paths in `git-cl` need to work consistently whether you're in a subdirector
 
 This three-stage approach ensures repository portability (paths work regardless of where the repo is moved) while maintaining compatibility with standard Git commands that expect CWD-relative paths
 
+
+#### Git Status Parsing
+
+Git's `status --porcelain` output needs to be transformed into changelist-grouped display. This happens in several stages:
+
+**Overview:** Raw Git status → Filtered status codes → Grouped by changelist → Formatted for display
+
+**Detailed Pipeline:**
+1. Status Collection - [clutil_get_git_status]...
+
+
 ### Git Status Parsing
 
 The status display system transforms Git's repository state into changelist-grouped output through a multi-stage pipeline implemented across several utility functions.
 
-#### Core Functions:
-
-- [clutil_get_git_status](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L307) - Executes git status --porcelain subprocess
-- [clutil_get_file_status_map](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L387) - Parses output into status code mapping
-- [clutil_format_file_status](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L461) - Formats individual file display lines
-- [cl_status](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2318) - Orchestrates the display workflow
-
-#### Processing Pipeline:
+#### Detailed Pipeline:
 
 **1. Status Collection** - [clutil_get_git_status](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L307) runs `git status --porcelain` with optional `--untracked-files=all` flag. Returns raw output lines as list.
 
@@ -233,7 +237,7 @@ The status display system transforms Git's repository state into changelist-grou
 
 **4. Changelist Grouping** -  [cl_status](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2318) iterates through loaded changelists, checking file membership and calling display formatting for each group.
 
-**5. Display Formatting** - `clutil_format_file_status` handles final presentation:
+**5. Display Formatting** - [clutil_format_file_status](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L461) handles final presentation:
 
 - Converts repo-relative paths back to CWD-relative using os.path.relpath
 - Applies color coding via clutil_should_use_color and colorama constants

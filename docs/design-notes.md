@@ -277,7 +277,11 @@ Files must have unstaged changes, be newly added to the index, or be untracked (
 
 ### Unstash Conflict Detection
 
-Similar to the stash categorisation process, unstash operations require conflict detection optimised for the 'stash→branch→unstash' workflow.
+**The Problem:** When you unstash a changelist, some file states will cause Git conflicts or failures.
+
+**The Solution:** Check file states before unstashing and provide specific guidance for resolving issues.
+
+**How it works:** Similar to stash categorisation, unstash operations require conflict detection optimised for the 'stash→branch→unstash' workflow.
 
 [clutil_check_unstash_conflicts_optimized](https://github.com/BHFock/git-cl/blob/19576c5a9eed0749aec9a344a0a70614caeb9b50/git-cl#L718) flags conflicts that would actually prevent [git stash pop](https://git-scm.com/docs/git-stash#Documentation/git-stash.txt-pop--index-q--quietstash) from succeeding. It uses a lookup table ([UNSTASH_STATUS_ANALYSIS](https://github.com/BHFock/git-cl/blob/c64e92b15bc8d85caf5390ca2fc327d4eb04e193/git-cl#L667)) to categorise Git status codes, with missing files treated as ideal for unstashing since they'll be restored without conflict.
 

@@ -200,7 +200,7 @@ File paths in `git-cl` need to work consistently whether you're in a subdirector
 
 **1. Input Validation** - [clutil_sanitize_path()](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L358) takes user-provided paths, resolves relative components (like ../), ensures they're within the Git repository, and rejects dangerous characters.
 
-**2. Storage Normalization** - All validated paths are converted to repo-root relative format using [Path.relative_to](https://docs.python.org/3/library/pathlib.html#pathlib.PurePath.relative_to)(git_root).[as_posix()](https://docs.python.org/3/library/pathlib.html#pathlib.PurePath.as_posix) before storing in `.git/cl.json`.
+**2. Storage Normalization** - The system converts all validated paths to repo-root relative format using [Path.relative_to](https://docs.python.org/3/library/pathlib.html#pathlib.PurePath.relative_to)(git_root).[as_posix()](https://docs.python.org/3/library/pathlib.html#pathlib.PurePath.as_posix) before storing in `.git/cl.json`.
 
 **3. Display Conversion** - [clutil_format_file_status()](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L461) converts stored repo-root relative paths back to CWD-relative paths using `os.path.relpath()` for user display and Git command compatibility.
 
@@ -227,7 +227,7 @@ The status display system transforms Git's repository state into changelist-grou
 
 **2. Parsing and Filtering** - [clutil_get_file_status_map](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L387) processes each line:
 
-- Extracts 2-character Git status codes and file paths
+- Extracts 2-character Git status codes (`M `, `??`, `A `) and file paths from each line
 - Handles renamed files by parsing old -> new syntax
 - Filters against [INTERESTING_CODES](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L399) allowlist (`??`, ` M`, `M `, `MM`, `A `, `AM`, ` D`, `D `, `R `, `RM`)
 - Counts and reports skipped files unless --all specified
@@ -258,7 +258,7 @@ The system gracefully degrades when colorama is unavailable through [dummy color
 
 Git's many possible repository states require careful analysis to determine which files can be safely stashed. `git cl stash` uses pre-validation to ensure only compatible files are included. This is handled by [clutil_categorize_files_for_stash](https://github.com/BHFock/git-cl/blob/cb5ca1923e1ee7acf4b942b5f259f3e5ce0db98c/git-cl#L1110C4-L1110C38) which determines if files are "stashable".
 
-The categorisation logic groups files into distinct categories based on their Git status:
+Files are grouped into categories based on what Git thinks of them:
 
 |Git status                                                | Stashable?    |
 |----------------------------------------------------------|---------------|

@@ -256,7 +256,7 @@ The system gracefully degrades when colorama is unavailable through [dummy color
 
 ### Stash categorisation rules
 
-Git's many possible repository states require careful analysis to determine which files can be safely stashed. `git cl stash` uses pre-validation to ensure only compatible files are included. This is handled by [clutil_categorize_files_for_stash](https://github.com/BHFock/git-cl/blob/cb5ca1923e1ee7acf4b942b5f259f3e5ce0db98c/git-cl#L1110C4-L1110C38) which determines if files are "stashable".
+The stash system needs to determine which files can safely be stashed. Git has many possible file states, but only some work with `git stash push`. Here's how git-cl categorizes files: `git cl stash` uses pre-validation to ensure only compatible files are included. This is handled by [clutil_categorize_files_for_stash](https://github.com/BHFock/git-cl/blob/cb5ca1923e1ee7acf4b942b5f259f3e5ce0db98c/git-cl#L1110C4-L1110C38) which determines if files are "stashable".
 
 Files are grouped into categories based on what Git thinks of them:
 

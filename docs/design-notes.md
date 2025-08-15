@@ -293,17 +293,23 @@ The cl_branch command automates the common "stash→branch→unstash" workflow i
 
 #### Workflow Steps:
 
-**1. Precondition Validation** - [clutil_validate_branch_preconditions](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2051) ensures the target changelist exists and is active (not stashed). [clutil_check_branch_exists](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2074) prevents conflicts with existing branch names.
+**Safety Checks:**
 
-**2. Workspace Safety Check** - [clutil_check_unassigned_changes](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2085) detects uncommitted changes not assigned to any changelist. The operation aborts if unassigned changes exist, preventing accidental data loss.
+1. Precondition Validation - [clutil_validate_branch_preconditions](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2051) ensures the target changelist exists and is active (not stashed). [clutil_check_branch_exists](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2074) prevents conflicts with existing branch names.
 
-**3. Workspace Cleanup** - [clutil_execute_stash_all](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2105) stashes all active changelists (including the target changelist), creating a clean working directory. Each changelist is stashed individually with metadata tracking.
+2. Workspace Safety Check - [clutil_check_unassigned_changes](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2085) detects uncommitted changes not assigned to any changelist. The operation aborts if unassigned changes exist, preventing accidental data loss.
 
-**4. Branch Creation** - [clutil_create_branch](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2112) creates and checks out the new branch from the specified base (or current HEAD). The branch is created only after successful stashing.
+**Execution:**
 
-**5. Selective Restore** - [clutil_unstash_changelist](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2123) restores only the target changelist to the new branch. Other changelists remain stashed and can be restored later with git cl unstash.
+3. Workspace Cleanup - [clutil_execute_stash_all](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2105) stashes all active changelists (including the target changelist), creating a clean working directory. Each changelist is stashed individually with metadata tracking.
 
-**6. Failure Recovery** - [clutil_handle_branch_creation_failure](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2132) attempts to restore all stashed changelists if branch creation or unstashing fails, preventing partial state corruption.
+4. Branch Creation - [clutil_create_branch](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2112) creates and checks out the new branch from the specified base (or current HEAD). The branch is created only after successful stashing.
+
+5. Selective Restore - [clutil_unstash_changelist](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2123) restores only the target changelist to the new branch. Other changelists remain stashed and can be restored later with git cl unstash.
+
+**Error Handling:**
+
+6. Failure Recovery - [clutil_handle_branch_creation_failure](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2132) attempts to restore all stashed changelists if branch creation or unstashing fails, preventing partial state corruption.
 
 #### Example Flow:
 

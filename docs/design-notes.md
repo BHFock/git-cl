@@ -206,56 +206,57 @@ File paths in `git-cl` need to work consistently whether you're in a subdirector
 
 This three-stage approach ensures repository portability (paths work regardless of where the repo is moved) while maintaining compatibility with standard Git commands that expect CWD-relative paths
 
-
-#### Git Status Parsing
-
-Git's `status --porcelain` output needs to be transformed into changelist-grouped display. This happens in several stages:
-
-**Overview:** Raw Git status → Filtered status codes → Grouped by changelist → Formatted for display
-
-**Detailed Pipeline:**
-1. Status Collection - [clutil_get_git_status]...
-
-
 ### Git Status Parsing
 
-The status display system transforms Git's repository state into changelist-grouped output through a multi-stage pipeline implemented across several utility functions.
+**Summary:** Takes `git status` output, filters for common file states, groups by changelist, adds colors.
 
-#### Detailed Pipeline:
+Git's `status --porcelain` output needs to be transformed into changelist-grouped display. This happens in several stages to handle the complexity of Git's many possible file states while keeping the display clean and useful.
 
-**1. Status Collection** - [clutil_get_git_status](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L307) runs `git status --porcelain` with optional `--untracked-files=all` flag. Returns raw output lines as list.
+> **Key Insight:** The pipeline filters out uncommon Git status codes by default (like merge conflicts `UU` or type changes `T `) to keep `git cl st` output focused on everyday development. Use `--all` to see everything.
 
-**2. Parsing and Filtering** - [clutil_get_file_status_map](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L387) processes each line:
+#### Processing Pipeline
 
+**Overview:** Raw Git status → Filter interesting files → Group by changelist → Add colors → Display
+
+**1. Status Collection**
+[clutil_get_git_status](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L307) runs `git status --porcelain` with optional `--untracked-files=all` flag. Returns raw output lines as a list.
+
+**2. Parsing and Filtering**
+[clutil_get_file_status_map](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L387) processes each line:
 - Extracts 2-character Git status codes (`M `, `??`, `A `) and file paths from each line
-- Handles renamed files by parsing old -> new syntax
+- Handles renamed files by parsing `old -> new` syntax  
 - Filters against [INTERESTING_CODES](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L399) allowlist (`??`, ` M`, `M `, `MM`, `A `, `AM`, ` D`, `D `, `R `, `RM`)
-- Counts and reports skipped files unless --all specified
+- Counts and reports skipped files unless `--all` specified
 - Returns `dict[str, str]` mapping file paths to status codes
 
-**3. Path Normalization** - Converts all paths to repository-root relative format using `Path.relative_to(git_root).as_posix()` for consistent internal representation.
+**3. Path Normalisation**
+Converts all paths to repository-root relative format using `Path.relative_to(git_root).as_posix()` for consistent internal representation.
 
-**4. Changelist Grouping** -  [cl_status](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2318) iterates through loaded changelists, checking file membership and calling display formatting for each group.
+**4. Changelist Grouping**
+[cl_status](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2318) iterates through loaded changelists, checking file membership and calling display formatting for each group.
 
-**5. Display Formatting** - [clutil_format_file_status](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L461) handles final presentation:
+**5. Display Formatting**
+[clutil_format_file_status](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L461) handles final presentation:
+- Converts repo-relative paths back to current-directory-relative using `os.path.relpath()`
+- Applies color coding based on file state
+- Returns formatted string with `[XX]` status prefix
 
-- Converts repo-relative paths back to CWD-relative using os.path.relpath
-- Applies color coding via clutil_should_use_color and colorama constants
-- Returns formatted string with [XX] status prefix
+#### Color Logic
 
-**Color Logic:** Status codes are [mapped](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L464) to colors in `clutil_format_file_status`:
+Status codes are [mapped to colors](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L464) to quickly identify file states:
 
-- `??` → Blue (untracked)
-- Staged-only (`X `) → Green
-- Unstaged-only (` X`) → Red
-- Mixed staged+unstaged (`XX`) → Magenta
+- `??` → **Blue** (untracked files)
+- Staged-only (`X `) → **Green** (ready to commit)  
+- Unstaged-only (` X`) → **Red** (working directory changes)
+- Mixed staged+unstaged (`XX`) → **Magenta** (both staged and unstaged changes)
 - Fallback → No color
 
-The system gracefully degrades when colorama is unavailable through [dummy color objects](https://github.com/BHFock/git-cl/blob/6ad06dc168da7548dfd759b224830f797df644d5/git-cl#L70).
+> **Graceful Degradation:** The system falls back to plain text when the `colorama` module is unavailable through [dummy color objects](https://github.com/BHFock/git-cl/blob/6ad06dc168da7548dfd759b224830f797df644d5/git-cl#L70).
 
-
-### Stash categorisation rules
-
+#### Common Pitfalls
+- **Status code confusion:** `M ` (staged) vs ` M` (unstaged) vs `MM` (both)
+- **Renamed file handling:** Git shows `R  old -> new` which needs special parsing
+- **Path relativity:** Git output uses repo-relative paths, but display needs current-directory-relative paths
 
 ### Stash Categorisation Rules
 

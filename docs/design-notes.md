@@ -185,7 +185,7 @@ The security model prioritises preventing common accidents and basic attacks whi
 
 ### Path Resolution Algorithm
 
-The path conversion system manages file paths in three distinct representations throughout the codebase:
+File paths in `git-cl` need to work consistently whether you're in a subdirectory or the repository root, and whether the repository is moved between machines. The path resolution system handles this by maintaining three distinct representations throughout the codebase:
 
 - **Repo-root relative** - stored in `.git/cl.json` (e.g., `src/main.py`)
 - **CWD relative** - used for Git commands and display (e.g., `../src/main.py`)

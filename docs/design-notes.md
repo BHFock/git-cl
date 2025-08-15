@@ -130,6 +130,47 @@ This section also includes the definition of the command line help. Defining the
 
 `git-cl` exits with code `0` on success and non-zero codes on errors. Error messages are printed to `stderr`. Some functions terminate execution immediately on fatal errors using [sys.exit()](https://docs.python.org/3/library/sys.html#sys.exit), ensuring no partial metadata changes are written.
 
+### Security and Safety
+
+`git-cl` implements multiple security layers to protect against malicious input and filesystem vulnerabilities whilst maintaining safe operation across different environments.
+
+#### Path Safety and Traversal Protection
+
+All user-provided file paths undergo strict validation through [`clutil_sanitize_path()`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L358):
+
+- **Directory traversal prevention** - Rejects `../../../etc/passwd` style attacks through path resolution
+- **Repository boundary enforcement** - Ensures paths remain within the Git repository using `Path.relative_to(git_root)`
+- **Dangerous character filtering** - Blocks `;`, `|`, `&`, backticks, `$`, newlines, and null bytes
+- **Path normalisation** - Converts to absolute paths, then repo-relative for consistent storage
+
+#### Input Validation
+
+Beyond path safety, all user inputs are validated:
+
+- **Changelist names** - [`clutil_validate_name()`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L265) restricts to alphanumeric characters, hyphens, underscores, and dots
+- **Git reserved words** - Prevents conflicts with `HEAD`, `FETCH_HEAD`, `index`, etc.
+- **Commit message files** - [`clutil_read_commit_message_file()`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L529) enforces 64KB size limits
+- **Length restrictions** - Changelist names capped at 100 characters
+
+#### Filesystem and Git Safety
+
+Operations use defensive programming patterns:
+
+- **Atomic metadata updates** - [`clutil_file_lock()`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L99) provides exclusive access with automatic cleanup
+- **Rollback capabilities** - Stash operations recover from partial failures by dropping orphaned Git stashes
+- **Command injection prevention** - Uses `subprocess.run()` with list arguments, never shell strings
+- **Safe argument handling** - All paths passed to Git are pre-validated
+
+#### Security Limitations
+
+`git-cl` targets single-user interactive use with intentional limitations:
+
+- **Unix-only file locking** - Uses `fcntl`, unsuitable for shared accounts or Windows
+- **Local threat model** - Assumes trusted Git repository and filesystem
+- **No cryptographic validation** - JSON metadata lacks signatures or checksums
+
+The security model prioritises preventing common accidents and basic attacks whilst maintaining simplicity for typical single-developer workflows.
+
 ## Core Algorithms
 
 ### Path Resolution Algorithm

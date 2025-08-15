@@ -280,7 +280,7 @@ The cl_branch command automates the common "stash→branch→unstash" workflow i
 
 #### Workflow Steps:
 
-**1. Precondition Validation** - [clutil_validate_branch_preconditions](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2051) ensures the target changelist exists and is active (not stashed). [`clutil_check_branch_exists`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2074) prevents conflicts with existing branch names.
+**1. Precondition Validation** - [clutil_validate_branch_preconditions](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2051) ensures the target changelist exists and is active (not stashed). [clutil_check_branch_exists](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2074) prevents conflicts with existing branch names.
 
 **2. Workspace Safety Check** - [clutil_check_unassigned_changes](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L2085) detects uncommitted changes not assigned to any changelist. The operation aborts if unassigned changes exist, preventing accidental data loss.
 

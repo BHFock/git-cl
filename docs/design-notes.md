@@ -1,6 +1,6 @@
 # git-cl Design Notes
 
-[git-cl](https://github.com/BHFock/git-cl) is a Git subcommand for managing named changelists within a Git working directory. It allows grouping files into logical changelists before staging or committing. The main design goal is to help review code changes with [git cl status](tutorial.md#22-view-status-by-changelist), but the functionality also supports [stashing](tutorial.md#31-stash-and-unstash-changelists) and [branching](tutorial.md#32-create-a-branch-from-a-changelist) based on changelists.
+[git-cl](https://github.com/BHFock/git-cl) is a Git subcommand for managing named changelists within a Git working directory. It allows grouping files into changelists before staging or committing. The main design goal is to help review code changes with [git cl status](tutorial.md#22-view-status-by-changelist), but the functionality also supports [stashing](tutorial.md#31-stash-and-unstash-changelists) and [branching](tutorial.md#32-create-a-branch-from-a-changelist) based on changelists.
 
 This document describes the design of `git-cl` to help future maintenance. Note that links to code examples are pinned to certain versions of the code and may have evolved since creating the links.
 

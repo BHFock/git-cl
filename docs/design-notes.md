@@ -5,12 +5,22 @@
 This document describes the design of `git-cl` to help future maintenance. Note that links to code examples are pinned to certain versions of the code which may have evolved since creating the links.
 
 ## Table of Contents
+
 - [Conceptual Model](#conceptual-model)
 - [Technical Architecture](#technical-architecture)
+  - [Code and Data Organisation](#code-and-data-organisation)
+  - [Runtime Behaviour](#runtime-behaviour)
+  - [Security and Safety](#security-and-safety)
 - [Core Algorithms](#core-algorithms)
+  - [Path Resolution Algorithm](#path-resolution-algorithm)
+  - [Git Status Parsing](#git-status-parsing)
+  - [Stash Categorisation Rules](#stash-categorisation-rules)
+  - [Unstash Conflict Detection](#unstash-conflict-detection)
+  - [Branching Workflow](#branching-workflow)
+  - [Platform Considerations](#platform-considerations)
+  - [Performance Considerations](#performance-considerations)
 - [Design Decisions FAQ](#design-decisions-faq)
 - [Future Direction](#future-direction)
-
 
 ## Conceptual Model
 

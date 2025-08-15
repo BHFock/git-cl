@@ -146,7 +146,7 @@ This section also includes the definition of the command line help. Defining the
 
 #### Path Safety and Traversal Protection
 
-All user-provided file paths undergo strict validation through [`clutil_sanitize_path()`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L358):
+All user-provided file paths undergo strict validation through [clutil_sanitize_path()](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L358):
 
 - **Directory traversal prevention** - Rejects `../../../etc/passwd` style attacks through path resolution
 - **Repository boundary enforcement** - Ensures paths remain within the Git repository using `Path.relative_to(git_root)`
@@ -157,16 +157,16 @@ All user-provided file paths undergo strict validation through [`clutil_sanitize
 
 Beyond path safety, all user inputs are validated:
 
-- **Changelist names** - [`clutil_validate_name()`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L265) restricts to alphanumeric characters, hyphens, underscores, and dots
+- **Changelist names** - [clutil_validate_name()](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L265) restricts to alphanumeric characters, hyphens, underscores, and dots
 - **Git reserved words** - Prevents conflicts with `HEAD`, `FETCH_HEAD`, `index`, etc.
-- **Commit message files** - [`clutil_read_commit_message_file()`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L529) enforces 64KB size limits
+- **Commit message files** - [clutil_read_commit_message_file()](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L529) enforces 64KB size limits
 - **Length restrictions** - Changelist names capped at 100 characters
 
 #### Filesystem and Git Safety
 
 Operations use defensive programming patterns:
 
-- **Atomic metadata updates** - [`clutil_file_lock()`](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L99) provides exclusive access with automatic cleanup
+- **Atomic metadata updates** - [clutil_file_lock()](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L99) provides exclusive access with automatic cleanup
 - **Rollback capabilities** - Stash operations recover from partial failures by dropping orphaned Git stashes
 - **Command injection prevention** - Uses `subprocess.run()` with list arguments, never shell strings
 - **Safe argument handling** - All paths passed to Git are pre-validated

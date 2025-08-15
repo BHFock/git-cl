@@ -1962,7 +1962,7 @@ def clutil_print_stash_success(
 def clutil_show_active_changelists(
     changelists: dict[str, list[str]],
     selected_names: Optional[set[str]],
-    st_map: dict[str, str],
+    status_map: dict[str, str],
     git_root: Path,
     use_color: bool
 ) -> tuple[bool, set[str]]:
@@ -1972,7 +1972,7 @@ def clutil_show_active_changelists(
     Args:
         changelists: Active changelists
         selected_names: Set of names to filter by (None = show all)
-        st_map: Git status mapping
+        status_map: Git status mapping
         git_root: Git repository root
         use_color: Whether to use colored output
 
@@ -1994,7 +1994,7 @@ def clutil_show_active_changelists(
             print(f"{cl_name}:")
             shown_any = True
             for file in files:
-                print(clutil_format_file_status(file, st_map, git_root, use_color))
+                print(clutil_format_file_status(file, status_map, git_root, use_color))
 
             # Track assigned files
             for f in files:
@@ -2363,13 +2363,13 @@ def cl_status(args: argparse.Namespace) -> None:
     changelists = clutil_load()
     stashes = clutil_load_stashes()
     git_root = clutil_get_git_root()
-    st_map = clutil_get_file_status_map(show_all=args.all)
+    status_map = clutil_get_file_status_map(show_all=args.all)
 
     use_color = clutil_should_use_color(args)
 
     # Show active changelists
     shown_any_active, assigned_files = clutil_show_active_changelists(
-        changelists, selected_names, st_map, git_root, use_color
+        changelists, selected_names, status_map, git_root, use_color
     )
 
     # Show stashed changelists section
@@ -2380,13 +2380,13 @@ def cl_status(args: argparse.Namespace) -> None:
 
     # Show unassigned files
     if selected_names is None or args.include_no_cl:
-        no_cl_files = [file for file in st_map if file not in assigned_files]
+        no_cl_files = [file for file in status_map if file not in assigned_files]
         if no_cl_files:
             if shown_any_active or stashes:
                 print()  # Add spacing
             print("No Changelist:")
             for file in sorted(no_cl_files):
-                print(clutil_format_file_status(file, st_map, git_root, use_color))
+                print(clutil_format_file_status(file, status_map, git_root, use_color))
 
 
 def cl_diff(args: argparse.Namespace) -> None:

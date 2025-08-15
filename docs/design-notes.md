@@ -149,7 +149,7 @@ The path conversion system manages file paths in three distinct representations 
 
 **1. Input Validation** - [clutil_sanitize_path()](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L358) takes user-provided paths, resolves relative components (like ../), ensures they're within the Git repository, and rejects dangerous characters.
 
-**2. Storage Normalization** - All validated paths are converted to repo-root relative format using Path.relative_to(git_root).as_posix() before storing in .git/cl.json.
+**2. Storage Normalization** - All validated paths are converted to repo-root relative format using [Path.relative_to](https://docs.python.org/3/library/pathlib.html#pathlib.PurePath.relative_to)(git_root).as_posix() before storing in .git/cl.json.
 
 **3. Display Conversion** - clutil_format_file_status() converts stored repo-root relative paths back to CWD-relative paths using os.path.relpath() for user display and Git command compatibility.
 

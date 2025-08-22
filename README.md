@@ -3,7 +3,7 @@ git-cl is a minimal Git subcommand that brings changelist support to Git. Organi
 -->
 # git-cl
 
-> A Git subcommand for managing named changelists — group files into changelists before staging.
+> A Git subcommand for managing named changelists — organise files by purpose before staging.
 
 [![Git Changelist Tutorial](https://img.shields.io/badge/Tutorial-View-blue)](https://github.com/BHFock/git-cl/blob/main/docs/tutorial.md)
 

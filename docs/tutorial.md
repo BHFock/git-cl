@@ -540,7 +540,7 @@ This way, you can choose whether the changelist sticks around after staging or r
 
 ### Why aren’t untracked files included when I stage or commit a changelist?
 
-Because `git cl` only stages or commits files already tracked by Git.
+`git cl` only stages or commits files already tracked by Git.
 
 If a file is untracked (`[??]`), it will show up in `git cl st`, but won’t be included when staging or committing.
 

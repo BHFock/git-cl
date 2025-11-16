@@ -19,7 +19,7 @@ git-cl is a feature complete, focused tool with a clear scope. While I appreciat
 - **Check** [existing issues](https://github.com/BHFock/git-cl/issues) first
 - **Include** your Python version, OS, and git-cl version (`git cl --version`)
 - **Provide** clear steps to reproduce
-- **Attach** relevant error messages or unexpected behaviour
+- **Attach** relevant error messages or **describe** unexpected behaviour
 
 ### Documentation Improvements
 

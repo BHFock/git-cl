@@ -223,11 +223,21 @@ Git's `status --porcelain` output needs to be transformed into changelist-groupe
 
 **2. Parsing and Filtering**
 [clutil_get_file_status_map](https://github.com/BHFock/git-cl/blob/0.3.4/git-cl#L387) processes each line:
-- Extracts 2-character Git status codes (`M `, `??`, `A `) and file paths from each line
+- Extracts 2-character Git status codes (`M `, `??`, `A `) and file paths
 - Handles renamed files by parsing `old -> new` syntax  
-- Filters against [INTERESTING_CODES](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L399) allowlist (`??`, ` M`, `M `, `MM`, `A `, `AM`, ` D`, `D `, `R `, `RM`)
+- Filters against [INTERESTING_CODES](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L399) allowlist
 - Counts and reports skipped files unless `--all` specified
 - Returns `dict[str, str]` mapping file paths to status codes
+
+**File Status Filtering Design**
+
+By default, only a subset of Git status codes are shown through the `INTERESTING_CODES` allowlist. This reduces clutter by filtering uncommon states like merge conflicts, type changes, and copied files.
+
+**Current allowlist:** `??`, ` M`, `M `, `MM`, `A `, `AM`, ` D`, `D `, `R `, `RM`
+
+**Rationale:** Focuses on common development workflow states (untracked, modifications, additions, deletions, renames) while keeping output clean for everyday use. Users can access filtered codes with the `--all` flag.
+
+**Status:** Conservative initial implementation. Will be refined based on real-world usage patterns as adoption grows.
 
 **3. Path Normalisation**
 Converts all paths to repository-root relative format using `Path.relative_to(git_root).as_posix()` for consistent internal representation.

@@ -2,7 +2,7 @@
 
 Thanks for your interest in [git-cl](https://github.com/BHFock/git-cl)! 
 
-This project is **feature complete** — all planned functionality has been implemented.
+This project is **feature complete**. All planned functionality has been implemented.
 
 Future development focuses on **maintenance, bug fixes, and usability improvements** rather than new features.
 

@@ -394,7 +394,7 @@ Stash saves those changes aside, and unstash brings them back later.
 git cl stash <changelist-name>
 ```
 
-Tip: Run stash commands from your repository root to avoid directory issues.
+Tip: Run stash commands from your repository root to avoid path issues.
 
 - Saves all unstaged and untracked files from the changelist.
 - Staged files are left alone (so you can commit them separately).

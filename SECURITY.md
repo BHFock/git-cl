@@ -17,6 +17,6 @@ This tool includes some basic safeguards by design:
 
 `git-cl` is not intended for multi-user or remote use, and is best suited for local developer workflows.
 
-While it's not security-critical software, care has been taken to avoid common footguns and insecure patterns. If something looks off — even if you're not sure — feel free to reach out.
+While it's not security-critical software, care has been taken to avoid common pitfalls and insecure patterns. If something looks off — even if you're not sure — feel free to reach out.
 
 Thanks for helping keep [git-cl](https://github.com/BHFock/git-cl) safe and clean!

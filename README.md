@@ -92,7 +92,7 @@ git cl br docs-fix
 - Requires Python 3.9+, Git, and a Unix-like OS
 - Designed for single-user workflows, concurrent operations may conflict
 - Always inspect downloaded scripts before executing. See [git-cl](https://github.com/BHFock/git-cl/blob/main/git-cl) for source.
-
+- For security considerations or to report vulnerabilities, see [SECURITY](./SECURITY.md).
 
 ## Project status
 

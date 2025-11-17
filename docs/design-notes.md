@@ -26,7 +26,7 @@ This document describes the design of `git-cl` to help future maintenance. Note 
 
 [git-cl](https://github.com/BHFock/git-cl) adds a layer of changelist metadata alongside Git’s staging and commit mechanisms. While Git’s index reflects staged changes, changelists records logical groupings of files regardless of their Git status. This separation allows changelists to persist across staging, stashing, and branching.
 
-The changelist layer supports intentional workflows: grouping related changes for review, isolating work before staging, and enabling targeted operations without relying on Git’s index or history. By decoupling file organisation from Git’s internal state, [git-cl](https://github.com/BHFock/git-cl) offers a stable and portable way to manage work-in-progress
+The changelist layer supports intentional workflows: grouping related changes for review, isolating work before staging, and enabling targeted operations without relying on Git’s index or history. By decoupling file organisation from Git’s internal state, [git-cl](https://github.com/BHFock/git-cl) offers a stable and portable way to manage work-in-progress.
 
 ## Technical Architecture
 

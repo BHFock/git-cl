@@ -65,7 +65,7 @@ Storing `cl.json` in `.git/` allows moving the repository locally while keeping 
   
 [Stash](tutorial.md#31-stash-and-unstash-changelists) metadata is stored in `.git/cl-stashes.json`. This keeps the stashes separate from the changelist files and allowed an implementation of the more advanced `git cl stash` and `git cl unstash` without impacting the implementation of the basic functions.
 
-Using `git cl stash list2` in the above example removes `list2` from `.git/cl.json` but adds the follwing stash metadata to `.git/cl-stashes.json`:
+Using `git cl stash list2` in the above example removes `list2` from `.git/cl.json` but adds the following stash metadata to `.git/cl-stashes.json`:
 
 ```
 {

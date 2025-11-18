@@ -334,7 +334,7 @@ After: Clean separation
 └── * my-feature-branch: feature-a unstashed, ready for development
 ```
 
-This atomic operation eliminates the manual coordination required for branching workflows while preserving changelist metadata and ensuring workspace
+This atomic operation eliminates the manual coordination required for branching workflows while preserving changelist metadata and ensuring workspace safety.
 
 ### Platform Considerations
 

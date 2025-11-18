@@ -1,10 +1,6 @@
 # Contributing to git-cl
 
-Thanks for your interest in [git-cl](https://github.com/BHFock/git-cl)! 
-
-This project is **feature complete**. All planned functionality has been implemented.
-
-Future development focuses on **maintenance, bug fixes, and usability improvements** rather than new features.
+Thanks for your interest in [git-cl](https://github.com/BHFock/git-cl)! This project is **feature complete**. All planned functionality has been implemented. Future development focuses on **maintenance, bug fixes, and usability improvements** rather than new features.
 
 **Best way to help:** Report reproducible bugs or improve documentation.
 

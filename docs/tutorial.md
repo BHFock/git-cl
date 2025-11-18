@@ -415,7 +415,7 @@ git cl unstash <changelist-name>
 git cl stash --all
 ```
 
-- Stashes all active changelists at once
+- Stashes all active changelists at once.
 
 Tip: Your files aren’t deleted — they’re just “put in a box” until you bring them back with unstash.
 

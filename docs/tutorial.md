@@ -258,7 +258,7 @@ git cl stage <changelist-name>
 
 - Stages all tracked files in the changelist.
 - Untracked files ([??]) are ignored unless added with git add.
-- The changelist is deleted after staging, unless --keep is used.
+- The changelist is deleted after staging, unless `--keep` is used.
   
 #### Example
 

@@ -594,6 +594,8 @@ Yes. If the changelist was deleted after a stage or commit, you can create a new
 
 ### 6.1 Command Summary Table
 
+**Note:** Many commands have short aliases (shown in "Alias" column) for faster typing.
+
 | Task                            | Command                                                   | Alias         | 
 | ------------------------------- | --------------------------------------------------------- | ------------- |
 | Add files to a changelist       | `git cl add <name> <files...>`                            | `git cl a`    |

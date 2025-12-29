@@ -9,7 +9,7 @@ git-cl is a minimal Git subcommand that brings changelist support to Git. Organi
 
 `git-cl` is a command-line tool that offers Git changelist support, inspired by Subversion. It allows users to assign working directory files to named changelists, helping organise work by intent, manage partial commits, and create branches directly from a changelist.
 
-Perfect for developers who prefer to organise their work logically from the start, rather than managing complex commit history afterward.
+Perfect for developers who prefer to organise their work logically from the start, rather than managing complex commit history afterwards.
 
 ## Why git-cl?
 

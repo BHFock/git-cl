@@ -81,11 +81,26 @@ git cl br docs-fix
 
 ## Documentation
 
-📘 Read the full [git-cl tutorial](docs/tutorial.md#git-cl-a-git-subcommand-for-changelist-management).
+📘 [Full Tutorial](docs/tutorial.md): Comprehensive guide with detailed examples
 
-📘 Read the [design notes](docs/design-notes.md).
+📘 [Design Notes](docs/design-notes.md): Technical architecture and implementation
 
-📘 Read [why git-cl exists](docs/why-git-cl.md#changelists-in-git-a-personal-history). 
+📘 [Why git-cl?](docs/why-git-cl.md): History and motivation behind the tool
+
+## Getting Help
+
+```bash
+git cl help              # General help
+git cl <command> -h      # Command-specific help
+```
+
+### Common Issues:
+- **Untracked files not staging?** Use `git add` first, then `git cl stage`
+- **Changelist deleted after commit?** This is default behaviour. Use `--keep` to preserve it.
+- **Command not found?** Check that `~/bin` is in your `$PATH`
+
+See the [FAQ](docs/tutorial.md#5-faq--common-pitfalls) for more troubleshooting.
+
 
 ## Notes
 

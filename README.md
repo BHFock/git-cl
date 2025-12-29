@@ -89,7 +89,7 @@ git cl br docs-fix
 
 ## Getting Help
 
-```bash
+```
 git cl help              # General help
 git cl <command> -h      # Command-specific help
 ```

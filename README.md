@@ -122,6 +122,5 @@ Use, fork, or adapt freely under the BSD license.
 BSD 3-Clause License — see [LICENSE](./LICENSE) for details.
 
 <!--
-Keywords: git changelist, svn changelist, partial commit, group files, perforce, git extension, organize changes, subversion
+Keywords: git changelist, svn changelist, partial commit, group files, perforce, git extension, organise changes, subversion, named staging area, pre-staging, commit logical units, selective commit
 -->
-

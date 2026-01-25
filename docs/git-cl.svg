@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg
   xmlns="http://www.w3.org/2000/svg"
-  viewBox="0 0 1100 520"
+  viewBox="0 0 1100 500"
   width="1100"
-  height="520"
+  height="500"
 >
 
   <!-- =======================
@@ -12,54 +12,54 @@
   <style>
     .title {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      font-size: 26px;
+      font-size: 28px;
       font-weight: 600;
       fill: #1f2937;
     }
 
     .subtitle {
       font-family: system-ui, sans-serif;
-      font-size: 15px;
+      font-size: 16px;
       fill: #4b5563;
     }
 
     .label {
       font-family: system-ui, sans-serif;
-      font-size: 14px;
+      font-size: 15px;
       fill: #374151;
       font-weight: 600;
     }
 
     .file {
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: 13px;
+      font-size: 14px;
       fill: #111827;
     }
 
     .status-m {
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: 13px;
+      font-size: 14px;
       fill: #d97706;
       font-weight: 600;
     }
 
     .status-a {
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: 13px;
+      font-size: 14px;
       fill: #059669;
       font-weight: 600;
     }
 
     .cmd {
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: 13px;
+      font-size: 14px;
       fill: #2563eb;
       font-weight: 600;
     }
 
     .annotation {
       font-family: system-ui, sans-serif;
-      font-size: 13px;
+      font-size: 14px;
       fill: #6b7280;
       font-style: italic;
     }
@@ -86,37 +86,37 @@
   <!-- =======================
        Title
        ======================= -->
-  <text x="550" y="40" text-anchor="middle" class="title">
+  <text x="550" y="38" text-anchor="middle" class="title">
     See your work by intent. Move it safely.
   </text>
 
-  <text x="550" y="68" text-anchor="middle" class="subtitle">
+  <text x="550" y="64" text-anchor="middle" class="subtitle">
     git cl st for clarity — git cl br for effortless branching
   </text>
 
   <!-- =======================
        Working Directory Area
        ======================= -->
-  <rect x="40" y="100" width="660" height="360" rx="16"
+  <rect x="40" y="90" width="660" height="340" rx="16"
         fill="#f9fafb" stroke="#e5e7eb"/>
 
-  <text x="60" y="130" class="label">
+  <text x="60" y="118" class="label">
     Working Directory — git cl st
   </text>
 
   <!-- =======================
        Changelist: docs (LEFT)
        ======================= -->
-  <rect x="80" y="160" width="220" height="120" rx="14"
+  <rect x="70" y="140" width="230" height="100" rx="14"
         fill="#e8f0ff" stroke="#5b8def" filter="url(#shadow)"/>
 
-  <text x="100" y="188" class="label">docs</text>
+  <text x="90" y="166" class="label">docs</text>
 
-  <text x="100" y="214">
+  <text x="90" y="190">
     <tspan class="status-m">M</tspan>
     <tspan class="file" dx="6">README.md</tspan>
   </text>
-  <text x="100" y="234">
+  <text x="90" y="212">
     <tspan class="status-a">A</tspan>
     <tspan class="file" dx="6">intro.md</tspan>
   </text>
@@ -124,16 +124,16 @@
   <!-- =======================
        Changelist: bugfix (RIGHT)
        ======================= -->
-  <rect x="340" y="160" width="220" height="120" rx="14"
+  <rect x="340" y="140" width="230" height="100" rx="14"
         fill="#e8f0ff" stroke="#5b8def" filter="url(#shadow)"/>
 
-  <text x="360" y="188" class="label">bugfix</text>
+  <text x="360" y="166" class="label">bugfix</text>
 
-  <text x="360" y="214">
+  <text x="360" y="190">
     <tspan class="status-m">M</tspan>
     <tspan class="file" dx="6">a.py</tspan>
   </text>
-  <text x="360" y="234">
+  <text x="360" y="212">
     <tspan class="status-m">M</tspan>
     <tspan class="file" dx="6">b.py</tspan>
   </text>
@@ -141,12 +141,12 @@
   <!-- =======================
        Changelist: experiment (faded)
        ======================= -->
-  <rect x="210" y="310" width="220" height="110" rx="14"
+  <rect x="200" y="270" width="230" height="90" rx="14"
         fill="#e8f0ff" stroke="#5b8def" class="muted"/>
 
-  <text x="230" y="338" class="label muted">experiment</text>
+  <text x="220" y="296" class="label muted">experiment</text>
 
-  <text x="230" y="364" class="muted">
+  <text x="220" y="320" class="muted">
     <tspan class="status-m">M</tspan>
     <tspan class="file" dx="6">scratch.c</tspan>
   </text>
@@ -154,35 +154,35 @@
   <!-- =======================
        git cl br Arrow (starts at bugfix)
        ======================= -->
-  <line x1="560" y1="220" x2="760" y2="220"
+  <line x1="570" y1="190" x2="760" y2="190"
         stroke="#2563eb" stroke-width="2"/>
 
-  <polygon points="760,220 748,214 748,226"
+  <polygon points="760,190 748,184 748,196"
            fill="#2563eb"/>
 
-  <text x="660" y="205" text-anchor="middle" class="cmd">
+  <text x="665" y="175" text-anchor="middle" class="cmd">
     git cl br bugfix
   </text>
 
   <!-- =======================
        New Branch Area
        ======================= -->
-  <rect x="780" y="150" width="280" height="200" rx="16"
+  <rect x="780" y="120" width="280" height="180" rx="16"
         fill="#f5f3ff" stroke="#8b5cf6" filter="url(#shadow)"/>
 
-  <text x="800" y="180" class="label">
+  <text x="800" y="148" class="label">
     feature/bugfix (new branch)
   </text>
 
-  <rect x="800" y="200" width="240" height="110" rx="14"
+  <rect x="800" y="168" width="240" height="100" rx="14"
         fill="#e8f0ff" stroke="#5b8def" filter="url(#shadow-light)"/>
 
-  <text x="820" y="228" class="label">bugfix</text>
-  <text x="820" y="254">
+  <text x="820" y="194" class="label">bugfix</text>
+  <text x="820" y="218">
     <tspan class="status-m">M</tspan>
     <tspan class="file" dx="6">a.py</tspan>
   </text>
-  <text x="820" y="274">
+  <text x="820" y="240">
     <tspan class="status-m">M</tspan>
     <tspan class="file" dx="6">b.py</tspan>
   </text>
@@ -190,18 +190,18 @@
   <!-- =======================
        Annotation with connector
        ======================= -->
-  <path d="M 920 320 Q 920 360 920 380" 
+  <path d="M 920 278 Q 920 310 920 330" 
         stroke="#9ca3af" stroke-width="1" stroke-dasharray="3,3" fill="none"/>
-  <circle cx="920" cy="320" r="2" fill="#9ca3af"/>
+  <circle cx="920" cy="278" r="2" fill="#9ca3af"/>
   
-  <text x="920" y="400" text-anchor="middle" class="annotation">
+  <text x="920" y="350" text-anchor="middle" class="annotation">
     ↑ Only this changelist moves
   </text>
 
   <!-- =======================
        Bottom annotation
        ======================= -->
-  <text x="60" y="480" class="subtitle">
+  <text x="60" y="455" class="subtitle">
     Other changelists stay on the original branch, auto-stashed and untouched.
   </text>
 

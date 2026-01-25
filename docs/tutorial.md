@@ -2,40 +2,9 @@
 git-cl: A Git subcommand to manage changelists in Git. Group files by intent, manage partial commits cleanly, and improve your Git workflow.
 -->
 
-
 # git-cl: A Git Subcommand for Changelist Management
 
 [git-cl](https://github.com/BHFock/git-cl) is a command-line tool that brings changelists to Git — like sticky notes for your working directory. It lets you group files into named changelists before [staging](https://git-scm.com/about/staging-area) or [committing](https://git-scm.com/docs/git-commit), helping you manage multiple parallel changes and make partial commits with intent and clarity.
-
-<details>
-<summary> Table of Contents</summary>
-
-- [Why git-cl](#why-git-cl)
-- [How changelists fit into Git workflows](#how-changelists-fit-into-git-workflows)
-- [1. Installation](#1-installation)
-- [2. Basic Commands](#2-basic-commands)
-  - [2.1 Add files to a changelist](#21-add-files-to-a-changelist)
-  - [2.2 View status by changelist](#22-view-status-by-changelist) 
-  - [2.3 Diff a changelist](#23-diff-a-changelist) 
-  - [2.4 Stage and unstage a changelist](#24-stage-and-unstage-a-changelist)
-  - [2.5 Commit a changelist](#25-commit-a-changelist)
-  - [2.6 Remove files from changelists](#26-remove-files-from-changelists)
-  - [2.7 Delete changelists](#27-delete-changelists)
-  - [2.8 Checkout a changelist](#28-checkout-a-changelist)
-  - [2.9 Getting help from the command line](#29-getting-help-from-the-command-line)
-- [3. Advanced Commands](#3-advanced-commands)
-  - [3.1 Stash and Unstash changelists](#31-stash-and-unstash-changelists)
-  - [3.2 Create a branch from a changelist](#32-create-a-branch-from-a-changelist)
-- [4. Example Workflows](#4-example-workflows)
-  - [4.1 Changelists as named staging areas](#41-changelists-as-named-staging-areas)
-  - [4.2 Branching Mid-Feature with git cl branch](#42-branching-mid-feature-with-git-cl-branch)
-- [5. FAQ & Common Pitfalls](#5-faq--common-pitfalls)
-- [6. Command Summary](#6-command-summary)
-  - [6.1 Command Summary Table](#61-command-summary-table)
-  - [6.2 Git Status Code Reference](#62-git-status-code-reference)
-
-</details>
-
 
 ## Why git-cl?
 

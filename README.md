@@ -23,7 +23,7 @@ Perfect for developers who prefer to organise their work logically from the star
 
 ## Branching from changelists
 
-<a href="docs/tutorial.md#32-create-a-branch-from-a-changelist">
+<a href="https://github.com/BHFock/git-cl/blob/main/docs/tutorial.md#32-create-a-branch-from-a-changelist">
   <img src="docs/git-cl.svg" alt="git-cl workflow: changelists in working directory moving to a new branch" width="800"/>
 </a>
 

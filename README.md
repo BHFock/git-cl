@@ -28,7 +28,6 @@ Perfect for developers who prefer to organise their work logically from the star
 </a>
 
 ## Quick Start
-
 ```
 # Install
 mkdir -p ~/bin
@@ -47,9 +46,7 @@ git cl commit fixup -m "Fix file1"
 
 Make sure `~/bin` is listed in your `$PATH`. 
 
-
 ## Common Commands
-
 ```bash
 # Add files to a changelist
 git cl add docs-fix README.md docs/index.md
@@ -79,53 +76,24 @@ git cl unstash docs-fix
 git cl br docs-fix
 ```
 
-## Example Output
-
-<p align="left">
-  <img src="docs/git-cl.png" alt="git-cl status changelist screenshot in terminal" width="220"/>
-</p>
-
 ## Documentation
 
-📘 [Full Tutorial](docs/tutorial.md): Comprehensive guide with detailed examples
+📘 [Full Tutorial](docs/tutorial.md): Guide with examples and FAQ
 
-📘 [Design Notes](docs/design-notes.md): Technical architecture and implementation
+📘 [Design Notes](docs/design-notes.md): Technical architecture
 
-📘 [Why git-cl?](docs/why-git-cl.md): History and motivation behind the tool
-
-## Getting Help
-
-```
-git cl help              # General help
-git cl <command> -h      # Command-specific help
-```
-
-### Common Issues:
-- **Untracked files not staging?** Use `git add` first, then `git cl stage`
-- **Changelist deleted after commit?** This is default behaviour. Use `--keep` to preserve it.
-- **Command not found?** Check that `~/bin` is in your `$PATH`
-
-See the [FAQ](docs/tutorial.md#5-faq--common-pitfalls) for more troubleshooting.
-
+📘 [Why git-cl?](docs/why-git-cl.md): History and motivation
 
 ## Notes
 
 - Requires Python 3.9+, Git, and a Unix-like OS
-- Designed for single-user workflows, concurrent operations may conflict
-- Always inspect downloaded scripts before executing. See [git-cl](https://github.com/BHFock/git-cl/blob/main/git-cl) for source.
-- For security considerations or to report vulnerabilities, see [SECURITY](./SECURITY.md).
-
-## Project status
-
-`git-cl` is now feature complete. All planned functionality has been implemented, including changelist creation, staging, committing, stashing, and branching. Future updates will focus on code refactoring, bug fixes, and usability improvements — no major new features are planned.
-
-See [CONTRIBUTING](CONTRIBUTING.md) for guidelines on bug reports and documentation improvements.
-
-Use, fork, or adapt freely under the BSD license.
+- Local-only; designed for single-user workflows
+- Always inspect downloaded scripts before executing — see [source](https://github.com/BHFock/git-cl/blob/main/git-cl)
+- For security concerns, see [SECURITY](./SECURITY.md)
 
 ## License
 
-BSD 3-Clause License — see [LICENSE](./LICENSE) for details.
+BSD 3-Clause — see [LICENSE](./LICENSE) | [CONTRIBUTING](CONTRIBUTING.md)
 
 <!--
 Keywords: git changelist, svn changelist, partial commit, group files, perforce, git extension, organise changes, subversion, named staging area, pre-staging, commit logical units, selective commit

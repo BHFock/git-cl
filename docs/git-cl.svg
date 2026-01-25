@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg
   xmlns="http://www.w3.org/2000/svg"
-  viewBox="0 0 1100 500"
-  width="1100"
-  height="500"
+  viewBox="0 0 1120 540"
+  width="1120"
+  height="540"
 >
 
   <!-- =======================
@@ -12,54 +12,54 @@
   <style>
     .title {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      font-size: 28px;
+      font-size: 30px;
       font-weight: 600;
       fill: #1f2937;
     }
 
     .subtitle {
       font-family: system-ui, sans-serif;
-      font-size: 16px;
+      font-size: 18px;
       fill: #4b5563;
     }
 
     .label {
       font-family: system-ui, sans-serif;
-      font-size: 15px;
+      font-size: 18px;
       fill: #374151;
       font-weight: 600;
     }
 
     .file {
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: 14px;
+      font-size: 17px;
       fill: #111827;
     }
 
     .status-m {
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: 14px;
+      font-size: 17px;
       fill: #d97706;
       font-weight: 600;
     }
 
     .status-a {
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: 14px;
+      font-size: 17px;
       fill: #059669;
       font-weight: 600;
     }
 
     .cmd {
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: 14px;
+      font-size: 17px;
       fill: #2563eb;
       font-weight: 600;
     }
 
     .annotation {
       font-family: system-ui, sans-serif;
-      font-size: 14px;
+      font-size: 16px;
       fill: #6b7280;
       font-style: italic;
     }
@@ -84,39 +84,45 @@
   </defs>
 
   <!-- =======================
-       Title
+       Outer Background Container
        ======================= -->
-  <text x="550" y="38" text-anchor="middle" class="title">
-    See your work by intent. Move it safely.
+  <rect x="0" y="0" width="1120" height="540" rx="12"
+        fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+
+  <!-- =======================
+       Title (left-aligned)
+       ======================= -->
+  <text x="50" y="46" class="title">
+    git cl — organise changes, branch by changelist
   </text>
 
-  <text x="550" y="64" text-anchor="middle" class="subtitle">
-    git cl st for clarity — git cl br for effortless branching
+  <text x="50" y="74" class="subtitle">
+    git cl st to see changelists · git cl br to branch from one
   </text>
 
   <!-- =======================
        Working Directory Area
        ======================= -->
-  <rect x="40" y="90" width="660" height="340" rx="16"
-        fill="#f9fafb" stroke="#e5e7eb"/>
+  <rect x="50" y="100" width="660" height="360" rx="16"
+        fill="#ffffff" stroke="#e5e7eb"/>
 
-  <text x="60" y="118" class="label">
+  <text x="70" y="132" class="label">
     Working Directory — git cl st
   </text>
 
   <!-- =======================
        Changelist: docs (LEFT)
        ======================= -->
-  <rect x="70" y="140" width="230" height="100" rx="14"
+  <rect x="80" y="155" width="240" height="110" rx="14"
         fill="#e8f0ff" stroke="#5b8def" filter="url(#shadow)"/>
 
-  <text x="90" y="166" class="label">docs</text>
+  <text x="100" y="184" class="label">docs</text>
 
-  <text x="90" y="190">
+  <text x="100" y="212">
     <tspan class="status-m">M</tspan>
     <tspan class="file" dx="6">README.md</tspan>
   </text>
-  <text x="90" y="212">
+  <text x="100" y="238">
     <tspan class="status-a">A</tspan>
     <tspan class="file" dx="6">intro.md</tspan>
   </text>
@@ -124,16 +130,16 @@
   <!-- =======================
        Changelist: bugfix (RIGHT)
        ======================= -->
-  <rect x="340" y="140" width="230" height="100" rx="14"
+  <rect x="360" y="155" width="240" height="110" rx="14"
         fill="#e8f0ff" stroke="#5b8def" filter="url(#shadow)"/>
 
-  <text x="360" y="166" class="label">bugfix</text>
+  <text x="380" y="184" class="label">bugfix</text>
 
-  <text x="360" y="190">
+  <text x="380" y="212">
     <tspan class="status-m">M</tspan>
     <tspan class="file" dx="6">a.py</tspan>
   </text>
-  <text x="360" y="212">
+  <text x="380" y="238">
     <tspan class="status-m">M</tspan>
     <tspan class="file" dx="6">b.py</tspan>
   </text>
@@ -141,12 +147,12 @@
   <!-- =======================
        Changelist: experiment (faded)
        ======================= -->
-  <rect x="200" y="270" width="230" height="90" rx="14"
+  <rect x="210" y="295" width="240" height="100" rx="14"
         fill="#e8f0ff" stroke="#5b8def" class="muted"/>
 
-  <text x="220" y="296" class="label muted">experiment</text>
+  <text x="230" y="324" class="label muted">experiment</text>
 
-  <text x="220" y="320" class="muted">
+  <text x="230" y="352" class="muted">
     <tspan class="status-m">M</tspan>
     <tspan class="file" dx="6">scratch.c</tspan>
   </text>
@@ -154,35 +160,35 @@
   <!-- =======================
        git cl br Arrow (starts at bugfix)
        ======================= -->
-  <line x1="570" y1="190" x2="760" y2="190"
+  <line x1="600" y1="210" x2="770" y2="210"
         stroke="#2563eb" stroke-width="2"/>
 
-  <polygon points="760,190 748,184 748,196"
+  <polygon points="770,210 756,203 756,217"
            fill="#2563eb"/>
 
-  <text x="665" y="175" text-anchor="middle" class="cmd">
+  <text x="685" y="193" text-anchor="middle" class="cmd">
     git cl br bugfix
   </text>
 
   <!-- =======================
        New Branch Area
        ======================= -->
-  <rect x="780" y="120" width="280" height="180" rx="16"
+  <rect x="790" y="130" width="290" height="195" rx="16"
         fill="#f5f3ff" stroke="#8b5cf6" filter="url(#shadow)"/>
 
-  <text x="800" y="148" class="label">
+  <text x="810" y="162" class="label">
     feature/bugfix (new branch)
   </text>
 
-  <rect x="800" y="168" width="240" height="100" rx="14"
+  <rect x="810" y="182" width="250" height="110" rx="14"
         fill="#e8f0ff" stroke="#5b8def" filter="url(#shadow-light)"/>
 
-  <text x="820" y="194" class="label">bugfix</text>
-  <text x="820" y="218">
+  <text x="830" y="211" class="label">bugfix</text>
+  <text x="830" y="239">
     <tspan class="status-m">M</tspan>
     <tspan class="file" dx="6">a.py</tspan>
   </text>
-  <text x="820" y="240">
+  <text x="830" y="265">
     <tspan class="status-m">M</tspan>
     <tspan class="file" dx="6">b.py</tspan>
   </text>
@@ -190,18 +196,18 @@
   <!-- =======================
        Annotation with connector
        ======================= -->
-  <path d="M 920 278 Q 920 310 920 330" 
+  <path d="M 935 302 Q 935 334 935 354" 
         stroke="#9ca3af" stroke-width="1" stroke-dasharray="3,3" fill="none"/>
-  <circle cx="920" cy="278" r="2" fill="#9ca3af"/>
+  <circle cx="935" cy="302" r="2" fill="#9ca3af"/>
   
-  <text x="920" y="350" text-anchor="middle" class="annotation">
+  <text x="935" y="376" text-anchor="middle" class="annotation">
     ↑ Only this changelist moves
   </text>
 
   <!-- =======================
        Bottom annotation
        ======================= -->
-  <text x="60" y="455" class="subtitle">
+  <text x="70" y="485" class="subtitle">
     Other changelists stay on the original branch, auto-stashed and untouched.
   </text>
 

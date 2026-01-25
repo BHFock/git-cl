@@ -27,6 +27,7 @@ Perfect for developers who prefer to organise their work logically from the star
   <img src="docs/git-cl.svg" alt="git-cl workflow: changelists in working directory moving to a new branch" width="800"/>
 </p>
 
+`git cl br` creates a new branch containing only the specified changelist — other changelists are auto-stashed and remain on the original branch. [Learn more →](docs/tutorial.md#32-create-a-branch-from-a-changelist)
 
 ## Quick Start
 

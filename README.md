@@ -23,6 +23,8 @@ Perfect for developers who prefer to organise their work logically from the star
 
 ## Branching from changelists
 
+git-cl lets you turn any changelist into a dedicated branch in one step.
+
 <a href="docs/tutorial.md#42-branching-mid-feature-with-git-cl-branch">
   <img src="docs/git-cl.svg" alt="git-cl workflow: changelists in working directory moving to a new branch" width="800"/>
 </a>

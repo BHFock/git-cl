@@ -191,7 +191,7 @@
   <polygon points="770,235 756,228 756,242"
            fill="#8b5cf6"/>
 
-  <text x="685" y="218" text-anchor="middle" class="cmd-highlight">
+  <text x="688" y="218" text-anchor="middle" class="cmd-highlight">
     git cl br bugfix
   </text>
 

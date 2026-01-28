@@ -10,21 +10,9 @@ git-cl: A Git subcommand to manage changelists in Git. Group files by intent, ma
 
 `git-cl` is a Git subcommand that lets you group related file changes under a named changelist — similar to changelists in [Subversion](https://subversion.apache.org/), but tailored for [Git](https://git-scm.com) workflows.
 
-```
-Traditional Git Workflow              With git-cl
-========================              ===========
-
- Working Directory                    Working Directory
-        ↓                                    ↓
-(all mixed together)                 (organised by intent)
-        ↓                                    ↓
- git add file1.py                     Changelist: "bugfix"
- git add file2.py                     Changelist: "refactor"  
- git add file3.py                     Changelist: "docs"
-        ↓                                    ↓
- Staging Area                         git cl commit bugfix
-(still mixed up)                     (clean, focused commit)
-```
+<p align="left">
+  <img src="git-cl-workflow-comparison.svg" alt="Traditional Git workflow vs git-cl workflow comparison" width="700"/>
+</p>
 
 This helps when:
 

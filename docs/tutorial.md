@@ -41,29 +41,9 @@ Read more: [Why git-cl exists: A personal history](why-git-cl.md) of changelists
 
 Changelists act as a layer above Git's [staging area](https://git-scm.com/about/staging-area) — helping you group related edits before deciding what to stage or commit:
 
-```
-Working Directory
-=================
-modified: clean_data.py ───┐
-modified: filters.py ──────┼─> Changelist: "preprocessing"
-modified: utils/math.py ───┘
-
-modified: plot.py ─────────┐
-modified: charts.py ───────┼─> Changelist: "visualisation"  
-modified: style.mplstyle ──┘
-
-modified: test_filters.py  ──> Changelist: "tests"
-
-new file: debug_output.csv ──> (No Changelist)
-
-     ↓ git cl stage preprocessing
-     
-Staging Area                     
-============
-clean_data.py
-filters.py      ─────────────> git commit -m "Apply Gaussian filters to input data"
-math.py
-```
+<p align="left">
+  <img src="git-cl-staging.svg" alt="Changelists staging flow: from working directory to commit" width="850"/>
+</p>
 
 They work alongside Git's core concepts, not in place of them:
 

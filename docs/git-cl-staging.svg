@@ -51,6 +51,13 @@
       font-weight: 600;
     }
 
+    .cmd-grey {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 13px;
+      fill: #6b7280;
+      font-weight: 600;
+    }
+
     .commit-file {
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       font-size: 12px;
@@ -219,10 +226,10 @@
   <!-- =======================
        Arrow 2: git commit
        ======================= -->
-  <line x1="575" y1="180" x2="655" y2="180" stroke="#059669" stroke-width="2"/>
-  <polygon points="660,180 650,174 650,186" fill="#059669"/>
+  <line x1="575" y1="180" x2="655" y2="180" stroke="#6b7280" stroke-width="2"/>
+  <polygon points="660,180 650,174 650,186" fill="#6b7280"/>
   
-  <text x="617" y="165" text-anchor="middle" class="cmd">git commit</text>
+  <text x="617" y="165" text-anchor="middle" class="cmd-grey">git commit</text>
 
   <!-- =====================================================================
        STEP 3: After Commit

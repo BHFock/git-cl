@@ -1,7 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg"
      viewBox="0 0 1120 440"
      width="1120"
      height="440">
+
+  <!-- =======================
+       Styles
+       ======================= -->
+  <style>
+    .title {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 22px;
+      font-weight: 600;
+      fill: #1f2937;
+    }
+
+    .subtitle {
+      font-family: system-ui, sans-serif;
+      font-size: 14px;
+      fill: #4b5563;
+    }
+
+    .label {
+      font-family: system-ui, sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      fill: #374151;
+    }
+
+    .cl-label {
+      font-family: system-ui, sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      fill: #374151;
+    }
+
+    .file {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 13px;
+      fill: #111827;
+    }
+
+    .status-m {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 13px;
+      fill: #d97706;
+      font-weight: 600;
+    }
+
+    .status-a {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 13px;
+      fill: #059669;
+      font-weight: 600;
+    }
+
+    .cmd-highlight {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 14px;
+      font-weight: 600;
+      fill: #7c3aed;
+    }
+
+    .annotation {
+      font-family: system-ui, sans-serif;
+      font-size: 13px;
+      fill: #6b7280;
+      font-style: italic;
+    }
+  </style>
+
+  <!-- =======================
+       Drop Shadow
+       ======================= -->
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3"
+                    flood-color="#000" flood-opacity="0.1"/>
+    </filter>
+  </defs>
 
   <!-- Background -->
   <rect x="0" y="0" width="1120" height="440"
@@ -10,18 +87,11 @@
         stroke="#e2e8f0"/>
 
   <!-- Title -->
-  <text x="40" y="36"
-        font-family="system-ui, sans-serif"
-        font-size="22"
-        font-weight="600"
-        fill="#1f2937">
+  <text x="40" y="36" class="title">
     Branching from a changelist
   </text>
 
-  <text x="40" y="62"
-        font-family="system-ui, sans-serif"
-        font-size="14"
-        fill="#4b5563">
+  <text x="40" y="62" class="subtitle">
     git cl branch moves one changelist onto a new branch, others stay stashed
   </text>
 
@@ -29,13 +99,10 @@
   <rect x="40" y="90" width="460" height="290"
         rx="14"
         fill="#ffffff"
-        stroke="#e5e7eb"/>
+        stroke="#e5e7eb"
+        filter="url(#shadow)"/>
 
-  <text x="60" y="118"
-        font-family="system-ui, sans-serif"
-        font-size="16"
-        font-weight="600"
-        fill="#374151">
+  <text x="60" y="118" class="label">
     main branch — git cl st
   </text>
 
@@ -45,24 +112,16 @@
         fill="#e8f0ff"
         stroke="#5b8def"/>
 
-  <text x="90" y="165"
-        font-family="system-ui, sans-serif"
-        font-size="14"
-        font-weight="600"
-        fill="#374151">docs</text>
+  <text x="90" y="165" class="cl-label">docs</text>
 
-  <text x="90" y="185"
-        font-family="monospace"
-        font-size="13">
-    <tspan fill="#dc2626">[ M]</tspan>
-    <tspan dx="6">README.md</tspan>
+  <text x="90" y="185">
+    <tspan class="status-m">[ M]</tspan>
+    <tspan class="file" dx="4">README.md</tspan>
   </text>
 
-  <text x="90" y="203"
-        font-family="monospace"
-        font-size="13">
-    <tspan fill="#16a34a">[A ]</tspan>
-    <tspan dx="6">intro.md</tspan>
+  <text x="90" y="203">
+    <tspan class="status-a">[A ]</tspan>
+    <tspan class="file" dx="4">intro.md</tspan>
   </text>
 
   <!-- experiment -->
@@ -71,17 +130,11 @@
         fill="#e8f0ff"
         stroke="#5b8def"/>
 
-  <text x="90" y="265"
-        font-family="system-ui, sans-serif"
-        font-size="14"
-        font-weight="600"
-        fill="#374151">experiment</text>
+  <text x="90" y="265" class="cl-label">experiment</text>
 
-  <text x="90" y="285"
-        font-family="monospace"
-        font-size="13">
-    <tspan fill="#dc2626">[ M]</tspan>
-    <tspan dx="6">scratch.c</tspan>
+  <text x="90" y="285">
+    <tspan class="status-m">[ M]</tspan>
+    <tspan class="file" dx="4">scratch.c</tspan>
   </text>
 
   <!-- bugfix -->
@@ -90,45 +143,32 @@
         fill="#e8f0ff"
         stroke="#5b8def"/>
 
-  <text x="290" y="165"
-        font-family="system-ui, sans-serif"
-        font-size="14"
-        font-weight="600"
-        fill="#374151">bugfix</text>
+  <text x="290" y="165" class="cl-label">bugfix</text>
 
-  <text x="290" y="185"
-        font-family="monospace"
-        font-size="13">
-    <tspan fill="#dc2626">[ M]</tspan>
-    <tspan dx="6">server.py</tspan>
+  <text x="290" y="185">
+    <tspan class="status-m">[ M]</tspan>
+    <tspan class="file" dx="4">server.py</tspan>
   </text>
 
-  <text x="290" y="203"
-        font-family="monospace"
-        font-size="13">
-    <tspan fill="#dc2626">[ M]</tspan>
-    <tspan dx="6">auth.py</tspan>
+  <text x="290" y="203">
+    <tspan class="status-m">[ M]</tspan>
+    <tspan class="file" dx="4">auth.py</tspan>
   </text>
 
-  <text x="290" y="221"
-        font-family="monospace"
-        font-size="13">
-    <tspan fill="#16a34a">[A ]</tspan>
-    <tspan dx="6">tests_auth.py</tspan>
+  <text x="290" y="221">
+    <tspan class="status-a">[A ]</tspan>
+    <tspan class="file" dx="4">tests_auth.py</tspan>
   </text>
 
   <!-- Arrow -->
   <line x1="520" y1="220" x2="650" y2="220"
         stroke="#7c3aed"
         stroke-width="2"/>
-  <polygon points="650,220 638,214 638,226" fill="#7c3aed"/>
+  <polygon points="655,220 645,214 645,226" fill="#7c3aed"/>
 
-  <text x="585" y="200"
+  <text x="587" y="200"
         text-anchor="middle"
-        font-family="monospace"
-        font-size="14"
-        font-weight="600"
-        fill="#7c3aed">
+        class="cmd-highlight">
     git cl br bugfix
   </text>
 
@@ -136,13 +176,10 @@
   <rect x="670" y="120" width="410" height="220"
         rx="14"
         fill="#f5f3ff"
-        stroke="#8b5cf6"/>
+        stroke="#8b5cf6"
+        filter="url(#shadow)"/>
 
-  <text x="690" y="150"
-        font-family="system-ui, sans-serif"
-        font-size="16"
-        font-weight="600"
-        fill="#374151">
+  <text x="690" y="150" class="label">
     feature/bugfix — git cl st
   </text>
 
@@ -152,47 +189,30 @@
         fill="#e8f0ff"
         stroke="#5b8def"/>
 
-  <text x="720" y="195"
-        font-family="system-ui, sans-serif"
-        font-size="14"
-        font-weight="600"
-        fill="#374151">bugfix</text>
+  <text x="720" y="195" class="cl-label">bugfix</text>
 
-  <text x="720" y="215"
-        font-family="monospace"
-        font-size="13">
-    <tspan fill="#dc2626">[ M]</tspan>
-    <tspan dx="6">server.py</tspan>
+  <text x="720" y="215">
+    <tspan class="status-m">[ M]</tspan>
+    <tspan class="file" dx="4">server.py</tspan>
   </text>
 
-  <text x="720" y="233"
-        font-family="monospace"
-        font-size="13">
-    <tspan fill="#dc2626">[ M]</tspan>
-    <tspan dx="6">auth.py</tspan>
+  <text x="720" y="233">
+    <tspan class="status-m">[ M]</tspan>
+    <tspan class="file" dx="4">auth.py</tspan>
   </text>
 
-  <text x="720" y="251"
-        font-family="monospace"
-        font-size="13">
-    <tspan fill="#16a34a">[A ]</tspan>
-    <tspan dx="6">tests_auth.py</tspan>
+  <text x="720" y="251">
+    <tspan class="status-a">[A ]</tspan>
+    <tspan class="file" dx="4">tests_auth.py</tspan>
   </text>
 
   <!-- Annotation (aligned to bugfix) -->
-  <text x="700" y="295"
-        font-family="system-ui, sans-serif"
-        font-size="13"
-        fill="#6b7280"
-        font-style="italic">
+  <text x="700" y="295" class="annotation">
     Only this changelist is restored on the branch
   </text>
 
   <!-- Footer -->
-  <text x="40" y="405"
-        font-family="system-ui, sans-serif"
-        font-size="14"
-        fill="#4b5563">
+  <text x="40" y="410" class="subtitle">
     Other changelists are automatically stashed and remain untouched.
   </text>
 

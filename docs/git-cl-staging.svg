@@ -114,15 +114,15 @@
         fill="#e8f0ff" stroke="#5b8def"/>
   <text x="44" y="99" class="label">preprocessing</text>
   <text x="44" y="118">
-    <tspan class="status-m">M</tspan>
+    <tspan class="status-m">[ M]</tspan>
     <tspan class="file" dx="3">clean_data.py</tspan>
   </text>
   <text x="44" y="136">
-    <tspan class="status-m">M</tspan>
+    <tspan class="status-m">[ M]</tspan>
     <tspan class="file" dx="3">filters.py</tspan>
   </text>
   <text x="44" y="154">
-    <tspan class="status-m">M</tspan>
+    <tspan class="status-m">[ M]</tspan>
     <tspan class="file" dx="3">math.py</tspan>
   </text>
 
@@ -131,11 +131,11 @@
         fill="#e8f0ff" stroke="#5b8def"/>
   <text x="44" y="187" class="label">visualisation</text>
   <text x="44" y="206">
-    <tspan class="status-m">M</tspan>
+    <tspan class="status-m">[ M]</tspan>
     <tspan class="file" dx="3">plot.py</tspan>
   </text>
   <text x="44" y="222">
-    <tspan class="status-m">M</tspan>
+    <tspan class="status-m">[ M]</tspan>
     <tspan class="file" dx="3">charts.py</tspan>
   </text>
 
@@ -144,7 +144,7 @@
         fill="#e8f0ff" stroke="#5b8def"/>
   <text x="44" y="253" class="label">tests</text>
   <text x="90" y="253" class="file">
-    <tspan class="status-m">M</tspan>
+    <tspan class="status-m">[ M]</tspan>
     <tspan dx="3">test.py</tspan>
   </text>
 
@@ -190,11 +190,11 @@
         fill="#e8f0ff" stroke="#5b8def"/>
   <text x="374" y="187" class="label">visualisation</text>
   <text x="374" y="206">
-    <tspan class="status-m">M</tspan>
+    <tspan class="status-m">[ M]</tspan>
     <tspan class="file" dx="3">plot.py</tspan>
   </text>
   <text x="374" y="222">
-    <tspan class="status-m">M</tspan>
+    <tspan class="status-m">[ M]</tspan>
     <tspan class="file" dx="3">charts.py</tspan>
   </text>
 
@@ -203,7 +203,7 @@
         fill="#e8f0ff" stroke="#5b8def"/>
   <text x="374" y="253" class="label">tests</text>
   <text x="420" y="253" class="file">
-    <tspan class="status-m">M</tspan>
+    <tspan class="status-m">[ M]</tspan>
     <tspan dx="3">test.py</tspan>
   </text>
 
@@ -246,11 +246,11 @@
         fill="#e8f0ff" stroke="#5b8def"/>
   <text x="704" y="99" class="label">visualisation</text>
   <text x="704" y="118">
-    <tspan class="status-m">M</tspan>
+    <tspan class="status-m">[ M]</tspan>
     <tspan class="file" dx="3">plot.py</tspan>
   </text>
   <text x="704" y="134">
-    <tspan class="status-m">M</tspan>
+    <tspan class="status-m">[ M]</tspan>
     <tspan class="file" dx="3">charts.py</tspan>
   </text>
 
@@ -259,7 +259,7 @@
         fill="#e8f0ff" stroke="#5b8def"/>
   <text x="704" y="165" class="label">tests</text>
   <text x="750" y="165" class="file">
-    <tspan class="status-m">M</tspan>
+    <tspan class="status-m">[ M]</tspan>
     <tspan dx="3">test.py</tspan>
   </text>
 

@@ -39,8 +39,8 @@
     main branch — git cl st
   </text>
 
-  <!-- docs changelist -->
-  <rect x="70" y="140" width="180" height="70"
+  <!-- docs -->
+  <rect x="70" y="140" width="180" height="90"
         rx="10"
         fill="#e8f0ff"
         stroke="#5b8def"/>
@@ -49,18 +49,42 @@
         font-family="system-ui, sans-serif"
         font-size="14"
         font-weight="600"
-        fill="#374151">
-    docs
-  </text>
+        fill="#374151">docs</text>
 
   <text x="90" y="185"
         font-family="monospace"
         font-size="13">
     <tspan fill="#dc2626">[ M]</tspan>
-    <tspan dx="6" fill="#111827">README.md</tspan>
+    <tspan dx="6">README.md</tspan>
   </text>
 
-  <!-- bugfix changelist (larger) -->
+  <text x="90" y="203"
+        font-family="monospace"
+        font-size="13">
+    <tspan fill="#16a34a">[A ]</tspan>
+    <tspan dx="6">intro.md</tspan>
+  </text>
+
+  <!-- experiment -->
+  <rect x="70" y="240" width="180" height="70"
+        rx="10"
+        fill="#e8f0ff"
+        stroke="#5b8def"/>
+
+  <text x="90" y="265"
+        font-family="system-ui, sans-serif"
+        font-size="14"
+        font-weight="600"
+        fill="#374151">experiment</text>
+
+  <text x="90" y="285"
+        font-family="monospace"
+        font-size="13">
+    <tspan fill="#dc2626">[ M]</tspan>
+    <tspan dx="6">scratch.c</tspan>
+  </text>
+
+  <!-- bugfix -->
   <rect x="270" y="140" width="180" height="100"
         rx="10"
         fill="#e8f0ff"
@@ -70,59 +94,34 @@
         font-family="system-ui, sans-serif"
         font-size="14"
         font-weight="600"
-        fill="#374151">
-    bugfix
-  </text>
+        fill="#374151">bugfix</text>
 
   <text x="290" y="185"
         font-family="monospace"
         font-size="13">
     <tspan fill="#dc2626">[ M]</tspan>
-    <tspan dx="6" fill="#111827">server.py</tspan>
+    <tspan dx="6">server.py</tspan>
   </text>
 
   <text x="290" y="203"
         font-family="monospace"
         font-size="13">
     <tspan fill="#dc2626">[ M]</tspan>
-    <tspan dx="6" fill="#111827">auth.py</tspan>
+    <tspan dx="6">auth.py</tspan>
   </text>
 
   <text x="290" y="221"
         font-family="monospace"
         font-size="13">
     <tspan fill="#16a34a">[A ]</tspan>
-    <tspan dx="6" fill="#111827">tests_auth.py</tspan>
+    <tspan dx="6">tests_auth.py</tspan>
   </text>
 
-  <!-- experiment changelist (normal colour) -->
-  <rect x="170" y="255" width="180" height="70"
-        rx="10"
-        fill="#e8f0ff"
-        stroke="#5b8def"/>
-
-  <text x="190" y="280"
-        font-family="system-ui, sans-serif"
-        font-size="14"
-        font-weight="600"
-        fill="#374151">
-    experiment
-  </text>
-
-  <text x="190" y="300"
-        font-family="monospace"
-        font-size="13">
-    <tspan fill="#dc2626">[ M]</tspan>
-    <tspan dx="6" fill="#111827">scratch.c</tspan>
-  </text>
-
-  <!-- Arrow + command -->
+  <!-- Arrow -->
   <line x1="520" y1="220" x2="650" y2="220"
         stroke="#7c3aed"
         stroke-width="2"/>
-
-  <polygon points="650,220 638,214 638,226"
-           fill="#7c3aed"/>
+  <polygon points="650,220 638,214 638,226" fill="#7c3aed"/>
 
   <text x="585" y="200"
         text-anchor="middle"
@@ -157,39 +156,36 @@
         font-family="system-ui, sans-serif"
         font-size="14"
         font-weight="600"
-        fill="#374151">
-    bugfix
-  </text>
+        fill="#374151">bugfix</text>
 
   <text x="720" y="215"
         font-family="monospace"
         font-size="13">
     <tspan fill="#dc2626">[ M]</tspan>
-    <tspan dx="6" fill="#111827">server.py</tspan>
+    <tspan dx="6">server.py</tspan>
   </text>
 
   <text x="720" y="233"
         font-family="monospace"
         font-size="13">
     <tspan fill="#dc2626">[ M]</tspan>
-    <tspan dx="6" fill="#111827">auth.py</tspan>
+    <tspan dx="6">auth.py</tspan>
   </text>
 
   <text x="720" y="251"
         font-family="monospace"
         font-size="13">
     <tspan fill="#16a34a">[A ]</tspan>
-    <tspan dx="6" fill="#111827">tests_auth.py</tspan>
+    <tspan dx="6">tests_auth.py</tspan>
   </text>
 
-  <!-- Annotation -->
-  <text x="920" y="285"
-        text-anchor="middle"
+  <!-- Annotation (aligned to bugfix) -->
+  <text x="700" y="295"
         font-family="system-ui, sans-serif"
         font-size="13"
         fill="#6b7280"
         font-style="italic">
-    Only this changelist is restored
+    Only this changelist is restored on the branch
   </text>
 
   <!-- Footer -->

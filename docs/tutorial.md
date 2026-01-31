@@ -366,7 +366,7 @@ What happens under the hood:
 
 See [Section 4.2](#42-branching-mid-feature-with-git-cl-branch) for a worked example.
 
-<p align="center">
+<p align="left">
   <img src="git-cl_br.svg"
        alt="Branching from a changelist using git cl branch"
        width="850"/>

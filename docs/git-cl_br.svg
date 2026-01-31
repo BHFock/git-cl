@@ -1,0 +1,181 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 1120 420"
+     width="1120"
+     height="420">
+
+  <!-- Background -->
+  <rect x="0" y="0" width="1120" height="420"
+        rx="12"
+        fill="#f8fafc"
+        stroke="#e2e8f0"/>
+
+  <!-- Title -->
+  <text x="40" y="36"
+        font-family="system-ui, sans-serif"
+        font-size="22"
+        font-weight="600"
+        fill="#1f2937">
+    Branching from a changelist
+  </text>
+
+  <text x="40" y="62"
+        font-family="system-ui, sans-serif"
+        font-size="14"
+        fill="#4b5563">
+    git cl branch moves one changelist onto a new branch, others stay stashed
+  </text>
+
+  <!-- =========================
+       LEFT: Original Branch
+       ========================= -->
+  <rect x="40" y="90" width="460" height="260"
+        rx="14"
+        fill="#ffffff"
+        stroke="#e5e7eb"/>
+
+  <text x="60" y="118"
+        font-family="system-ui, sans-serif"
+        font-size="16"
+        font-weight="600"
+        fill="#374151">
+    main branch — working directory
+  </text>
+
+  <!-- Changelist: docs -->
+  <rect x="70" y="140" width="180" height="70"
+        rx="10"
+        fill="#e8f0ff"
+        stroke="#5b8def"/>
+
+  <text x="90" y="165"
+        font-family="system-ui, sans-serif"
+        font-size="14"
+        font-weight="600"
+        fill="#374151">
+    docs
+  </text>
+
+  <text x="90" y="185"
+        font-family="monospace"
+        font-size="13"
+        fill="#111827">
+    README.md
+  </text>
+
+  <!-- Changelist: bugfix -->
+  <rect x="270" y="140" width="180" height="70"
+        rx="10"
+        fill="#e8f0ff"
+        stroke="#5b8def"/>
+
+  <text x="290" y="165"
+        font-family="system-ui, sans-serif"
+        font-size="14"
+        font-weight="600"
+        fill="#374151">
+    bugfix
+  </text>
+
+  <text x="290" y="185"
+        font-family="monospace"
+        font-size="13"
+        fill="#111827">
+    server.py
+  </text>
+
+  <!-- Changelist: experiment -->
+  <rect x="170" y="230" width="180" height="60"
+        rx="10"
+        fill="#f1f5f9"
+        stroke="#cbd5f5"/>
+
+  <text x="190" y="255"
+        font-family="system-ui, sans-serif"
+        font-size="14"
+        font-weight="600"
+        fill="#64748b">
+    experiment
+  </text>
+
+  <text x="190" y="275"
+        font-family="monospace"
+        font-size="13"
+        fill="#64748b">
+    scratch.c
+  </text>
+
+  <!-- =========================
+       ARROW + COMMAND
+       ========================= -->
+  <line x1="520" y1="220" x2="650" y2="220"
+        stroke="#7c3aed"
+        stroke-width="2"/>
+
+  <polygon points="650,220 638,214 638,226"
+           fill="#7c3aed"/>
+
+  <text x="585" y="200"
+        text-anchor="middle"
+        font-family="monospace"
+        font-size="14"
+        font-weight="600"
+        fill="#7c3aed">
+    git cl br bugfix
+  </text>
+
+  <!-- =========================
+       RIGHT: New Branch
+       ========================= -->
+  <rect x="670" y="120" width="410" height="200"
+        rx="14"
+        fill="#f5f3ff"
+        stroke="#8b5cf6"/>
+
+  <text x="690" y="150"
+        font-family="system-ui, sans-serif"
+        font-size="16"
+        font-weight="600"
+        fill="#374151">
+    feature/bugfix (new branch)
+  </text>
+
+  <!-- bugfix changelist carried over -->
+  <rect x="700" y="170" width="180" height="70"
+        rx="10"
+        fill="#e8f0ff"
+        stroke="#5b8def"/>
+
+  <text x="720" y="195"
+        font-family="system-ui, sans-serif"
+        font-size="14"
+        font-weight="600"
+        fill="#374151">
+    bugfix
+  </text>
+
+  <text x="720" y="215"
+        font-family="monospace"
+        font-size="13"
+        fill="#111827">
+    server.py
+  </text>
+
+  <!-- Annotation -->
+  <text x="920" y="255"
+        text-anchor="middle"
+        font-family="system-ui, sans-serif"
+        font-size="13"
+        fill="#6b7280"
+        font-style="italic">
+    Only this changelist is restored
+  </text>
+
+  <!-- Bottom note -->
+  <text x="40" y="380"
+        font-family="system-ui, sans-serif"
+        font-size="14"
+        fill="#4b5563">
+    Other changelists are automatically stashed and can be restored later with git cl unstash.
+  </text>
+
+</svg>

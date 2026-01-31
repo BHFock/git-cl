@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg
   xmlns="http://www.w3.org/2000/svg"
-  viewBox="0 0 820 480"
-  width="820"
+  viewBox="0 0 840 480"
+  width="840"
   height="480"
 >
 
@@ -86,7 +86,7 @@
   <!-- =======================
        Outer Background
        ======================= -->
-  <rect x="0" y="0" width="820" height="480" rx="12"
+  <rect x="0" y="0" width="840" height="480" rx="12"
         fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
 
   <!-- =======================
@@ -101,25 +101,25 @@
   <text x="185" y="95" text-anchor="middle" class="sublabel">(files mixed together)</text>
   
   <text x="85" y="118">
-    <tspan class="status-m">M</tspan>
+    <tspan class="status-m">[ M]</tspan>
     <tspan class="file" dx="3">fix.py</tspan>
-    <tspan class="status-m" dx="12">M</tspan>
+    <tspan class="status-m" dx="8">[ M]</tspan>
     <tspan class="file" dx="3">helper.py</tspan>
   </text>
   <text x="85" y="136">
-    <tspan class="status-m">M</tspan>
+    <tspan class="status-m">[ M]</tspan>
     <tspan class="file" dx="3">api.py</tspan>
-    <tspan class="status-m" dx="12">M</tspan>
+    <tspan class="status-m" dx="8">[ M]</tspan>
     <tspan class="file" dx="3">utils.py</tspan>
   </text>
   <text x="85" y="154">
-    <tspan class="status-m">M</tspan>
+    <tspan class="status-m">[ M]</tspan>
     <tspan class="file" dx="3">docs.md</tspan>
-    <tspan class="status-m" dx="12">M</tspan>
+    <tspan class="status-m" dx="8">[ M]</tspan>
     <tspan class="file" dx="3">test.py</tspan>
   </text>
   <text x="85" y="172">
-    <tspan class="status-m">M</tspan>
+    <tspan class="status-m">[ M]</tspan>
     <tspan class="file" dx="3">config.yml</tspan>
   </text>
 
@@ -151,7 +151,7 @@
   <!-- =======================
        DIVIDER
        ======================= -->
-  <line x1="410" y1="40" x2="410" y2="460" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="6,4"/>
+  <line x1="420" y1="40" x2="420" y2="460" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="6,4"/>
 
   <!-- =======================
        RIGHT SIDE: With git-cl
@@ -159,80 +159,80 @@
   <text x="625" y="32" text-anchor="middle" class="title">With git-cl</text>
 
   <!-- Working Directory with changelists -->
-  <rect x="510" y="50" width="250" height="195" rx="10"
+  <rect x="510" y="50" width="270" height="195" rx="10"
         fill="#ffffff" stroke="#e5e7eb" filter="url(#shadow)"/>
-  <text x="635" y="75" text-anchor="middle" class="label">Working Directory</text>
-  <text x="635" y="95" text-anchor="middle" class="sublabel positive">(organised by intent)</text>
+  <text x="645" y="75" text-anchor="middle" class="label">Working Directory</text>
+  <text x="645" y="95" text-anchor="middle" class="sublabel positive">(organised by intent)</text>
   
   <!-- Changelist: bugfix -->
-  <rect x="525" y="108" width="105" height="55" rx="6"
+  <rect x="525" y="108" width="115" height="55" rx="6"
         fill="#e8f0ff" stroke="#5b8def"/>
   <text x="537" y="125" class="cl-name">bugfix</text>
   <text x="537" y="142">
-    <tspan class="status-m">M</tspan>
+    <tspan class="status-m">[ M]</tspan>
     <tspan class="file" dx="3">fix.py</tspan>
   </text>
   <text x="537" y="156">
-    <tspan class="status-m">M</tspan>
+    <tspan class="status-m">[ M]</tspan>
     <tspan class="file" dx="3">helper.py</tspan>
   </text>
   
   <!-- Changelist: refactor -->
-  <rect x="640" y="108" width="105" height="55" rx="6"
+  <rect x="650" y="108" width="115" height="55" rx="6"
         fill="#e8f0ff" stroke="#5b8def"/>
-  <text x="652" y="125" class="cl-name">refactor</text>
-  <text x="652" y="142">
-    <tspan class="status-m">M</tspan>
+  <text x="662" y="125" class="cl-name">refactor</text>
+  <text x="662" y="142">
+    <tspan class="status-m">[ M]</tspan>
     <tspan class="file" dx="3">api.py</tspan>
   </text>
-  <text x="652" y="156">
-    <tspan class="status-m">M</tspan>
+  <text x="662" y="156">
+    <tspan class="status-m">[ M]</tspan>
     <tspan class="file" dx="3">utils.py</tspan>
   </text>
   
   <!-- Changelist: docs -->
-  <rect x="525" y="172" width="105" height="55" rx="6"
+  <rect x="525" y="172" width="115" height="55" rx="6"
         fill="#e8f0ff" stroke="#5b8def"/>
   <text x="537" y="189" class="cl-name">docs</text>
   <text x="537" y="206">
-    <tspan class="status-m">M</tspan>
+    <tspan class="status-m">[ M]</tspan>
     <tspan class="file" dx="3">docs.md</tspan>
   </text>
   <text x="537" y="220">
-    <tspan class="status-m">M</tspan>
+    <tspan class="status-m">[ M]</tspan>
     <tspan class="file" dx="3">config.yml</tspan>
   </text>
 
   <!-- Changelist: tests -->
-  <rect x="640" y="172" width="105" height="55" rx="6"
+  <rect x="650" y="172" width="115" height="55" rx="6"
         fill="#e8f0ff" stroke="#5b8def"/>
-  <text x="652" y="189" class="cl-name">tests</text>
-  <text x="652" y="206">
-    <tspan class="status-m">M</tspan>
+  <text x="662" y="189" class="cl-name">tests</text>
+  <text x="662" y="206">
+    <tspan class="status-m">[ M]</tspan>
     <tspan class="file" dx="3">test.py</tspan>
   </text>
 
   <!-- Arrow down -->
-  <line x1="635" y1="250" x2="635" y2="275" stroke="#7c3aed" stroke-width="1.5"/>
-  <polygon points="635,280 630,272 640,272" fill="#7c3aed"/>
+  <line x1="645" y1="250" x2="645" y2="275" stroke="#7c3aed" stroke-width="1.5"/>
+  <polygon points="645,280 640,272 650,272" fill="#7c3aed"/>
   
-  <text x="635" y="303" text-anchor="middle" class="cmd-highlight">git cl commit bugfix</text>
+  <text x="645" y="303" text-anchor="middle" class="cmd-highlight">git cl commit bugfix</text>
 
   <!-- Arrow down -->
-  <line x1="635" y1="313" x2="635" y2="338" stroke="#7c3aed" stroke-width="1.5"/>
-  <polygon points="635,343 630,335 640,335" fill="#7c3aed"/>
+  <line x1="645" y1="313" x2="645" y2="338" stroke="#7c3aed" stroke-width="1.5"/>
+  <polygon points="645,343 640,335 650,335" fill="#7c3aed"/>
 
   <!-- Result: focused commit + remaining changelists -->
-  <rect x="510" y="353" width="250" height="105" rx="10"
+  <rect x="510" y="353" width="270" height="105" rx="10"
         fill="#ecfdf5" stroke="#6ee7b7" filter="url(#shadow)"/>
-  <text x="635" y="378" text-anchor="middle" class="label">Result</text>
+  <text x="645" y="378" text-anchor="middle" class="label">Result</text>
   
   <!-- Committed -->
-  <rect x="525" y="390" width="220" height="28" rx="6"
+  <rect x="525" y="390" width="240" height="28" rx="6"
         fill="#d1fae5" stroke="#34d399"/>
-  <text x="635" y="409" text-anchor="middle" class="sublabel positive">✓ Clean commit: fix.py, helper.py</text>
+  <text x="645" y="409" text-anchor="middle" class="sublabel positive">✓ Clean commit: fix.py, helper.py</text>
   
   <!-- Remaining -->
-  <text x="635" y="440" text-anchor="middle" class="sublabel">Other changelists remain untouched</text>
+  <text x="645" y="440" text-anchor="middle" class="sublabel">Other changelists remain untouched</text>
 
 </svg>

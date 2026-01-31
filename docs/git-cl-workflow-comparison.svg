@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg
   xmlns="http://www.w3.org/2000/svg"
-  viewBox="0 0 840 480"
-  width="840"
+  viewBox="0 0 860 480"
+  width="860"
   height="480"
 >
 
@@ -86,7 +86,7 @@
   <!-- =======================
        Outer Background
        ======================= -->
-  <rect x="0" y="0" width="840" height="480" rx="12"
+  <rect x="0" y="0" width="860" height="480" rx="12"
         fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
 
   <!-- =======================
@@ -151,7 +151,7 @@
   <!-- =======================
        DIVIDER
        ======================= -->
-  <line x1="420" y1="40" x2="420" y2="460" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="6,4"/>
+  <line x1="430" y1="40" x2="430" y2="460" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="6,4"/>
 
   <!-- =======================
        RIGHT SIDE: With git-cl
@@ -159,13 +159,13 @@
   <text x="625" y="32" text-anchor="middle" class="title">With git-cl</text>
 
   <!-- Working Directory with changelists -->
-  <rect x="510" y="50" width="270" height="195" rx="10"
+  <rect x="510" y="50" width="290" height="195" rx="10"
         fill="#ffffff" stroke="#e5e7eb" filter="url(#shadow)"/>
-  <text x="645" y="75" text-anchor="middle" class="label">Working Directory</text>
-  <text x="645" y="95" text-anchor="middle" class="sublabel positive">(organised by intent)</text>
+  <text x="655" y="75" text-anchor="middle" class="label">Working Directory</text>
+  <text x="655" y="95" text-anchor="middle" class="sublabel positive">(organised by intent)</text>
   
   <!-- Changelist: bugfix -->
-  <rect x="525" y="108" width="115" height="55" rx="6"
+  <rect x="525" y="108" width="125" height="55" rx="6"
         fill="#e8f0ff" stroke="#5b8def"/>
   <text x="537" y="125" class="cl-name">bugfix</text>
   <text x="537" y="142">
@@ -178,20 +178,20 @@
   </text>
   
   <!-- Changelist: refactor -->
-  <rect x="650" y="108" width="115" height="55" rx="6"
+  <rect x="660" y="108" width="125" height="55" rx="6"
         fill="#e8f0ff" stroke="#5b8def"/>
-  <text x="662" y="125" class="cl-name">refactor</text>
-  <text x="662" y="142">
+  <text x="672" y="125" class="cl-name">refactor</text>
+  <text x="672" y="142">
     <tspan class="status-m">[ M]</tspan>
     <tspan class="file" dx="3">api.py</tspan>
   </text>
-  <text x="662" y="156">
+  <text x="672" y="156">
     <tspan class="status-m">[ M]</tspan>
     <tspan class="file" dx="3">utils.py</tspan>
   </text>
   
   <!-- Changelist: docs -->
-  <rect x="525" y="172" width="115" height="55" rx="6"
+  <rect x="525" y="172" width="125" height="55" rx="6"
         fill="#e8f0ff" stroke="#5b8def"/>
   <text x="537" y="189" class="cl-name">docs</text>
   <text x="537" y="206">
@@ -204,35 +204,35 @@
   </text>
 
   <!-- Changelist: tests -->
-  <rect x="650" y="172" width="115" height="55" rx="6"
+  <rect x="660" y="172" width="125" height="55" rx="6"
         fill="#e8f0ff" stroke="#5b8def"/>
-  <text x="662" y="189" class="cl-name">tests</text>
-  <text x="662" y="206">
+  <text x="672" y="189" class="cl-name">tests</text>
+  <text x="672" y="206">
     <tspan class="status-m">[ M]</tspan>
     <tspan class="file" dx="3">test.py</tspan>
   </text>
 
   <!-- Arrow down -->
-  <line x1="645" y1="250" x2="645" y2="275" stroke="#7c3aed" stroke-width="1.5"/>
-  <polygon points="645,280 640,272 650,272" fill="#7c3aed"/>
+  <line x1="655" y1="250" x2="655" y2="275" stroke="#7c3aed" stroke-width="1.5"/>
+  <polygon points="655,280 650,272 660,272" fill="#7c3aed"/>
   
-  <text x="645" y="303" text-anchor="middle" class="cmd-highlight">git cl commit bugfix</text>
+  <text x="655" y="303" text-anchor="middle" class="cmd-highlight">git cl commit bugfix</text>
 
   <!-- Arrow down -->
-  <line x1="645" y1="313" x2="645" y2="338" stroke="#7c3aed" stroke-width="1.5"/>
-  <polygon points="645,343 640,335 650,335" fill="#7c3aed"/>
+  <line x1="655" y1="313" x2="655" y2="338" stroke="#7c3aed" stroke-width="1.5"/>
+  <polygon points="655,343 650,335 660,335" fill="#7c3aed"/>
 
   <!-- Result: focused commit + remaining changelists -->
-  <rect x="510" y="353" width="270" height="105" rx="10"
+  <rect x="510" y="353" width="290" height="105" rx="10"
         fill="#ecfdf5" stroke="#6ee7b7" filter="url(#shadow)"/>
-  <text x="645" y="378" text-anchor="middle" class="label">Result</text>
+  <text x="655" y="378" text-anchor="middle" class="label">Result</text>
   
   <!-- Committed -->
-  <rect x="525" y="390" width="240" height="28" rx="6"
+  <rect x="525" y="390" width="260" height="28" rx="6"
         fill="#d1fae5" stroke="#34d399"/>
-  <text x="645" y="409" text-anchor="middle" class="sublabel positive">✓ Clean commit: fix.py, helper.py</text>
+  <text x="655" y="409" text-anchor="middle" class="sublabel positive">✓ Clean commit: fix.py, helper.py</text>
   
   <!-- Remaining -->
-  <text x="645" y="440" text-anchor="middle" class="sublabel">Other changelists remain untouched</text>
+  <text x="655" y="440" text-anchor="middle" class="sublabel">Other changelists remain untouched</text>
 
 </svg>

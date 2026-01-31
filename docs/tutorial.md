@@ -153,17 +153,11 @@ git cl st --all
 
 #### Example
 
-```
-$ git cl st docs --include-no-cl --all
+Example output of `git cl st`, showing files grouped by changelist with standard Git status codes.
 
-docs:
-  [ M] docs/index.md
-  [A ] docs/new_section.md
-
-No Changelist:
-  [??] scratch.txt
-  [UU] merge_conflict_file.py
-```
+<img src="git-cl.png"
+     alt="git cl st output showing changelists feature1, feature2, and No Changelist with colour-coded status codes"
+     width="200"/>
 
 ### 2.3 Diff a changelist
 

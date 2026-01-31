@@ -144,11 +144,11 @@
   <text x="100" y="209" class="label">docs</text>
 
   <text x="100" y="237">
-    <tspan class="status-m">M</tspan>
+    <tspan class="status-m">[ M]</tspan>
     <tspan class="file" dx="6">README.md</tspan>
   </text>
   <text x="100" y="263">
-    <tspan class="status-a">A</tspan>
+    <tspan class="status-a">[A ]</tspan>
     <tspan class="file" dx="6">intro.md</tspan>
   </text>
 
@@ -161,11 +161,11 @@
   <text x="380" y="209" class="label">bugfix</text>
 
   <text x="380" y="237">
-    <tspan class="status-m">M</tspan>
+    <tspan class="status-m">[ M]</tspan>
     <tspan class="file" dx="6">a.py</tspan>
   </text>
   <text x="380" y="263">
-    <tspan class="status-m">M</tspan>
+    <tspan class="status-m">[ M]</tspan>
     <tspan class="file" dx="6">b.py</tspan>
   </text>
 
@@ -178,7 +178,7 @@
   <text x="230" y="349" class="label muted">experiment</text>
 
   <text x="230" y="377" class="muted">
-    <tspan class="status-m">M</tspan>
+    <tspan class="status-m">[ M]</tspan>
     <tspan class="file" dx="6">scratch.c</tspan>
   </text>
 
@@ -210,11 +210,11 @@
 
   <text x="830" y="236" class="label">bugfix</text>
   <text x="830" y="264">
-    <tspan class="status-m">M</tspan>
+    <tspan class="status-m">[ M]</tspan>
     <tspan class="file" dx="6">a.py</tspan>
   </text>
   <text x="830" y="290">
-    <tspan class="status-m">M</tspan>
+    <tspan class="status-m">[ M]</tspan>
     <tspan class="file" dx="6">b.py</tspan>
   </text>
 

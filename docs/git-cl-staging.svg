@@ -41,7 +41,6 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       font-size: 13px;
       fill: #d97706;
-      font-weight: 600;
     }
 
     .cmd {

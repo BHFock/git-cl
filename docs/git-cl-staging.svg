@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg
   xmlns="http://www.w3.org/2000/svg"
-  viewBox="0 0 980 480"
+  viewBox="0 0 980 510"
   width="980"
-  height="480"
+  height="510"
 >
 
   <!-- =======================
@@ -41,6 +41,12 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       font-size: 13px;
       fill: #d97706;
+    }
+
+    .status-staged {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 13px;
+      fill: #059669;
     }
 
     .cmd {
@@ -95,7 +101,7 @@
   <!-- =======================
        Outer Background
        ======================= -->
-  <rect x="0" y="0" width="980" height="480" rx="12"
+  <rect x="0" y="0" width="980" height="510" rx="12"
         fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
 
   <!-- =====================================================================
@@ -142,9 +148,9 @@
   <rect x="32" y="234" width="170" height="40" rx="8"
         fill="#e8f0ff" stroke="#5b8def"/>
   <text x="44" y="253" class="label">tests</text>
-  <text x="90" y="253" class="file">
+  <text x="44" y="269">
     <tspan class="status-m">[ M]</tspan>
-    <tspan dx="3">test.py</tspan>
+    <tspan class="file" dx="3">test.py</tspan>
   </text>
 
   <!-- Empty Staging Area -->
@@ -201,26 +207,37 @@
   <rect x="362" y="234" width="170" height="40" rx="8"
         fill="#e8f0ff" stroke="#5b8def"/>
   <text x="374" y="253" class="label">tests</text>
-  <text x="420" y="253" class="file">
+  <text x="374" y="269">
     <tspan class="status-m">[ M]</tspan>
-    <tspan dx="3">test.py</tspan>
+    <tspan class="file" dx="3">test.py</tspan>
   </text>
 
-  <!-- Staging Area with preprocessing -->
-  <rect x="350" y="305" width="210" height="80" rx="10"
+  <!-- Staging Area with preprocessing - expanded to show files -->
+  <rect x="350" y="305" width="210" height="115" rx="10"
         fill="#ecfdf5" stroke="#6ee7b7" filter="url(#shadow)"/>
   <text x="365" y="328" class="heading">Staging Area</text>
 
-  <rect x="362" y="340" width="170" height="38" rx="6"
+  <rect x="362" y="340" width="186" height="72" rx="6"
         fill="#d1fae5" stroke="#34d399"/>
-  <text x="374" y="358" class="label">preprocessing ✓</text>
-  <text x="374" y="374" class="file">3 files staged</text>
+  <text x="374" y="358" class="label">preprocessing</text>
+  <text x="374" y="377">
+    <tspan class="status-staged">[M ]</tspan>
+    <tspan class="file" dx="3">clean_data.py</tspan>
+  </text>
+  <text x="374" y="393">
+    <tspan class="status-staged">[M ]</tspan>
+    <tspan class="file" dx="3">filters.py</tspan>
+  </text>
+  <text x="374" y="409">
+    <tspan class="status-staged">[M ]</tspan>
+    <tspan class="file" dx="3">math.py</tspan>
+  </text>
 
-  <!-- Empty Committed -->
-  <rect x="350" y="398" width="210" height="45" rx="10"
+  <!-- Empty Committed - adjusted position -->
+  <rect x="350" y="432" width="210" height="45" rx="10"
         fill="#f9fafb" stroke="#e5e7eb" stroke-dasharray="4,2"/>
-  <text x="365" y="425" class="heading">Committed</text>
-  <text x="455" y="425" class="empty-label">(no new commits)</text>
+  <text x="365" y="459" class="heading">Committed</text>
+  <text x="455" y="459" class="empty-label">(no new commits)</text>
 
   <!-- =======================
        Arrow 2: git commit
@@ -257,9 +274,9 @@
   <rect x="692" y="146" width="170" height="40" rx="8"
         fill="#e8f0ff" stroke="#5b8def"/>
   <text x="704" y="165" class="label">tests</text>
-  <text x="750" y="165" class="file">
+  <text x="704" y="181">
     <tspan class="status-m">[ M]</tspan>
-    <tspan dx="3">test.py</tspan>
+    <tspan class="file" dx="3">test.py</tspan>
   </text>
 
   <!-- Empty Staging Area -->
@@ -278,7 +295,7 @@
   <!-- =======================
        Bottom annotation
        ======================= -->
-  <text x="35" y="462" class="muted-text">
+  <text x="35" y="495" class="muted-text">
     Changelists organise your working directory. Only the staged changelist is committed — others remain ready for the next commit.
   </text>
 

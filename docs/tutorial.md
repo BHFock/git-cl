@@ -350,6 +350,10 @@ git cl stash --all
 
 Tip: Your files aren’t deleted — they’re just “put in a box” until you bring them back with unstash.
 
+<p align="left">
+  <img src="git-cl-stash.svg" alt="Stashing and unstashing changelists: stash all, then selectively restore" width="750"/>
+</p>
+
 ### 3.2 Create a branch from a changelist
 
 You can turn a changelist into its own branch in one step — great for separating work mid-feature or starting a dedicated branch for a new idea.

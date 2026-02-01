@@ -68,7 +68,7 @@ from pathlib import Path
 from typing import Optional, Iterator
 
 # Try to import colorama for colored output of 'git cl st'
-# use dummy objects if coloram is not availble to avoid NameError
+# use dummy objects if colorama is not available to avoid NameError
 try:
     from colorama import Fore, Style
     COLORAMA_AVAILABLE = True

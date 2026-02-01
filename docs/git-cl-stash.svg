@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 920 420"
+  width="920"
+  height="420"
+>
+
+  <!-- Styles -->
+  <style>
+    .title {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 22px;
+      font-weight: 600;
+      fill: #1f2937;
+    }
+
+    .subtitle {
+      font-family: system-ui, sans-serif;
+      font-size: 14px;
+      fill: #4b5563;
+    }
+
+    .heading {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      fill: #374151;
+    }
+
+    .label {
+      font-family: system-ui, sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      fill: #374151;
+    }
+
+    .file {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      fill: #111827;
+    }
+
+    .status-m {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      fill: #d97706;
+    }
+
+    .cmd {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 13px;
+      fill: #7c3aed;
+      font-weight: 600;
+    }
+
+    .stash-label {
+      font-family: system-ui, sans-serif;
+      font-size: 12px;
+      fill: #6b7280;
+      font-style: italic;
+    }
+
+    .annotation {
+      font-family: system-ui, sans-serif;
+      font-size: 12px;
+      fill: #6b7280;
+      font-style: italic;
+    }
+
+    .muted {
+      opacity: 0.35;
+    }
+  </style>
+
+  <!-- Drop Shadow -->
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3"
+                    flood-color="#000" flood-opacity="0.1"/>
+    </filter>
+  </defs>
+
+  <!-- Outer Background -->
+  <rect x="0" y="0" width="920" height="420" rx="12"
+        fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+
+  <!-- Title -->
+  <text x="40" y="32" class="title">Stashing changelists</text>
+  <text x="40" y="54" class="subtitle">Stash individual changelists by name, restore them selectively later</text>
+
+  <!-- STEP 1: Two active changelists -->
+  
+  <!-- Working Directory box -->
+  <rect x="30" y="75" width="180" height="195" rx="12"
+        fill="#ffffff" stroke="#e5e7eb" filter="url(#shadow)"/>
+  <text x="45" y="98" class="heading">Working Directory</text>
+
+  <!-- Changelist: solver -->
+  <rect x="42" y="112" width="156" height="68" rx="8"
+        fill="#e8f0ff" stroke="#5b8def"/>
+  <text x="54" y="130" class="label">solver</text>
+  <text x="54" y="148">
+    <tspan class="status-m">[ M]</tspan>
+    <tspan class="file" dx="3">advection.f90</tspan>
+  </text>
+  <text x="54" y="164">
+    <tspan class="status-m">[ M]</tspan>
+    <tspan class="file" dx="3">diffusion.f90</tspan>
+  </text>
+
+  <!-- Changelist: io-fix -->
+  <rect x="42" y="188" width="156" height="68" rx="8"
+        fill="#e8f0ff" stroke="#5b8def"/>
+  <text x="54" y="206" class="label">io-fix</text>
+  <text x="54" y="224">
+    <tspan class="status-m">[ M]</tspan>
+    <tspan class="file" dx="3">netcdf_out.f90</tspan>
+  </text>
+  <text x="54" y="240">
+    <tspan class="status-m">[ M]</tspan>
+    <tspan class="file" dx="3">restart.f90</tspan>
+  </text>
+
+  <!-- Stash area (empty) -->
+  <rect x="30" y="285" width="180" height="50" rx="10"
+        fill="#f9fafb" stroke="#e5e7eb" stroke-dasharray="4,2"/>
+  <text x="45" y="315" class="heading">Stashed</text>
+  <text x="100" y="315" class="stash-label">(none)</text>
+
+  <!-- Arrow 1: git cl stash all -->
+  <line x1="225" y1="180" x2="290" y2="180" stroke="#7c3aed" stroke-width="2"/>
+  <polygon points="295,180 285,174 285,186" fill="#7c3aed"/>
+  
+  <text x="260" y="165" text-anchor="middle" class="cmd">git cl stash</text>
+  <text x="260" y="200" text-anchor="middle" class="cmd">--all</text>
+
+  <!-- STEP 2: Both changelists stashed -->
+  
+  <!-- Working Directory box (empty) -->
+  <rect x="310" y="75" width="180" height="195" rx="12"
+        fill="#ffffff" stroke="#e5e7eb" filter="url(#shadow)"/>
+  <text x="325" y="98" class="heading">Working Directory</text>
+
+  <!-- Empty placeholder -->
+  <text x="400" y="175" text-anchor="middle" class="stash-label">(clean)</text>
+
+  <!-- Stash area with both changelists -->
+  <rect x="310" y="285" width="180" height="110" rx="10"
+        fill="#fef3c7" stroke="#f59e0b" filter="url(#shadow)"/>
+  <text x="325" y="308" class="heading">Stashed</text>
+
+  <!-- Stashed: solver -->
+  <rect x="322" y="320" width="156" height="28" rx="6"
+        fill="#fde68a" stroke="#f59e0b"/>
+  <text x="334" y="339" class="label">solver</text>
+  <text x="402" y="339" class="stash-label">2 files</text>
+
+  <!-- Stashed: io-fix -->
+  <rect x="322" y="356" width="156" height="28" rx="6"
+        fill="#fde68a" stroke="#f59e0b"/>
+  <text x="334" y="375" class="label">io-fix</text>
+  <text x="402" y="375" class="stash-label">2 files</text>
+
+  <!-- Arrow 2: git cl unstash solver -->
+  <line x1="505" y1="180" x2="590" y2="180" stroke="#7c3aed" stroke-width="2"/>
+  <polygon points="595,180 585,174 585,186" fill="#7c3aed"/>
+  
+  <text x="550" y="165" text-anchor="middle" class="cmd">git cl unstash</text>
+  <text x="550" y="200" text-anchor="middle" class="cmd">solver</text>
+
+  <!-- STEP 3: Solver restored, io-fix still stashed -->
+  
+  <!-- Working Directory box -->
+  <rect x="610" y="75" width="180" height="195" rx="12"
+        fill="#ffffff" stroke="#e5e7eb" filter="url(#shadow)"/>
+  <text x="625" y="98" class="heading">Working Directory</text>
+
+  <!-- Changelist: solver (restored) -->
+  <rect x="622" y="112" width="156" height="68" rx="8"
+        fill="#e8f0ff" stroke="#5b8def"/>
+  <text x="634" y="130" class="label">solver</text>
+  <text x="634" y="148">
+    <tspan class="status-m">[ M]</tspan>
+    <tspan class="file" dx="3">advection.f90</tspan>
+  </text>
+  <text x="634" y="164">
+    <tspan class="status-m">[ M]</tspan>
+    <tspan class="file" dx="3">diffusion.f90</tspan>
+  </text>
+
+  <!-- Empty slot where io-fix was -->
+  <rect x="622" y="188" width="156" height="68" rx="8"
+        fill="#f9fafb" stroke="#e5e7eb" stroke-dasharray="4,2" class="muted"/>
+  <text x="700" y="226" text-anchor="middle" class="stash-label">io-fix still stashed</text>
+
+  <!-- Stash area with io-fix only -->
+  <rect x="610" y="285" width="180" height="75" rx="10"
+        fill="#fef3c7" stroke="#f59e0b" filter="url(#shadow)"/>
+  <text x="625" y="308" class="heading">Stashed</text>
+
+  <!-- Stashed: io-fix -->
+  <rect x="622" y="320" width="156" height="28" rx="6"
+        fill="#fde68a" stroke="#f59e0b"/>
+  <text x="634" y="339" class="label">io-fix</text>
+  <text x="702" y="339" class="stash-label">2 files</text>
+
+  <!-- Bottom annotation -->
+  <text x="40" y="412" class="annotation">
+    Unlike git stash, changelists are named and restored selectively.
+  </text>
+
+</svg>

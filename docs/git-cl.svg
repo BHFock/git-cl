@@ -40,14 +40,12 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       font-size: 17px;
       fill: #d97706;
-      font-weight: 600;
     }
 
     .status-a {
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       font-size: 17px;
       fill: #059669;
-      font-weight: 600;
     }
 
     .cmd {

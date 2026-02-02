@@ -157,7 +157,7 @@
   <rect x="20" y="305" width="210" height="45" rx="10"
         fill="#f9fafb" stroke="#e5e7eb" stroke-dasharray="4,2"/>
   <text x="35" y="332" class="heading">Staging Area</text>
-  <text x="140" y="332" class="empty-label">(empty)</text>
+  <text x="155" y="332" class="empty-label">(empty)</text>
 
   <!-- Empty Committed -->
   <rect x="20" y="362" width="210" height="45" rx="10"
@@ -283,7 +283,7 @@
   <rect x="680" y="305" width="210" height="45" rx="10"
         fill="#f9fafb" stroke="#e5e7eb" stroke-dasharray="4,2"/>
   <text x="695" y="332" class="heading">Staging Area</text>
-  <text x="800" y="332" class="empty-label">(empty)</text>
+  <text x="815" y="332" class="empty-label">(empty)</text>
 
   <!-- Committed with preprocessing -->
   <rect x="680" y="362" width="210" height="60" rx="10"

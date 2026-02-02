@@ -162,8 +162,9 @@
   <!-- Empty Committed -->
   <rect x="20" y="362" width="210" height="45" rx="10"
         fill="#f9fafb" stroke="#e5e7eb" stroke-dasharray="4,2"/>
-  <text x="35" y="389" class="heading">Committed</text>
-  <text x="125" y="389" class="empty-label">(no new commits)</text>
+  <text x="35" y="382" class="heading">Committed</text>
+  <text x="140" y="382" class="empty-label">(no new</text>
+  <text x="140" y="396" class="empty-label">commits)</text>
 
   <!-- =======================
        Arrow 1: git cl stage
@@ -236,8 +237,9 @@
   <!-- Empty Committed - adjusted position -->
   <rect x="350" y="432" width="210" height="45" rx="10"
         fill="#f9fafb" stroke="#e5e7eb" stroke-dasharray="4,2"/>
-  <text x="365" y="459" class="heading">Committed</text>
-  <text x="455" y="459" class="empty-label">(no new commits)</text>
+  <text x="365" y="452" class="heading">Committed</text>
+  <text x="470" y="452" class="empty-label">(no new</text>
+  <text x="470" y="466" class="empty-label">commits)</text>
 
   <!-- =======================
        Arrow 2: git commit

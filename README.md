@@ -5,7 +5,10 @@ git-cl is a minimal Git subcommand that brings changelist support to Git. Organi
 
 > A Git subcommand to group and organise changed files before staging. SVN-style changelists for Git.
 
-[![Git Changelist Tutorial](https://img.shields.io/badge/Tutorial-View-blue)](https://github.com/BHFock/git-cl/blob/main/docs/tutorial.md)
+[![GitHub stars](https://img.shields.io/github/stars/BHFock/git-cl?style=social)](https://github.com/BHFock/git-cl/stargazers)
+[![Tutorial](https://img.shields.io/badge/Tutorial-View-blue)](https://github.com/BHFock/git-cl/blob/main/docs/tutorial.md)
+[![License](https://img.shields.io/badge/License-BSD_3--Clause-blue)](https://github.com/BHFock/git-cl/blob/main/LICENSE)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 
 `git-cl` is a command-line tool that offers Git changelist support, inspired by Subversion. It allows users to assign working directory files to named changelists, helping organise work by intent, manage partial commits, and create branches directly from a changelist.
 

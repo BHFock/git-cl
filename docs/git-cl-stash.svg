@@ -126,7 +126,7 @@
   <rect x="30" y="285" width="180" height="50" rx="10"
         fill="#f9fafb" stroke="#e5e7eb" stroke-dasharray="4,2"/>
   <text x="45" y="315" class="heading">Stashed</text>
-  <text x="100" y="315" class="stash-label">(none)</text>
+  <text x="115" y="315" class="stash-label">(none)</text>
 
   <!-- Arrow 1: git cl stash all -->
   <line x1="225" y1="180" x2="290" y2="180" stroke="#7c3aed" stroke-width="2"/>

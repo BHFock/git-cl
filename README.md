@@ -7,8 +7,8 @@ git-cl is a minimal Git subcommand that brings changelist support to Git. Organi
 
 
 [![Tutorial](https://img.shields.io/badge/Tutorial-View-blue)](https://github.com/BHFock/git-cl/blob/main/docs/tutorial.md)
+[![GitHub stars](https://img.shields.io/github/stars/BHFock/git-cl?style=social)](https://github.com/BHFock/git-cl/stargazers)
 [![Paper](https://img.shields.io/badge/Paper-Read-blue)](https://github.com/BHFock/git-cl/blob/main/docs/paper.md)
-[![GitHub stars](https://img.shields.io/github/stars/BHFock/git-cl?style=social)](https://github.com/BHFock/git-cl/stargazers) [![License](https://img.shields.io/badge/License-BSD_3--Clause-blue)](https://github.com/BHFock/git-cl/blob/main/LICENSE)
 
 `git-cl` is a command-line tool that offers Git changelist support, inspired by Subversion. It allows users to assign working directory files to named changelists, helping organise work by intent, manage partial commits, and branch directly from a changelist.
 

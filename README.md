@@ -86,6 +86,9 @@ git cl br docs-fix
 
 📘 [Why git-cl?](docs/why-git-cl.md): History and motivation
 
+📘 [Paper](docs/paper.md): Motivation, design, and comparison with related tools
+
+
 ## Notes
 
 - Requires Python 3.9+, Git, and a Unix-like OS

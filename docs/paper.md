@@ -207,7 +207,7 @@ This workflow removes the need to predict scope upfront. Developers can organise
 
 [8] Git Documentation. *git-commit.* https://git-scm.com/docs/git-commit
 
-[9] JetBrains. *Changelists in IntelliJ IDEA.* https://www.jetbrains.com/help/idea/changelist-grouping.html
+[9] JetBrains. *Group changes into changelists — IntelliJ IDEA.* https://www.jetbrains.com/help/idea/managing-changelists.html
 
 [10] git-cl Tutorial. https://github.com/BHFock/git-cl/blob/main/docs/tutorial.md
 

@@ -2,6 +2,8 @@
 
 Björn Hendrik Fock
 
+*February 2026*
+
 ## Abstract
 
 git-cl is a command-line tool that brings changelist support to Git. It introduces a pre-staging layer — a persistent, metadata-driven abstraction between the working directory and Git's staging area — that allows developers to partition modified files into named groups before staging or committing. Changelists persist across sessions, support selective stashing, and can be promoted to dedicated branches. The tool stores its state in a local JSON file within the `.git` directory, requires no external dependencies beyond Python and Git, and integrates transparently with existing Git workflows. This paper presents the conceptual model of pre-staging in distributed version control, describes the design and implementation of git-cl, and discusses how file-level changelist organisation complements Git's existing mechanisms.

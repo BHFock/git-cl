@@ -87,7 +87,7 @@ git cl br docs-fix
 
 📘 [Why git-cl?](docs/why-git-cl.md): History and motivation
 
-📘 [Paper](docs/paper.md): Motivation, design, and comparison with related tools
+📘 [Paper](docs/paper.md): Design, workflow, and related work
 
 
 ## Notes

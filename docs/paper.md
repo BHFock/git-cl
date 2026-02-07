@@ -117,7 +117,7 @@ The most architecturally involved feature is promoting a changelist to a dedicat
 Figure 1 illustrates this workflow. If any step fails, git-cl attempts to restore all stashed changelists to their prior state, preventing partial corruption of the working directory.
 
 <p align="center">
-  <img src="docs/git-cl_br.svg" alt="git-cl branch workflow: stash all changelists, create branch, selectively restore the target changelist" width="850"/>
+  <img src="git-cl_br.svg" alt="git-cl branch workflow: stash all changelists, create branch, selectively restore the target changelist" width="850"/>
 </p>
 
 *Figure 1: The git-cl branch workflow — stash all changelists, create a new branch, and selectively restore the target changelist.*
@@ -150,7 +150,7 @@ git commit -m "Refactor data preprocessing pipeline"
 The remaining changelists stay intact for subsequent commits. Figure 2 illustrates this workflow.
 
 <p align="center">
-  <img src="docs/git-cl-staging.svg" alt="Pre-staging review workflow: organise files into changelists, stage one changelist, commit, continue with the rest" width="850"/>
+  <img src="git-cl-staging.svg" alt="Pre-staging review workflow: organise files into changelists, stage one changelist, commit, continue with the rest" width="850"/>
 </p>
 
 *Figure 2: The pre-staging review workflow — organise files into changelists, stage one changelist, commit, and continue with the remaining changelists.*

@@ -204,7 +204,7 @@ for automated testing.
 
 ## Requirements
 
-- Python 3.9+
+- Python 3.10+
 - Git
 - A Unix-like OS (Linux, macOS)
 - `git-cl` available in `$PATH`

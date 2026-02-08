@@ -92,7 +92,7 @@ git cl br docs-fix
 
 ## Notes
 
-- Requires Python 3.9+, Git, and a Unix-like OS
+- Requires Python 3.10+, Git, and a Unix-like OS
 - Local-only; designed for single-user workflows
 - Always inspect downloaded scripts before executing, see [source](https://github.com/BHFock/git-cl/blob/main/git-cl)
 - For security concerns, see [SECURITY](./SECURITY.md)

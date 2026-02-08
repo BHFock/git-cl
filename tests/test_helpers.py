@@ -44,10 +44,11 @@ class TestRepo:
         log:            Recorded operations for shell export.
     """
 
-    def __init__(self):
+    def __init__(self, quiet: bool = False):
         self.repo_dir: Path | None = None
         self.last_exit_code: int = 0
         self.log: list[dict] = []
+        self.quiet: bool = quiet  # suppress output (used during --export)
 
         # Assertion counters
         self.tests_run: int = 0
@@ -86,6 +87,18 @@ class TestRepo:
         self._git("add", ".gitkeep")
         self._git("commit", "--quiet", "-m", "Initial commit")
 
+        # Record setup for shell export
+        self._record("setup", shell_lines=[
+            "# Create a temporary Git repository",
+            "cd $(mktemp -d)",
+            "git init --quiet",
+            'git config user.email "test@git-cl.test"',
+            'git config user.name "git-cl test"',
+            'echo "initial" > .gitkeep',
+            "git add .gitkeep",
+            'git commit --quiet -m "Initial commit"',
+        ])
+
     def _teardown(self):
         """Remove the temporary repository."""
         if self.repo_dir and self.repo_dir.exists():
@@ -119,7 +132,8 @@ class TestRepo:
 
             repo.section("Add files to a changelist")
         """
-        print(f"\n--- {title} ---")
+        if not self.quiet:
+            print(f"\n--- {title} ---")
         self._record("section", title=title)
 
     # ---- File operations ----
@@ -284,11 +298,13 @@ class TestRepo:
         self.tests_run += 1
         if passed:
             self.tests_passed += 1
-            print(f"  \u2713 PASS: {msg}")
+            if not self.quiet:
+                print(f"  \u2713 PASS: {msg}")
         else:
             self.tests_failed += 1
-            detail_str = f"\n         Got: {detail}" if detail else ""
-            print(f"  \u2717 FAIL: {msg}{detail_str}")
+            if not self.quiet:
+                detail_str = f"\n         Got: {detail}" if detail else ""
+                print(f"  \u2717 FAIL: {msg}{detail_str}")
 
     def assert_in(self, needle: str, haystack, msg: str):
         """
@@ -358,8 +374,54 @@ class TestRepo:
 
     def _print_summary(self):
         """Print test results summary."""
+        if self.quiet:
+            return
         print(f"\n{'=' * 45}")
         print(f"Results: {self.tests_run} assertions")
         print(f"  Passed: {self.tests_passed}")
         print(f"  Failed: {self.tests_failed}")
         print(f"{'=' * 45}")
+
+    # ---- Shell export ----
+
+    def export_shell(self, title: str = "git-cl test") -> str:
+        """
+        Convert the recorded operations into a standalone shell script.
+
+        The exported script is for reading and manual line-by-line
+        execution. Assertions become comments that tell the reader
+        what to look for.
+
+            script = repo.export_shell("walkthrough: add and status")
+            print(script)
+        """
+        lines = [
+            "#!/usr/bin/env bash",
+            f"# {title}",
+            "#",
+            "# This script was exported from a git-cl test.",
+            "# Run it line by line to learn how git-cl works.",
+            "# Lines starting with '# Check:' tell you what to expect.",
+            "#",
+            "set -euo pipefail",
+            "",
+        ]
+
+        for entry in self.log:
+            kind = entry["kind"]
+
+            if kind == "section":
+                lines.append("")
+                lines.append(f"# === {entry['title']} ===")
+                lines.append("")
+
+            elif kind in ("setup", "run", "run_in", "write_file",
+                          "mkdir", "delete_file", "assert"):
+                for shell_line in entry.get("shell_lines", []):
+                    lines.append(shell_line)
+
+        lines.append("")
+        lines.append('echo "All steps completed."')
+        lines.append("")
+
+        return "\n".join(lines)

@@ -93,7 +93,7 @@ if __name__ == "__main__":
 Every test script supports `--export` to produce a shell walkthrough:
 
 ```
-python3 test_basic_add_status.py --export > walkthrough_add_status.sh
+./test_basic_add_status.py --export > walkthrough_add_status.sh
 ```
 
 The exported script contains:
@@ -158,19 +158,19 @@ The exported scripts are for reading and manual line-by-line execution, not for 
 Run all tests:
 
 ```
-python3 run_tests.py
+./run_tests.py
 ```
 
 Run a single test:
 
 ```
-python3 test_basic_add_status.py
+./test_basic_add_status.py
 ```
 
 Export a test as a shell walkthrough:
 
 ```
-python3 test_basic_add_status.py --export > walkthrough_add_status.sh
+./test_basic_add_status.py --export > walkthrough_add_status.sh
 ```
 
 

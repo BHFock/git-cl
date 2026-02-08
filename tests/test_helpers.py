@@ -21,10 +21,12 @@ Usage:
     # temporary directory is cleaned up here
 """
 
+import json
 import os
 import shlex
 import shutil
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
@@ -47,12 +49,22 @@ class TestRepo:
         self.last_exit_code: int = 0
         self.log: list[dict] = []
 
+        # Assertion counters
+        self.tests_run: int = 0
+        self.tests_passed: int = 0
+        self.tests_failed: int = 0
+
     def __enter__(self):
         self._setup()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        self._print_summary()
         self._teardown()
+        # Exit with non-zero code if any assertions failed,
+        # but only if no other exception is already propagating
+        if exc_type is None and self.tests_failed > 0:
+            sys.exit(1)
         return False  # do not suppress exceptions
 
     def _setup(self):
@@ -233,3 +245,121 @@ class TestRepo:
             )
 
         return output
+
+    # ---- git-cl helpers ----
+
+    def load_cl_json(self) -> dict:
+        """Load and return the contents of .git/cl.json."""
+        cl_path = self.repo_dir / ".git" / "cl.json"
+        if not cl_path.exists():
+            return {}
+        with open(cl_path) as f:
+            return json.load(f)
+
+    def load_stash_json(self) -> dict:
+        """Load and return the contents of .git/cl-stashes.json."""
+        stash_path = self.repo_dir / ".git" / "cl-stashes.json"
+        if not stash_path.exists():
+            return {}
+        with open(stash_path) as f:
+            return json.load(f)
+
+    def get_current_branch(self) -> str:
+        """Return the current Git branch name."""
+        return self.run("git branch --show-current")
+
+    def get_staged_files(self) -> list[str]:
+        """Return list of currently staged file paths."""
+        output = self.run("git diff --cached --name-only")
+        return [f for f in output.splitlines() if f.strip()]
+
+    def get_git_log_oneline(self, n: int = 1) -> str:
+        """Return the last n commits as one-line summaries."""
+        return self.run(f"git log --oneline -{n}")
+
+    # ---- Assertions ----
+
+    def _assertion_result(self, passed: bool, msg: str, detail: str = ""):
+        """Record and print an assertion result."""
+        self.tests_run += 1
+        if passed:
+            self.tests_passed += 1
+            print(f"  \u2713 PASS: {msg}")
+        else:
+            self.tests_failed += 1
+            detail_str = f"\n         Got: {detail}" if detail else ""
+            print(f"  \u2717 FAIL: {msg}{detail_str}")
+
+    def assert_in(self, needle: str, haystack, msg: str):
+        """
+        Assert that needle is found in haystack.
+
+        haystack can be a string (checks substring) or a list (checks membership).
+
+            repo.assert_in("feature1:", output, "shows feature1 header")
+            repo.assert_in("file.txt", cl["docs"], "file in changelist")
+        """
+        passed = needle in haystack
+        self._assertion_result(passed, msg,
+                               f"'{needle}' not found" if not passed else "")
+        self._record("assert", check="contains", needle=needle, msg=msg,
+                      shell_lines=[f"# Check: output contains '{needle}'"])
+
+    def assert_not_in(self, needle: str, haystack, msg: str):
+        """
+        Assert that needle is NOT found in haystack.
+
+            repo.assert_not_in("feature2:", output, "does not show feature2")
+        """
+        passed = needle not in haystack
+        self._assertion_result(passed, msg,
+                               f"'{needle}' unexpectedly found" if not passed else "")
+        self._record("assert", check="not_contains", needle=needle, msg=msg,
+                      shell_lines=[f"# Check: output does NOT contain '{needle}'"])
+
+    def assert_equal(self, expected, actual, msg: str):
+        """
+        Assert that two values are equal.
+
+            repo.assert_equal(0, repo.last_exit_code, "command succeeded")
+        """
+        passed = expected == actual
+        self._assertion_result(passed, msg,
+                               f"expected {expected!r}, got {actual!r}" if not passed else "")
+        self._record("assert", check="equal", expected=repr(expected), msg=msg,
+                      shell_lines=[f"# Check: {msg}"])
+
+    def assert_true(self, value: bool, msg: str):
+        """
+        Assert that a value is truthy.
+
+            repo.assert_true("docs" in cl, "changelist exists")
+        """
+        self._assertion_result(bool(value), msg,
+                               "value is falsy" if not value else "")
+        self._record("assert", check="true", msg=msg,
+                      shell_lines=[f"# Check: {msg}"])
+
+    def assert_exit_code(self, expected: int, msg: str):
+        """
+        Assert that the last run() call had the expected exit code.
+
+            repo.run("git cl add docs file.txt")
+            repo.assert_exit_code(0, "git cl add should succeed")
+        """
+        actual = self.last_exit_code
+        passed = actual == expected
+        self._assertion_result(passed, msg,
+                               f"exit code {actual} (expected {expected})" if not passed else "")
+        self._record("assert", check="exit_code", expected=expected, msg=msg,
+                      shell_lines=[f"# Check: exit code is {expected}"])
+
+    # ---- Summary ----
+
+    def _print_summary(self):
+        """Print test results summary."""
+        print(f"\n{'=' * 45}")
+        print(f"Results: {self.tests_run} assertions")
+        print(f"  Passed: {self.tests_passed}")
+        print(f"  Failed: {self.tests_failed}")
+        print(f"{'=' * 45}")

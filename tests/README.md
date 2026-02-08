@@ -28,6 +28,8 @@ Each test script creates a temporary Git repository, runs git-cl commands agains
 - **Exit codes** — does the command succeed or fail as expected?
 - **Internal metadata** — does `.git/cl.json` contain the right changelist entries?
 - **Git state** — are the correct files staged, committed, or reverted?
+- **Git status codes** — are files in the expected state (`[ M]`, `[A ]`, `[??]`, etc.)?
+- **Working directory context** — do commands behave correctly from subdirectories?
 
 ### What is NOT tested?
 
@@ -40,9 +42,9 @@ Each test script creates a temporary Git repository, runs git-cl commands agains
 
 ```
 tests/
-├── README.md              <= this file
-├── test_helpers.py        <= TestRepo class and shell export logic
-├── run_tests.py           <= test runner (discovers and runs all test scripts)
+├── README.md                  ← this file
+├── test_helpers.py            ← TestRepo class and shell export logic
+├── run_tests.py               ← test runner (discovers and runs all test scripts)
 ├── test_basic_add_status.py
 ├── test_stage_unstage.py
 ├── test_commit.py
@@ -52,6 +54,8 @@ tests/
 ├── test_stash_unstash.py
 ├── test_branch.py
 ├── test_validation.py
+├── test_git_states.py
+├── test_subdirectory.py
 └── test_edge_cases.py
 ```
 
@@ -65,11 +69,44 @@ Provides the `TestRepo` class — a context manager that:
 - Provides assertion methods that print pass/fail results and log themselves for export
 - Cleans up the temporary directory on exit
 
-### Test scripts
+#### run() — command execution
 
-Each test script follows the same structure:
+`run()` accepts commands as a string or as a list of arguments:
 
 ```python
+# Simple commands — string is fine, parsed with shlex.split()
+repo.run("git cl add docs file.txt")
+
+# Arguments containing spaces — use a list for precise control
+repo.run(["git", "cl", "commit", "docs", "-m", "Fix the bug"])
+```
+
+When a string is passed, it is split using `shlex.split()`, which handles quoted
+arguments correctly (e.g. `'git cl commit docs -m "Fix the bug"'` works as expected).
+
+When a list is passed, it is used directly as the argument vector.
+
+For shell export, list-form commands are reconstructed with proper quoting.
+
+#### run_in() — subdirectory execution
+
+`run_in(subdir, command)` runs a command from within a subdirectory of the
+repository, without changing the test process's working directory:
+
+```python
+# Test that adding a file from a subdirectory normalises the path
+repo.run_in("src", "git cl add my-list main.py")
+```
+
+This passes `cwd=repo_dir/subdir` to `subprocess.run`. In the shell export, it
+becomes a subshell: `(cd src && git cl add my-list main.py)`.
+
+### Test scripts
+
+Each test script is executable and follows the same structure:
+
+```python
+#!/usr/bin/env python3
 from test_helpers import TestRepo
 
 def run_tests(repo: TestRepo):
@@ -101,7 +138,11 @@ The exported script contains:
 - `# Check:` comments where assertions were, describing expected outcomes
 - Section headers matching the test structure
 
-The exported scripts are for reading and manual line-by-line execution, not for automated testing.
+In export mode, assertion output (pass/fail lines) is suppressed. Only the
+shell script is written to stdout.
+
+The exported scripts are for reading and manual line-by-line execution, not
+for automated testing.
 
 
 ## Test Plan
@@ -111,7 +152,7 @@ The exported scripts are for reading and manual line-by-line execution, not for 
 | Script                        | Commands under test                    | Key behaviours verified                                    |
 |-------------------------------|----------------------------------------|------------------------------------------------------------|
 | `test_basic_add_status.py`    | `add`, `status`, `st`                  | Creating changelists, assigning files, reassignment,       |
-|                               |                                        | status grouping, filtering, subdirectory paths, aliases    |
+|                               |                                        | status grouping, filtering, `--include-no-cl`, aliases     |
 | `test_stage_unstage.py`       | `stage`, `unstage`                     | Staging tracked files, skipping untracked files,           |
 |                               |                                        | `--delete` flag, round-trip stage/unstage, changelist      |
 |                               |                                        | preserved by default                                       |
@@ -132,6 +173,22 @@ The exported scripts are for reading and manual line-by-line execution, not for 
 |                               |                                        | metadata, `--all` flag, selective unstash after stash all  |
 | `test_branch.py`              | `branch`, `br`                         | Branch from changelist, custom branch name, `--from` base, |
 |                               |                                        | other changelists stashed, alias                           |
+
+### Git States and Working Directory
+
+| Script                        | Focus area                             | Key behaviours verified                                    |
+|-------------------------------|----------------------------------------|------------------------------------------------------------|
+| `test_git_states.py`          | Git status codes                       | Changelists with files in each common state:               |
+|                               |                                        | `[ M]` unstaged modification, `[M ]` staged modification, |
+|                               |                                        | `[MM]` mixed staged/unstaged, `[A ]` newly added,         |
+|                               |                                        | `[AM]` added then modified, `[ D]` unstaged deletion,     |
+|                               |                                        | `[D ]` staged deletion, `[??]` untracked.                 |
+|                               |                                        | Correct display in `git cl st`, correct behaviour with     |
+|                               |                                        | `--all` flag for uncommon codes.                           |
+| `test_subdirectory.py`        | Path resolution                        | Running git-cl commands from the repo root, a subdirectory,|
+|                               |                                        | and a nested subdirectory. Verifying that paths are stored |
+|                               |                                        | as repo-root-relative in `cl.json` and displayed correctly |
+|                               |                                        | relative to the current working directory.                 |
 
 ### Validation and Edge Cases
 
@@ -174,11 +231,29 @@ Export a test as a shell walkthrough:
 ```
 
 
-## Open Questions
+## Resolved Design Decisions
 
-> Items to resolve as development progresses.
+> Decisions made during development of the test framework.
 
-- **Commit messages with spaces:** `run()` currently splits commands on whitespace. Commands like `git cl commit my-list -m "Fix the bug"` need a way to handle quoted arguments. Options: accept a list of arguments, or use `shlex.split()`.
-- **Subdirectory execution:** testing `git cl add` from within a subdirectory requires changing the working directory. A `run_in(subdir, command)` helper could handle this cleanly.
-- **Export noise:** when using `--export`, test output (pass/fail lines) is printed to stderr alongside the shell script on stdout. Consider suppressing test output in export mode, or writing it to a separate stream.
-- **Test runner:** `run_tests.py` needs to discover test scripts, run each in a subprocess, and summarise results. Keep it simple — no need for pytest-level machinery.
+### Commit messages with spaces
+
+`run()` uses `shlex.split()` when given a string, which correctly handles quoted
+arguments. For full control, a list of arguments can be passed instead. Shell export
+reconstructs the command with proper quoting from the list form.
+
+### Subdirectory execution
+
+`run_in(subdir, command)` sets the `cwd` for the subprocess without affecting the
+test process. Exported as `(cd subdir && command)` in shell scripts.
+
+### Export noise
+
+In `--export` mode, all assertion output is suppressed. Only the shell script is
+written to stdout. This means `./test_basic_add_status.py --export > walkthrough.sh`
+produces a clean file with no test noise mixed in.
+
+### Test runner
+
+`run_tests.py` discovers `test_*.py` files in its directory, runs each as a subprocess,
+collects exit codes, and prints a summary. Each test script is self-contained and can
+be run independently.

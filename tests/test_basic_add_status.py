@@ -203,7 +203,17 @@ def run_tests(repo: TestRepo):
 # =================================================================
 
 if __name__ == "__main__":
+
+    if "--help" in sys.argv:
+        print("Usage: ./test_basic_add_status.py [--export]\n")
+        print("Runs the test normally, printing PASS/FAIL output.\n")
+        print("Options:")
+        print("  --export   Print a shell walkthrough instead of running assertions.")
+        print("  --help     Show this message.")
+        sys.exit(0)
+
     export_mode = "--export" in sys.argv
+        
     with TestRepo(quiet=export_mode) as repo:
         run_tests(repo)
         if export_mode:

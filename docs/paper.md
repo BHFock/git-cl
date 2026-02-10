@@ -187,6 +187,9 @@ This workflow removes the need to predict scope upfront. Developers can organise
 
 **Availability.** git-cl is freely available at [https://github.com/BHFock/git-cl](https://github.com/BHFock/git-cl) under the BSD-3-Clause licence. The implementation consists of a single Python file (approximately 3,250 lines) with no external dependencies beyond Python 3.10+ and Git. Documentation includes a tutorial with worked examples [10] and design notes describing the technical architecture [11].
 
+**Testing.** The repository includes an integration test suite covering all commands. Tests are implemented in Python, operate
+on temporary Git repositories, and can be exported as standalone shell scripts for use as worked examples [12].
+
 **Future directions.** git-cl's JSON metadata format is deliberately simple and human-readable. IDE plugins or GUI tools could adopt this format to provide a seamless experience across terminal and graphical interfaces, without requiring git-cl itself as a dependency. No further feature development is planned for the command-line tool.
 
 **Conclusion.** The transition from centralised to distributed version control brought powerful branching and merging but left behind lightweight organisational mechanisms found in systems like Subversion. git-cl reintroduces this capability through a pre-staging layer: a persistent, named grouping of files between the working directory and Git's staging area. By providing a CLI-native method to organise, stash, and promote changes by intent, git-cl supports developers in producing clean, atomic commits without requiring upfront branching decisions or retrospective history rewriting.
@@ -214,6 +217,8 @@ This workflow removes the need to predict scope upfront. Developers can organise
 [10] git-cl Tutorial. https://github.com/BHFock/git-cl/blob/main/docs/tutorial.md
 
 [11] git-cl Design Notes. https://github.com/BHFock/git-cl/blob/main/docs/design-notes.md
+
+[12] git-cl Test Suite. https://github.com/BHFock/git-cl/blob/main/tests/README.md
 
 ## Acknowledgement
 

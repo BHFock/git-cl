@@ -1,0 +1,48 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'git-cl'
+      - 'tests/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'git-cl'
+      - 'tests/**'
+  schedule:
+    # First Friday of every month at 18:00 UTC
+      - cron: '0 18 1-7 * 5'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install git-cl
+        run: |
+          mkdir -p ~/bin
+          cp git-cl ~/bin/git-cl
+          chmod +x ~/bin/git-cl
+          echo "$HOME/bin" >> $GITHUB_PATH
+
+      - name: Verify installation
+        run: |
+          git cl --version
+          python3 --version
+          git --version
+
+      - name: Run tests
+        run: python3 tests/run_tests.py

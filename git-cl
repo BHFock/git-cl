@@ -2964,6 +2964,11 @@ def main() -> None:
     Parses command-line arguments and dispatches to the appropriate
     subcommand handler (e.g., add, remove, stage, commit, etc.).
     """
+
+    if sys.version_info < (3, 9):
+        print("Error: git-cl requires Python 3.9+", file=sys.stderr)
+        sys.exit(1)
+
     parser = argparse.ArgumentParser(
         prog='git-cl',
         usage='git cl <command> [<args>]',

@@ -54,7 +54,7 @@ Features:
 This tool is intended for use within Git repositories.
 """
 
-__version__ = "0.3.5"
+__version__ = "1.0.0"
 
 import argparse
 import datetime

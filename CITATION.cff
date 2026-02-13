@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: "If you use git-cl in your work, please cite it as below."
+title: "git-cl: A Pre-Staging Layer for Organising Changes in Git"
+type: software
+authors:
+  - family-names: Fock
+    given-names: Björn Hendrik
+url: "https://github.com/BHFock/git-cl"
+repository-code: "https://github.com/BHFock/git-cl"
+license: BSD-3-Clause
+abstract: >-
+  git-cl is a command-line tool that brings changelist support to Git.
+  It introduces a pre-staging layer that allows developers to partition
+  modified files into named groups before staging or committing.
+  Changelists persist across sessions, support selective stashing, and
+  can be promoted to dedicated branches. The tool stores its state in
+  a local JSON file within the .git directory, requires no external
+  dependencies beyond Python and Git, and integrates transparently
+  with existing Git workflows.
+keywords:
+  - git
+  - changelist
+  - pre-staging
+  - late-binding branching
+  - partial commit

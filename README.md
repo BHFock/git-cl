@@ -85,6 +85,8 @@ git cl br docs-fix
 
 📘 [Design Notes](docs/design-notes.md): Technical architecture
 
+📘 [Tests](tests/README.md): Test suite and shell walkthroughs
+
 📘 [Why git-cl?](docs/why-git-cl.md): History and motivation
 
 📘 [Paper](docs/paper.md): Design, workflow, and related work

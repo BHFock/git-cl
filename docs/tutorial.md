@@ -64,7 +64,7 @@ export PATH="$HOME/bin:$PATH"
 
 ### Method 2: Clone the repository
 
-Clone the complete [git-cl project](https://github.com/BHFock/git-cl) including documentation:
+Clone the complete [git-cl project](https://github.com/BHFock/git-cl) including documentation and [tests](https://github.com/BHFock/git-cl/blob/main/tests/README.md):
 
 ```
 git clone https://github.com/BHFock/git-cl.git ~/opt/git-cl

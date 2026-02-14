@@ -447,6 +447,8 @@ git cl branch solver-opt feature/fortran-speedup --from main
 This workflow is especially handy when experimental work — like optimising a finite-difference solver or changing file I/O routines — starts to grow beyond the original scope of your current branch.
 It keeps unrelated changes isolated and easy to review later.
 
+For more step-by-step examples, each test script in the [test suite](https://github.com/BHFock/git-cl/blob/main/tests/README.md) can be exported as a standalone shell walkthrough you can follow in your terminal.
+
 [↑ Back to top](#git-cl-a-git-subcommand-for-changelist-management)
 
 ## 5. FAQ & Common Pitfalls

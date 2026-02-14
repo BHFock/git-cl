@@ -1,213 +1,6 @@
 # git-cl Test Suite
 
-## Purpose
-
-This test suite provides automated integration tests for [git-cl](https://github.com/BHFock/git-cl). It serves two goals:
-
-1. **Regression testing** — verify that git-cl behaves correctly across Python versions, Git versions, and operating systems.
-2. **Worked examples** — each test script can be exported as a standalone shell walkthrough for user training.
-
-git-cl is feature complete. These tests document and protect existing behaviour rather than driving new features.
-
-
-## Design Decisions
-
-### Why Python tests with shell export?
-
-The test framework is written in Python, but each test can be exported as a self-contained shell script. This gives us:
-
-- **Clean test logic** — assertions, JSON inspection, and temporary repo management are natural in Python.
-- **Readable training material** — the exported shell scripts read as step-by-step terminal sessions a user can follow.
-- **No external dependencies** — the framework uses only the Python standard library.
-
-### What is tested?
-
-Each test script creates a temporary Git repository, runs git-cl commands against it, and verifies the results by checking:
-
-- **Command output** — does `git cl add` print the expected confirmation?
-- **Exit codes** — does the command succeed or fail as expected?
-- **Internal metadata** — does `.git/cl.json` contain the right changelist entries?
-- **Git state** — are the correct files staged, committed, or reverted?
-- **Git status codes** — are files in the expected state (`[ M]`, `[A ]`, `[??]`, etc.)?
-- **Working directory context** — do commands behave correctly from subdirectories?
-
-### What is NOT tested?
-
-- Interactive terminal behaviour (colour output, terminal width)
-- Concurrent access or file locking under load
-- Platform-specific behaviour (Windows, network filesystems)
-
-
-## Architecture
-
-```
-tests/
-├── README.md                  ← this file
-├── test_helpers.py            ← TestRepo class and shell export logic
-├── run_tests.py               ← test runner (discovers and runs all test scripts)
-├── test_basic_add_status.py
-├── test_stage_unstage.py
-├── test_commit.py
-├── test_diff.py
-├── test_remove_delete.py
-├── test_checkout.py
-├── test_stash_unstash.py
-├── test_branch.py
-├── test_validation.py
-├── test_git_states.py
-├── test_subdirectory.py
-└── test_edge_cases.py
-```
-
-### test_helpers.py
-
-Provides the `TestRepo` class — a context manager that:
-
-- Creates a fresh temporary Git repository with an initial commit
-- Offers helper methods for common operations (`write_file`, `run`, `load_cl_json`, ...)
-- Records every operation so the session can be exported as a shell script
-- Provides assertion methods that print pass/fail results and log themselves for export
-- Cleans up the temporary directory on exit
-
-#### run() — command execution
-
-`run()` accepts commands as a string or as a list of arguments:
-
-```python
-# Simple commands — string is fine, parsed with shlex.split()
-repo.run("git cl add docs file.txt")
-
-# Arguments containing spaces — use a list for precise control
-repo.run(["git", "cl", "commit", "docs", "-m", "Fix the bug"])
-```
-
-When a string is passed, it is split using `shlex.split()`, which handles quoted
-arguments correctly (e.g. `'git cl commit docs -m "Fix the bug"'` works as expected).
-
-When a list is passed, it is used directly as the argument vector.
-
-For shell export, list-form commands are reconstructed with proper quoting.
-
-#### run_in() — subdirectory execution
-
-`run_in(subdir, command)` runs a command from within a subdirectory of the
-repository, without changing the test process's working directory:
-
-```python
-# Test that adding a file from a subdirectory normalises the path
-repo.run_in("src", "git cl add my-list main.py")
-```
-
-This passes `cwd=repo_dir/subdir` to `subprocess.run`. In the shell export, it
-becomes a subshell: `(cd src && git cl add my-list main.py)`.
-
-### Test scripts
-
-Each test script is executable and follows the same structure:
-
-```python
-#!/usr/bin/env python3
-from test_helpers import TestRepo
-
-def run_tests(repo: TestRepo):
-    repo.section("Setup")
-    # ... prepare repository ...
-
-    repo.section("Test scenario name")
-    output = repo.run("git cl add my-list file.txt")
-    repo.assert_in("Added to", output, "confirms addition")
-
-    cl = repo.load_cl_json()
-    repo.assert_true("my-list" in cl, "changelist exists")
-
-if __name__ == "__main__":
-    # Handles both test execution and --export
-    ...
-```
-
-### Shell export
-
-Every test script supports `--export` to produce a shell walkthrough:
-
-```
-./test_basic_add_status.py --export > walkthrough_add_status.sh
-```
-
-The exported script contains:
-- The same git-cl commands as the Python test
-- `# Check:` comments where assertions were, describing expected outcomes
-- Section headers matching the test structure
-
-In export mode, assertion output (pass/fail lines) is suppressed. Only the
-shell script is written to stdout.
-
-The exported scripts are for reading and manual line-by-line execution, not
-for automated testing.
-
-
-## Test Plan
-
-### Core Commands
-
-| Script                        | Commands under test                    | Key behaviours verified                                    |
-|-------------------------------|----------------------------------------|------------------------------------------------------------|
-| `test_basic_add_status.py`    | `add`, `status`, `st`                  | Creating changelists, assigning files, reassignment,       |
-|                               |                                        | status grouping, filtering, `--include-no-cl`, aliases     |
-| `test_stage_unstage.py`       | `stage`, `unstage`                     | Staging tracked files, skipping untracked files,           |
-|                               |                                        | `--delete` flag, round-trip stage/unstage, changelist      |
-|                               |                                        | preserved by default                                       |
-| `test_commit.py`              | `commit`, `ci`                         | Commit with `-m` and `-F`, `--keep` flag, changelist       |
-|                               |                                        | deleted by default, untracked files skipped, alias         |
-| `test_diff.py`                | `diff`                                 | Single changelist diff, multiple changelist diff,          |
-|                               |                                        | `--staged` flag                                            |
-| `test_remove_delete.py`       | `remove`, `rm`, `delete`, `del`        | Removing files from changelists, deleting changelists,     |
-|                               |                                        | `--all` flag, files untouched on disk, aliases             |
-| `test_checkout.py`            | `checkout`, `co`                       | Reverting files to HEAD, only affects named changelist,    |
-|                               |                                        | changelist kept by default, `--delete` flag, alias         |
-
-### Advanced Commands
-
-| Script                        | Commands under test                    | Key behaviours verified                                    |
-|-------------------------------|----------------------------------------|------------------------------------------------------------|
-| `test_stash_unstash.py`       | `stash`, `unstash`                     | Stash single changelist, unstash restores files and        |
-|                               |                                        | metadata, `--all` flag, selective unstash after stash all  |
-| `test_branch.py`              | `branch`, `br`                         | Branch from changelist, custom branch name, `--from` base, |
-|                               |                                        | other changelists stashed, alias                           |
-
-### Git States and Working Directory
-
-| Script                        | Focus area                             | Key behaviours verified                                    |
-|-------------------------------|----------------------------------------|------------------------------------------------------------|
-| `test_git_states.py`          | Git status codes                       | Changelists with files in each common state:               |
-|                               |                                        | `[ M]` unstaged modification, `[M ]` staged modification, |
-|                               |                                        | `[MM]` mixed staged/unstaged, `[A ]` newly added,         |
-|                               |                                        | `[AM]` added then modified, `[ D]` unstaged deletion,     |
-|                               |                                        | `[D ]` staged deletion, `[??]` untracked.                 |
-|                               |                                        | Correct display in `git cl st`, correct behaviour with     |
-|                               |                                        | `--all` flag for uncommon codes.                           |
-| `test_subdirectory.py`        | Path resolution                        | Running git-cl commands from the repo root, a subdirectory,|
-|                               |                                        | and a nested subdirectory. Verifying that paths are stored |
-|                               |                                        | as repo-root-relative in `cl.json` and displayed correctly |
-|                               |                                        | relative to the current working directory.                 |
-
-### Validation and Edge Cases
-
-| Script                        | Focus area                             | Key behaviours verified                                    |
-|-------------------------------|----------------------------------------|------------------------------------------------------------|
-| `test_validation.py`          | Input validation                       | Invalid changelist names (special chars, reserved words,   |
-|                               |                                        | dots-only, too long), dangerous paths, directory traversal,|
-|                               |                                        | non-existent files, non-existent changelists               |
-| `test_edge_cases.py`          | Boundary conditions                    | Empty working directory, no changelists, nested            |
-|                               |                                        | subdirectories, deleted files, file reassignment,          |
-|                               |                                        | already-staged files, rapid add/remove cycles              |
-
-
-## Requirements
-
-- Python 3.10+
-- Git
-- A Unix-like OS (Linux, macOS)
-- `git-cl` available in `$PATH`
+Automated integration tests for [git-cl](https://github.com/BHFock/git-cl). Each test script creates a temporary Git repository, runs git-cl commands, and verifies the results. Every test can also be exported as a standalone shell walkthrough — a step-by-step terminal session you can follow to learn how git-cl works.
 
 
 ## Usage
@@ -231,29 +24,86 @@ Export a test as a shell walkthrough:
 ```
 
 
-## Resolved Design Decisions
+## Shell Walkthroughs
 
-> Decisions made during development of the test framework.
+Every test script supports `--export` to produce a self-contained shell script. These walkthroughs mirror the test scenarios but are written for reading and manual line-by-line execution. `# Check:` comments tell you what to expect at each step.
 
-### Commit messages with spaces
+Here is a shortened example from `test_basic_add_status.py --export`:
 
-`run()` uses `shlex.split()` when given a string, which correctly handles quoted
-arguments. For full control, a list of arguments can be passed instead. Shell export
-reconstructs the command with proper quoting from the list form.
+```bash
+#!/usr/bin/env bash
+# git-cl walkthrough: add and status
+#
+# Run it line by line to learn how git-cl works.
+# Lines starting with '# Check:' tell you what to expect.
 
-### Subdirectory execution
+set -euo pipefail
 
-`run_in(subdir, command)` sets the `cwd` for the subprocess without affecting the
-test process. Exported as `(cd subdir && command)` in shell scripts.
+# Create a temporary Git repository
+cd $(mktemp -d)
+git init --quiet
+git config user.email "test@git-cl.test"
+git config user.name "git-cl test"
 
-### Export noise
+# === Setup: create files with an initial commit ===
 
-In `--export` mode, all assertion output is suppressed. Only the shell script is
-written to stdout. This means `./test_basic_add_status.py --export > walkthrough.sh`
-produces a clean file with no test noise mixed in.
+echo "hello" > file1.txt
+echo "world" > file2.txt
+git add file1.txt file2.txt
+git commit --quiet -m "Add initial files"
+echo "hello modified" > file1.txt
+echo "world modified" > file2.txt
 
-### Test runner
+# === Add files to a new changelist ===
 
-`run_tests.py` discovers `test_*.py` files in its directory, runs each as a subprocess,
-collects exit codes, and prints a summary. Each test script is self-contained and can
-be run independently.
+git cl add feature1 file1.txt file2.txt
+# Check: output contains 'Added to 'feature1''
+
+# === View status grouped by changelist ===
+
+git cl st
+# Check: output contains 'feature1:'
+# Check: output contains 'file1.txt'
+# Check: output contains 'file2.txt'
+```
+
+
+## What's Tested
+
+### Core Commands
+
+| Script | Commands |
+|---|---|
+| `test_basic_add_status.py` | `add`, `status` / `st`, filtering, `--include-no-cl` |
+| `test_stage_unstage.py` | `stage`, `unstage`, `--delete` flag, round-trip |
+| `test_commit.py` | `commit` / `ci`, `-m`, `-F`, `--keep` flag |
+| `test_diff.py` | `diff`, multiple changelists, `--staged` |
+| `test_remove_delete.py` | `remove` / `rm`, `delete` / `del`, `--all` |
+| `test_checkout.py` | `checkout` / `co`, `--delete`, `--force` |
+
+### Advanced Commands
+
+| Script | Commands |
+|---|---|
+| `test_stash_unstash.py` | `stash` / `sh`, `unstash` / `us`, `--all` |
+| `test_branch.py` | `branch` / `br`, custom name, `--from` base |
+
+### States, Paths, and Validation
+
+| Script | Focus |
+|---|---|
+| `test_git_states.py` | All common Git status codes (`[ M]`, `[M ]`, `[MM]`, `[A ]`, `[AM]`, `[ D]`, `[D ]`, `[??]`) |
+| `test_subdirectory.py` | Path normalisation from subdirectories, cross-directory add, relative display |
+| `test_validation.py` | Invalid names, reserved words, path traversal, missing arguments |
+| `test_edge_cases.py` | Empty states, reassignment, duplicate files, deleted files |
+
+
+## How the Tests Work
+
+The test framework lives in `test_helpers.py` and provides a single class: `TestRepo`. It is used as a context manager that creates a fresh temporary Git repository on entry and cleans it up on exit.
+
+`TestRepo` offers helpers for common operations — `write_file`, `run`, `run_in` (execute from a subdirectory), `load_cl_json`, `get_staged_files`, and a set of assertion methods (`assert_in`, `assert_equal`, `assert_exit_code`, etc.) that print pass/fail results during the test run.
+
+Every operation is recorded internally. When a test script is run with `--export`, the recorded operations are replayed as a shell script instead of executing assertions. This is how the same test code serves both as an automated check and as a readable walkthrough.
+
+Each `test_*.py` script follows the same pattern: import `TestRepo`, define a `run_tests(repo)` function with sections and assertions, and handle both normal execution and `--export` mode in `__main__`. Test scripts are self-contained and can be run independently. `run_tests.py` discovers and runs all of them, collecting results into a summary.

@@ -106,7 +106,7 @@ Three principles guided the implementation:
 
 *Single file, zero dependencies.* The entire implementation is a single Python script (approximately 3,250 lines) with no external dependencies beyond Python 3.10+ and Git. This allows installation by downloading one file, making it suitable for restricted or air-gapped environments.
 
-*Non-destructive operation.* git-cl never alters Git's index, object database, or commit history. All changelist state is confined to the two JSON metadata files. If the metadata files are deleted, the repository is unaffected — only the changelist groupings are lost.
+*Minimal footprint.* git-cl's own metadata is confined to two JSON files and is entirely separate from Git's object model. Organisational commands like `add`, `remove`, `status`, and `delete` never alter the index, object database, or commit history. Commands that do alter Git state (`stage`, `commit`, `stash`, `branch`) delegate to native Git and behave exactly as their Git counterparts would. If the metadata files are deleted, the repository is unaffected; only the changelist groupings are lost.
 
 ### 3.3 The Branch Workflow
 

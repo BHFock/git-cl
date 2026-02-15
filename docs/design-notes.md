@@ -390,4 +390,4 @@ Leverages Git's native commands (`git status`, `git stash`, etc.) rather than re
 
 ## Future direction
 
-The aim is to keep functionality focused while improving code quality. Priority areas include handling edge cases, platform compatibility improvements, general refactoring for maintainability, and adding tests. The single-file structure should be preserved for deployment simplicity.
+The aim is to keep functionality focused while improving code quality. Priority areas include handling edge cases, platform compatibility improvements, general refactoring for maintainability, and improving tests. The single-file structure should be preserved for deployment simplicity.

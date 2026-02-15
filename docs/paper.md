@@ -104,7 +104,7 @@ Three principles guided the implementation:
 
 *Wrap, don't reimplement.* git-cl delegates all version control operations to native Git commands. Status detection uses `git status --porcelain`, stashing uses `git stash push`, and branch creation uses `git checkout -b`. This keeps the tool lightweight and ensures it benefits from Git's own correctness and performance.
 
-*Single file, zero dependencies.* The entire implementation is a single Python script (approximately 3,250 lines) with no external dependencies beyond Python 3.10+ and Git. This allows installation by downloading one file, making it suitable for restricted or air-gapped environments.
+*Single file, zero dependencies.* The entire implementation is a single Python script (approximately 3,250 lines) with no external dependencies beyond Python 3.9+ and Git. This allows installation by downloading one file, making it suitable for restricted or air-gapped environments.
 
 *Minimal footprint.* git-cl's own metadata is confined to two JSON files and is entirely separate from Git's object model. Organisational commands like `add`, `remove`, `status`, and `delete` never alter the index, object database, or commit history. Commands that do alter Git state (`stage`, `commit`, `stash`, `branch`) delegate to native Git and behave exactly as their Git counterparts would. If the metadata files are deleted, the repository is unaffected; only the changelist groupings are lost.
 
@@ -185,7 +185,7 @@ This workflow removes the need to predict scope upfront. Developers can organise
 
 **Limitations.** git-cl targets single-user, Unix-based workflows. File locking relies on `fcntl`, which is not available on Windows. The tool does not validate changelist contents against branch state — a changelist may reference files that do not exist after switching branches. These are accepted constraints for a tool designed for local developer workflows rather than shared or cross-platform environments.
 
-**Availability.** git-cl is freely available at [https://github.com/BHFock/git-cl](https://github.com/BHFock/git-cl) under the BSD-3-Clause licence. The implementation consists of a single Python file (approximately 3,250 lines) with no external dependencies beyond Python 3.10+ and Git. Documentation includes a tutorial with worked examples [10] and design notes describing the technical architecture [11].
+**Availability.** git-cl is freely available at [https://github.com/BHFock/git-cl](https://github.com/BHFock/git-cl) under the BSD-3-Clause licence. The implementation consists of a single Python file (approximately 3,250 lines) with no external dependencies beyond Python 3.9+ and Git. Documentation includes a tutorial with worked examples [10] and design notes describing the technical architecture [11].
 
 **Testing.** The repository includes an integration test suite covering all commands. Tests are implemented in Python, operate
 on temporary Git repositories, and can be exported as standalone shell scripts for use as worked examples [12].

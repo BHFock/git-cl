@@ -6,7 +6,7 @@ Björn Hendrik Fock
 
 ## Abstract
 
-git-cl is a command-line tool that brings changelist support to Git. It introduces a pre-staging layer — a persistent, metadata-driven abstraction between the working directory and Git's staging area — that allows developers to partition modified files into named groups before staging or committing. Changelists persist across sessions, support selective stashing, and can be promoted to dedicated branches. The tool stores its state in a local JSON file within the `.git` directory, requires no external dependencies beyond Python and Git, and integrates transparently with existing Git workflows. This paper presents the conceptual model of pre-staging in distributed version control, describes the design and implementation of git-cl, and discusses how file-level changelist organisation complements Git's existing mechanisms.
+git-cl is a command-line tool that brings changelist support to Git. It introduces a pre-staging layer — a persistent, metadata-driven abstraction between the working directory and Git's staging area — that allows developers to partition modified files into named groups before staging or committing. Changelists persist across sessions, support selective stashing, and can be promoted to dedicated branches. The tool stores its state in a local JSON file within the `.git` directory, requires no external dependencies beyond Python and Git, and integrates transparently with existing Git workflows. This paper presents a conceptual model for intent-based pre-staging in Git, describes the design and implementation of git-cl, and discusses how file-level changelist organisation complements Git's existing mechanisms.
 
 **Availability:** git-cl is freely available at [https://github.com/BHFock/git-cl](https://github.com/BHFock/git-cl) under the BSD-3-Clause licence.
 
@@ -78,6 +78,8 @@ Table 1 summarises the key differences.
 | **git-cl** | **Yes** | **Yes** | **Yes** | **Yes** | **CLI** | **Yes** |
 
 ## 3. Design and Implementation
+
+Git traces intent through commits: each commit groups files deliberately and carries a message explaining why. But this intent is only recorded at the point of commitment. During active development — while changes are still in flux across multiple tasks — there is no native mechanism to declare which files belong together or why. git-cl introduces an intent layer before the commit: a persistent but mutable mapping from files to named purposes, stored alongside the working directory, where groupings can be declared, revised, and discarded as work evolves. Organisation and preparation become separate steps rather than a single action at commit time.
 
 git-cl employs a sidecar metadata pattern. Rather than modifying Git's index or object database, the tool maintains state in human-readable JSON files within the `.git` directory, ensuring non-destructive and portable operation.
 

@@ -22,12 +22,10 @@ git-cl is a minimal Git subcommand that brings changelist support to Git. Organi
 - Local-only metadata (`.git/cl.json`)
 - Simple CLI: `git cl <command>`
 
-## Branching from changelists
+## Demo 
 
-git-cl lets you turn any changelist into a dedicated branch in one step.
-
-<a href="https://github.com/BHFock/git-cl/blob/main/docs/tutorial.md#32-create-a-branch-from-a-changelist">
-  <img src="docs/git-cl.svg" alt="git-cl workflow: git changelists in working directory moving to a new branch" width="800"/>
+<a href="https://github.com/BHFock/git-cl/blob/main/docs/tutorial.md">
+  <img src="docs/demo/git-cl-demo.gif" alt="git-cl demo: creating changelists, viewing status, and branching" width="750"/>
 </a>
 
 ## Quick Start

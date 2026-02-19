@@ -4,6 +4,10 @@ Generate an animated GIF demo for git-cl using real command output.
 
 Sets up a temporary Git repo, runs actual git-cl commands, captures
 the output, and renders an animated terminal GIF.
+
+To reduce the file size of the output gif use:
+
+   gifsicle -O3 --colors 64 git-cl-demo.gif -o git-cl-demo.gif
 """
 
 import os

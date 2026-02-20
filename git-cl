@@ -58,11 +58,14 @@ __version__ = "1.0.0"
 
 import argparse
 import datetime
-import fcntl
 import json
 import os
 import subprocess
 import sys
+if sys.platform == "win32":
+    import msvcrt
+else:
+    import fcntl
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Optional, Iterator

@@ -119,6 +119,15 @@ def clutil_file_lock(lock_path: Path):
     Raises:
         OSError: If the lock file cannot be created or locked.
 
+    Platform notes:
+        On Unix, ``fcntl.flock`` acquires a whole-file advisory lock that
+        blocks indefinitely until the lock becomes available.
+        On Windows, ``msvcrt.locking`` locks a single byte (the file is
+        empty and used only for mutual exclusion, so one byte suffices).
+        Unlike ``fcntl.flock``, ``msvcrt.locking`` with ``LK_LOCK`` retries
+        for approximately ten seconds before raising ``OSError``.  This is
+        acceptable because changelist operations are fast.
+
     Example:
         >>> lock_file = Path('.git/cl.lock')
         >>> with clutil_file_lock(lock_file):

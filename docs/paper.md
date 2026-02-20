@@ -26,7 +26,7 @@ The challenge of managing concurrent changes has been addressed at different sta
 
 ### 2.1 Changelist Models in Other Version Control Systems
 
-Subversion introduced changelists as a client-side feature that allows developers to associate modified files with named groups [1][2]. These groups act as local organisational filters that persist until commit, enabling developers to work on multiple logical tasks and commit them separately. Subversion changelists served as the primary model for git-cl, particularly the ability to provide structured pre-commit review by grouping files by intent. However, Subversion's implementation is tied to a centralised architecture. When teams migrated to Git, they gained distributed branching and merging but lost this lightweight grouping mechanism.
+Subversion introduced changelists as a client-side feature that allows developers to associate modified files with named groups [1][2]. These groups act as local organisational filters that persist until commit, enabling developers to work on multiple logical tasks and commit them separately. Subversion changelists served as the primary model for git-cl, particularly the ability to provide structured pre-commit review by grouping files by intent. Because the feature is part of Subversion’s client tooling, it did not carry over when teams migrated to Git’s distributed model.
 
 Perforce provides a more formal changelist model through numbered, server-managed pending changelists that track file groups throughout the development lifecycle [3]. While more powerful than Subversion's client-side approach, Perforce changelists are tightly integrated with its centralised server architecture and not transferable to Git's distributed model.
 

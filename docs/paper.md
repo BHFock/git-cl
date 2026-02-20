@@ -83,7 +83,7 @@ git-cl employs a sidecar metadata pattern. Rather than modifying Git's index or 
 
 ### 3.1 Metadata Architecture
 
-git-cl uses two metadata stores to separate active work from preserved work-in-progress:
+git-cl uses two metadata stores: `cl.json` for active changelists and `cl-stashes.json` for stashed ones.
 
 `cl.json` maps named changelists to lists of file paths relative to the repository root. This is the pre-staging layer where files are grouped before any Git operation. A typical `cl.json` might contain:
 

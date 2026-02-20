@@ -77,7 +77,7 @@ git-cl occupies a distinct position among these approaches. It provides the name
 
 ## 3. Design and Implementation
 
-Git traces intent through commits: each commit groups files deliberately and carries a message explaining why. But this intent is only recorded at the point of commitment. During active development — while changes are still in flux across multiple tasks — there is no native mechanism to declare which files belong together or why. git-cl introduces an intent layer before the commit: a persistent but mutable mapping from files to named purposes, stored alongside the working directory, where groupings can be declared, revised, and discarded as work evolves. Organisation and preparation become separate steps rather than a single action at commit time.
+Git traces intent through commits: each commit groups files deliberately and carries a message explaining why. But this intent is only recorded at the point of commitment. During active development — while changes are still in flux across multiple tasks — there is no native mechanism to declare which files belong together or why. git-cl introduces an intent layer before the commit: a persistent but mutable mapping from files to named purposes, stored alongside the working directory, where groupings can be declared, revised, and discarded as work evolves.
 
 git-cl employs a sidecar metadata pattern. Rather than modifying Git's index or object database, the tool maintains state in human-readable JSON files within the `.git` directory, ensuring non-destructive and portable operation.
 

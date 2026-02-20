@@ -132,7 +132,7 @@ This section also includes the definition of the command line help. Defining the
 
 #### Concurrency and Locking
 
-`git-cl` uses [fcntl](https://docs.python.org/3/library/fcntl.html) to lock metadata files preventing race conditions. It is designed for single-user interactive use rather than shared accounts or scripts.
+`git-cl` uses platform-specific file locking (fcntl on Unix, msvcrt on Windows) to lock metadata files, preventing race conditions. It is designed for single-user interactive use rather than shared accounts or scripts.
 
 [`clutil_file_lock`](https://github.com/BHFock/git-cl/blob/29f16c54698048a6dbaf42d2e878654cc91a6ba6/git-cl#L99) implements a [context manager](https://book.pythontips.com/en/latest/context_managers.html) that creates temporary `.lock` files (e.g., `cl.json.lock`) with exclusive locks. All metadata read/write operations are wrapped in these locks, with automatic cleanup on exit or exception.
 
@@ -175,7 +175,7 @@ Operations use defensive programming patterns:
 
 `git-cl` targets single-user interactive use with intentional limitations:
 
-- **Unix-only file locking** - Uses `fcntl`, unsuitable for shared accounts or Windows
+- **Single-user file locking** — Uses `fcntl` (Unix) / `msvcrt` (Windows); unsuitable for shared accounts or concurrent automation
 - **Local threat model** - Assumes trusted Git repository and filesystem
 - **No cryptographic validation** - JSON metadata lacks signatures or checksums
 
@@ -345,7 +345,7 @@ This atomic operation eliminates the manual coordination required for branching 
 Colour output depends on [colorama](https://pypi.org/project/colorama/) for cross-platform compatibility. The implementation gracefully degrades to plain text when colour support is unavailable.
 
 #### File Locking Differences
-Uses Unix-specific [fcntl](https://docs.python.org/3/library/fcntl.html) module for metadata locking. Alternative implementations would be needed for Windows compatibility, though single-user interactive usage makes race conditions unlikely.
+Uses `fcntl` on Unix and `msvcrt` on Windows for metadata locking. On Unix, `fcntl.flock` blocks indefinitely; on Windows, `msvcrt.locking` retries for approximately ten seconds before raising an error. Both are advisory locks suitable for single-user interactive usage, where race conditions are unlikely.
 
 ### Performance Considerations
 
@@ -379,8 +379,8 @@ Leverages Git's native commands (`git status`, `git stash`, etc.) rather than re
 - Works regardless of mount points
 - Consistent with Git's internal path handling
 
-### Why fcntl locking instead of Git's index locking?
-- Simpler implementation
+### Why fcntl/msvcrt locking instead of Git's index locking?
+- Simpler implementation using platform-native advisory locks
 - Independent of Git's internal mechanisms
 - Sufficient for single-user interactive use case
 
@@ -390,4 +390,4 @@ Leverages Git's native commands (`git status`, `git stash`, etc.) rather than re
 
 ## Future direction
 
-The aim is to keep functionality focused while improving code quality. Priority areas include handling edge cases, platform compatibility improvements, general refactoring for maintainability, and improving tests. The single-file structure should be preserved for deployment simplicity.
+The aim is to keep functionality focused while improving code quality. Priority areas include handling edge cases, general refactoring for maintainability, and improving tests. The single-file structure should be preserved for deployment simplicity.

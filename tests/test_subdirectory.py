@@ -74,6 +74,10 @@ def run_tests(repo: TestRepo):
     repo.assert_exit_code(0, "adding from root should succeed")
 
     cl = repo.load_cl_json()
+
+    raw = (repo.repo_dir / ".git" / "cl.json").read_text()
+    repo.assert_true("\\" not in raw,
+                     "cl.json contains no backslashes")
     repo.assert_in("root.txt", cl["feature"],
                     "root.txt stored as 'root.txt'")
     repo.assert_in("src/app.py", cl["feature"],

@@ -18,26 +18,33 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13']
-
+        os: [ubuntu-latest, windows-latest]
+        python-version: ['3.9', '3.13']
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install git-cl
+      - name: Install git-cl (Unix)
+        if: runner.os != 'Windows'
         run: |
           mkdir -p ~/bin
           cp git-cl ~/bin/git-cl
           chmod +x ~/bin/git-cl
           echo "$HOME/bin" >> $GITHUB_PATH
+
+      - name: Install git-cl (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          mkdir "$env:USERPROFILE\bin" -Force
+          Copy-Item git-cl "$env:USERPROFILE\bin\git-cl"
+          echo "$env:USERPROFILE\bin" | Out-File -Append $env:GITHUB_PATH
 
       - name: Verify installation
         run: |

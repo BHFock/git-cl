@@ -183,9 +183,9 @@ This workflow removes the need to predict scope upfront. Developers can organise
 
 **File-level abstraction.** git-cl operates at file level rather than hunk level. This reflects how developers typically think during active coding — grouping files by task rather than selecting individual hunks. For finer-grained staging within a file, Git's `git add -p` remains available and complementary.
 
-**Limitations.** git-cl targets single-user, Unix-based workflows. File locking relies on `fcntl`, which is not available on Windows. The tool does not validate changelist contents against branch state — a changelist may reference files that do not exist after switching branches. These are accepted constraints for a tool designed for local developer workflows rather than shared or cross-platform environments.
+**Limitations.** git-cl targets single-user, local workflows. File locking uses platform-specific mechanisms (`fcntl` on Unix, `msvcrt` on Windows), and the tool is tested on both platforms via continuous integration. The tool does not validate changelist contents against branch state — a changelist may reference files that do not exist after switching branches. This is an accepted constraint for a tool designed for local developer workflows rather than shared environments
 
-**Availability.** git-cl is freely available at [https://github.com/BHFock/git-cl](https://github.com/BHFock/git-cl) under the BSD-3-Clause licence. The implementation consists of a single Python file (approximately 3,250 lines) with no external dependencies beyond Python 3.9+ and Git. Documentation includes a tutorial with worked examples [10] and design notes describing the technical architecture [11].
+**Availability.** git-cl is freely available at [https://github.com/BHFock/git-cl](https://github.com/BHFock/git-cl) under the BSD-3-Clause licence. The implementation consists of a single Python file (approximately 3,300 lines) with no external dependencies beyond Python 3.9+ and Git. Documentation includes a tutorial with worked examples [10] and design notes describing the technical architecture [11].
 
 **Testing.** The repository includes an integration test suite covering all commands. Tests are implemented in Python, operate
 on temporary Git repositories, and can be exported as standalone shell scripts for use as worked examples [12].

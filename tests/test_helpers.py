@@ -102,7 +102,10 @@ class TestRepo:
     def _teardown(self):
         """Remove the temporary repository."""
         if self.repo_dir and self.repo_dir.exists():
-            shutil.rmtree(self.repo_dir)
+            def _force_remove(func, path, exc_info):
+                os.chmod(path, 0o777)
+                func(path)
+            shutil.rmtree(self.repo_dir, onerror=_force_remove)
 
     def _git(self, *args: str) -> subprocess.CompletedProcess:
         """Run a git command in the repository directory."""
@@ -285,7 +288,7 @@ class TestRepo:
     def get_staged_files(self) -> list[str]:
         """Return list of currently staged file paths."""
         output = self.run("git diff --cached --name-only")
-        return [f for f in output.splitlines() if f.strip()]
+        return [f.replace("\\", "/") for f in output.splitlines() if f.strip()]
 
     def get_git_log_oneline(self, n: int = 1) -> str:
         """Return the last n commits as one-line summaries."""
@@ -299,12 +302,12 @@ class TestRepo:
         if passed:
             self.tests_passed += 1
             if not self.quiet:
-                print(f"  \u2713 PASS: {msg}")
+                print(f"  PASS: {msg}")
         else:
             self.tests_failed += 1
             if not self.quiet:
                 detail_str = f"\n         Got: {detail}" if detail else ""
-                print(f"  \u2717 FAIL: {msg}{detail_str}")
+                print(f"  FAIL: {msg}{detail_str}")
 
     def assert_in(self, needle: str, haystack, msg: str):
         """

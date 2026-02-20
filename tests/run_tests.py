@@ -45,7 +45,7 @@ def main():
 
     for script in scripts:
         name = script.stem
-        print(f"\n{'━' * 3} Running: {name} {'━' * 3}")
+        print(f"\n{'=' * 3} Running: {name} {'=' * 3}")
 
         result = subprocess.run(
             [sys.executable, str(script)],

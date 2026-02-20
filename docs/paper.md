@@ -90,7 +90,7 @@ git-cl uses two metadata stores: `cl.json` for active changelists and `cl-stashe
 ```json
 {
   "feature-logic": ["src/core.py", "tests/test_core.py"],
-  "playground": ["notes/tmp.txt"]
+  "config": ["io.nml", "physics.nml"]
 }
 ```
 

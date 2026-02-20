@@ -288,7 +288,7 @@ class TestRepo:
     def get_staged_files(self) -> list[str]:
         """Return list of currently staged file paths."""
         output = self.run("git diff --cached --name-only")
-        return [f for f in output.splitlines() if f.strip()]
+        return [f.replace("\\", "/") for f in output.splitlines() if f.strip()]
 
     def get_git_log_oneline(self, n: int = 1) -> str:
         """Return the last n commits as one-line summaries."""

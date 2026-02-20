@@ -60,9 +60,7 @@ git-cl addresses this by providing a CLI-native implementation whose metadata, s
 
 ### 2.5 Positioning of git-cl
 
-git-cl occupies a distinct position among these approaches. It provides the named, persistent grouping of Subversion's changelists, adapted for Git's distributed model. It maintains organisational context across sessions — without requiring files to be committed to a branch, shelved in the stash, or separated into worktrees.
-
-Table 1 summarises the key differences.
+git-cl occupies a distinct position among these approaches. It provides the named, persistent grouping of Subversion's changelists, adapted for Git's distributed model. It maintains organisational context across sessions — without requiring files to be committed to a branch, shelved in the stash, or separated into worktrees. Table 1 summarises the key differences.
 
 *Table 1: Comparison of approaches to managing concurrent changes*
 

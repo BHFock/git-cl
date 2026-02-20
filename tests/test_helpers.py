@@ -299,12 +299,12 @@ class TestRepo:
         if passed:
             self.tests_passed += 1
             if not self.quiet:
-                print(f"  \u2713 PASS: {msg}")
+                print(f"  PASS: {msg}")
         else:
             self.tests_failed += 1
             if not self.quiet:
                 detail_str = f"\n         Got: {detail}" if detail else ""
-                print(f"  \u2717 FAIL: {msg}{detail_str}")
+                print(f"  FAIL: {msg}{detail_str}")
 
     def assert_in(self, needle: str, haystack, msg: str):
         """

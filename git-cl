@@ -126,11 +126,20 @@ def clutil_file_lock(lock_path: Path):
     lock_file = None
     try:
         lock_file = open(lock_path, 'w', encoding='utf-8')
-        fcntl.flock(lock_file, fcntl.LOCK_EX)
+        if sys.platform == "win32":
+            msvcrt.locking(lock_file.fileno(), msvcrt.LK_LOCK, 1)
+        else:
+            fcntl.flock(lock_file, fcntl.LOCK_EX)
         yield
     finally:
         if lock_file:
-            fcntl.flock(lock_file, fcntl.LOCK_UN)
+            if sys.platform == "win32":
+                try:
+                    msvcrt.locking(lock_file.fileno(), msvcrt.LK_UNLCK, 1)
+                except OSError:
+                    pass
+            else:
+                fcntl.flock(lock_file, fcntl.LOCK_UN)
             lock_file.close()
             lock_path.unlink(missing_ok=True)
 

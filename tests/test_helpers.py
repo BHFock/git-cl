@@ -102,7 +102,10 @@ class TestRepo:
     def _teardown(self):
         """Remove the temporary repository."""
         if self.repo_dir and self.repo_dir.exists():
-            shutil.rmtree(self.repo_dir)
+            def _force_remove(func, path, exc_info):
+                os.chmod(path, 0o777)
+                func(path)
+            shutil.rmtree(self.repo_dir, onerror=_force_remove)
 
     def _git(self, *args: str) -> subprocess.CompletedProcess:
         """Run a git command in the repository directory."""

@@ -361,7 +361,7 @@ def clutil_sanitize_path(file_path: str, git_root: Path) -> Optional[str]:
 
         # If it's relative, make it relative to current working directory
         if not path.is_absolute():
-            path = Path.cwd() / path
+            path = Path.cwd().resolve() / path
 
         # Resolve any .. or . components and get absolute path
         path = path.resolve()
@@ -455,7 +455,7 @@ def clutil_format_file_status(
     Paths are shown relative to the current working directory.
     """
     abs_file = (git_root / file).resolve()
-    rel_to_cwd = _relpath(abs_file, Path.cwd())
+    rel_to_cwd = _relpath(abs_file, Path.cwd().resolve())
 
     rel_to_git_root = abs_file.relative_to(git_root).as_posix()
     status = status_map.get(rel_to_git_root, "  ")
@@ -869,7 +869,7 @@ def clutil_safe_stash_context(
         tuple[list[str], list[str]]: (files_for_git, untracked_files_for_git)
                                      relative to git root
     """
-    original_cwd = Path.cwd()
+    original_cwd = Path.cwd().resolve()
 
     def convert_to_git_root_relative(file_paths: list[str]) -> list[str]:
         """Convert file paths to be relative to git root."""
@@ -1294,11 +1294,11 @@ def clutil_prepare_files_for_git_stash(
     for stored_path in stashable_files:
         abs_path = (git_root / stored_path).resolve()
         if abs_path.exists():
-            rel_to_cwd = _relpath(abs_path, Path.cwd())
+            rel_to_cwd = _relpath(abs_path, Path.cwd().resolve())
             files_for_git.append(rel_to_cwd)
         else:
             # For deleted files, we still need to pass the path
-            rel_to_cwd = _relpath(git_root / stored_path, Path.cwd())
+            rel_to_cwd = _relpath(git_root / stored_path, Path.cwd().resolve())
             files_for_git.append(rel_to_cwd)
 
     # Handle untracked files specially
@@ -1309,7 +1309,7 @@ def clutil_prepare_files_for_git_stash(
             print("Adding untracked files to git temporarily for stashing...")
         for stored_path in file_categories['untracked']:
             abs_path = (git_root / stored_path).resolve()
-            rel_to_cwd = _relpath(abs_path, Path.cwd())
+            rel_to_cwd = _relpath(abs_path, Path.cwd().resolve())
             untracked_files_for_git.append(rel_to_cwd)
 
         try:
@@ -2279,7 +2279,7 @@ def cl_stage(args: argparse.Namespace) -> None:
             continue
 
         # Convert to path relative to current working directory for Git command
-        rel_to_cwd = _relpath(abs_path, Path.cwd())
+        rel_to_cwd = _relpath(abs_path, Path.cwd().resolve())
 
         # Check if this file is tracked (not untracked)
         if not clutil_is_file_untracked(stored_path, git_root):
@@ -2334,7 +2334,7 @@ def cl_unstage(args: argparse.Namespace) -> None:
             continue
 
         # Convert to path relative to current working directory for Git command
-        rel_to_cwd = _relpath(abs_path, Path.cwd())
+        rel_to_cwd = _relpath(abs_path, Path.cwd().resolve())
 
         # Check if this file has staged changes
         rel_to_git_root = abs_path.relative_to(git_root).as_posix()
@@ -2426,7 +2426,7 @@ def cl_diff(args: argparse.Namespace) -> None:
         for path in changelists[name]:
             abs_path = (git_root / path).resolve()
             if abs_path.exists():
-                rel_to_cwd = _relpath(abs_path, Path.cwd())
+                rel_to_cwd = _relpath(abs_path, Path.cwd().resolve())
                 diff_files.add(rel_to_cwd)
             else:
                 print(f"Warning: File '{path}' from '{name}' does not exist.")
@@ -2511,7 +2511,7 @@ def cl_checkout(args: argparse.Namespace) -> None:
             missing_files.append(stored_path)
             continue
 
-        rel_to_cwd = _relpath(abs_path, Path.cwd())
+        rel_to_cwd = _relpath(abs_path, Path.cwd().resolve())
         checkout_files.append(rel_to_cwd)
 
     # Report missing files
@@ -2671,7 +2671,7 @@ def cl_commit(args: argparse.Namespace) -> None:
             continue
 
         # Convert to path relative to current working directory for Git command
-        rel_to_cwd = _relpath(abs_path, Path.cwd())
+        rel_to_cwd = _relpath(abs_path, Path.cwd().resolve())
 
         # Check if this file is tracked (not untracked)
         if not clutil_is_file_untracked(stored_path, git_root):

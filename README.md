@@ -80,7 +80,7 @@ git cl br docs-fix
 
 ## Documentation
 
-📘 [Full Tutorial](docs/tutorial.md): Guide with examples and FAQ
+📘 [Tutorial](docs/tutorial.md): Guide with examples and FAQ
 
 📘 [Design Notes](docs/design-notes.md): Technical architecture
 

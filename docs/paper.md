@@ -185,7 +185,7 @@ This workflow removes the need to predict scope upfront. Developers can organise
 
 **Limitations.** git-cl targets single-user, local workflows. File locking uses platform-specific mechanisms (`fcntl` on Unix, `msvcrt` on Windows), and the tool is tested on both platforms via continuous integration. The tool does not validate changelist contents against branch state — a changelist may reference files that do not exist after switching branches. This is an accepted constraint for a tool designed for local developer workflows rather than shared environments
 
-**Availability.** git-cl is freely available at [https://github.com/BHFock/git-cl](https://github.com/BHFock/git-cl) under the BSD-3-Clause licence. The implementation consists of a single Python file (approximately 3,300 lines) with no external dependencies beyond Python 3.9+ and Git. Documentation includes a tutorial with worked examples [10] and design notes describing the technical architecture [11].
+**Availability.** git-cl is freely available at [https://github.com/BHFock/git-cl](https://github.com/BHFock/git-cl) under the BSD-3-Clause licence and archived on Zenodo (DOI: [10.5281/zenodo.18722077](https://doi.org/10.5281/zenodo.18722077)). The implementation consists of a single Python file (approximately 3,300 lines) with no external dependencies beyond Python 3.9+ and Git. Documentation includes a tutorial with worked examples [10] and design notes describing the technical architecture [11].
 
 **Testing.** The repository includes an integration test suite covering all commands. Tests are implemented in Python, operate
 on temporary Git repositories, and can be exported as standalone shell scripts for use as worked examples [12].

@@ -7,7 +7,7 @@ git-cl is a minimal Git subcommand that brings changelist support to Git. Organi
 
 [![Tutorial](https://img.shields.io/badge/Tutorial-View-blue)](https://github.com/BHFock/git-cl/blob/main/docs/tutorial.md)
 [![Paper](https://img.shields.io/badge/Paper-Read-blue)](https://github.com/BHFock/git-cl/blob/main/docs/paper.md)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18722077.svg)](https://doi.org/10.5281/zenodo.18722077)
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.18722077-blue)](https://doi.org/10.5281/zenodo.18722077)
 [![Tests](https://github.com/BHFock/git-cl/actions/workflows/test.yml/badge.svg)](https://github.com/BHFock/git-cl/actions/workflows/test.yml)
 [![GitHub stars](https://img.shields.io/github/stars/BHFock/git-cl?style=social)](https://github.com/BHFock/git-cl/stargazers)
 

@@ -9,8 +9,8 @@ url: "https://github.com/BHFock/git-cl"
 repository-code: "https://github.com/BHFock/git-cl"
 license: BSD-3-Clause
 doi: "10.5281/zenodo.18722077"
-version: "1.1.0"
-date-released: "2026-02-21"
+version: "1.1.1"
+date-released: "2026-02-22"
 abstract: >-
   git-cl is a command-line tool that brings changelist support to Git.
   It introduces a pre-staging layer that allows developers to partition

@@ -4,8 +4,6 @@ If you notice something that might be a security issue, please report it private
 
 This allows you to share details confidentially, giving me a chance to review and respond before any public disclosure. While there's no guaranteed response or timeline, thoughtful reports are always appreciated.
 
----
-
 ## Notes on Code Safety
 
 This tool includes some basic safeguards by design:

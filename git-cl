@@ -37,8 +37,8 @@
 """
 git-cl: Manage changelists within a Git working directory.
 
-Repository: https://github.com/BHFock/git-cl
-Note: This project may or may not be actively maintained in the future.
+GitHub: https://github.com/BHFock/git-cl
+DOI: https://doi.org/10.5281/zenodo.18722077
 
 This CLI tool allows you to group files into named changelists before staging
 or committing. Changelists are saved in a 'cl.json' file inside the Git
@@ -3008,7 +3008,9 @@ def main() -> None:
             "    git cl add my-feature file1.py file2.py\n"
             "    git cl status\n"
             "    git cl commit my-feature -m 'Implement feature'\n\n"
-            "See also: https://github.com/BHFock/git-cl"),
+            "See also: \n"
+            "    GitHub: https://github.com/BHFock/git-cl \n"
+            "    DOI:    https://doi.org/10.5281/zenodo.18722077"),
         formatter_class=argparse.RawTextHelpFormatter,
         add_help=False)
 

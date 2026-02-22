@@ -35,26 +35,28 @@
 # pylint: disable=too-many-lines
 #
 """
-git-cl: Manage changelists within a Git working directory.
+git-cl: A pre-staging layer for organising changes in Git.
 
-Repository: https://github.com/BHFock/git-cl
-Note: This project may or may not be actively maintained in the future.
+GitHub: https://github.com/BHFock/git-cl
+DOI:    https://doi.org/10.5281/zenodo.18722077
 
-This CLI tool allows you to group files into named changelists before staging
-or committing. Changelists are saved in a 'cl.json' file inside the Git
-directory. You can then operate on changelists as logical groups: staging,
-committing, listing, or deleting them.
+git-cl brings changelist support to Git, allowing developers to partition
+modified files into named groups before staging or committing. Changelists
+persist across sessions in a JSON file inside the .git directory, and
+integrate transparently with existing Git workflows.
 
 Features:
-- Add/remove files to/from changelists
-- Stage or commit all files in a changelist
-- Show status grouped by changelists
-- Delete changelists when done
+- Group files into named changelists (add, remove, status)
+- Stage, unstage, commit, or diff by changelist
+- Checkout (revert) changelist files to HEAD
+- Stash and unstash changelists selectively
+- Promote a changelist to a dedicated branch (late-binding branching)
 
-This tool is intended for use within Git repositories.
+Single file, zero dependencies beyond Python 3.9+ and Git.
+Cross-platform: Unix (fcntl) and Windows (msvcrt) file locking.
 """
 
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 
 import argparse
 import datetime
@@ -3008,7 +3010,9 @@ def main() -> None:
             "    git cl add my-feature file1.py file2.py\n"
             "    git cl status\n"
             "    git cl commit my-feature -m 'Implement feature'\n\n"
-            "See also: https://github.com/BHFock/git-cl"),
+            "See also: \n"
+            "    GitHub: https://github.com/BHFock/git-cl \n"
+            "    DOI:    https://doi.org/10.5281/zenodo.18722077"),
         formatter_class=argparse.RawTextHelpFormatter,
         add_help=False)
 

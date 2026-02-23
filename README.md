@@ -11,15 +11,15 @@ git-cl is a minimal Git subcommand that brings changelist support to Git. Organi
 [![Tests](https://github.com/BHFock/git-cl/actions/workflows/test.yml/badge.svg)](https://github.com/BHFock/git-cl/actions/workflows/test.yml)
 [![GitHub stars](https://img.shields.io/github/stars/BHFock/git-cl?style=social)](https://github.com/BHFock/git-cl/stargazers)
 
-`git-cl` is a command-line tool that offers Git changelist support, inspired by Subversion. It allows users to assign working directory files to named changelists, helping organise work by intent, manage partial commits, and branch directly from a changelist.
+`git-cl` is a command-line tool that brings changelist support to Git, inspired by Subversion. It adds a pre-staging review layer that lets you organise modified files into named groups before staging or committing. Changelists can be stashed selectively and promoted to dedicated branches — enabling a late-binding branching workflow where the branch decision follows the code, not the other way around.
 
 ## Why git-cl?
 
-- Group files logically before staging using Git changelists
-- Work on multiple features on a single branch
+- Pre-staging review: group changed files by intent before staging
+- Organise multiple concerns on a single branch
 - Stage and commit changes by intent
 - Stash changelists and resume work later
-- Create a new branch directly from a changelist
+- Late-binding branching: promote a changelist to a dedicated branch
 - Local-only metadata (`.git/cl.json`)
 - Simple CLI: `git cl <command>`
 
@@ -69,12 +69,7 @@ git cl remove README.md
 # Delete a changelist
 git cl delete docs-fix
 
-# Temporarily stash a changelist and resume work on a new branch
-git cl stash docs-fix
-git checkout -b docs-fix-work
-git cl unstash docs-fix
-
-# Create and switch to a new branch from a changelist (auto-stash/unstash)
+# Late-binding branching: create a branch from a changelist (auto-stash/unstash)
 git cl br docs-fix
 ```
 
@@ -103,5 +98,5 @@ git cl br docs-fix
 BSD 3-Clause — see [LICENSE](./LICENSE) | [CONTRIBUTING](CONTRIBUTING.md)
 
 <!--
-Keywords: git changelist, svn changelist, partial commit, group files, perforce, git extension, organise changes, subversion, named staging area, pre-staging, commit logical units, selective commit
+Keywords: git changelist, svn changelist, partial commit, group files, perforce, git extension, organise changes, subversion, named staging area, pre-staging, commit logical units, selective commit, late-binding branching
 -->

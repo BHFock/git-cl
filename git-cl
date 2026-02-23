@@ -72,6 +72,10 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Optional, Iterator
 
+if sys.version_info < (3, 9):
+    print("Error: git-cl requires Python 3.9+", file=sys.stderr)
+    sys.exit(1)
+
 # Try to import colorama for colored output of 'git cl st'
 # use dummy objects if colorama is not available to avoid NameError
 try:
@@ -2990,10 +2994,6 @@ def main() -> None:
     Parses command-line arguments and dispatches to the appropriate
     subcommand handler (e.g., add, remove, stage, commit, etc.).
     """
-
-    if sys.version_info < (3, 9):
-        print("Error: git-cl requires Python 3.9+", file=sys.stderr)
-        sys.exit(1)
 
     parser = argparse.ArgumentParser(
         prog='git-cl',

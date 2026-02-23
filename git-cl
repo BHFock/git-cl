@@ -56,7 +56,7 @@ Single file, zero dependencies beyond Python 3.9+ and Git.
 Cross-platform: Unix (fcntl) and Windows (msvcrt) file locking.
 """
 
-__version__ = "1.1.1"
+__version__ = "1.1.2"
 
 import argparse
 import datetime

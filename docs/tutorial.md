@@ -4,7 +4,9 @@ git-cl: A Git subcommand to manage changelists in Git. Group files by intent, ma
 
 # git-cl: A Git Subcommand for Changelist Management
 
-[git-cl](https://github.com/BHFock/git-cl) is a command-line tool that brings changelists to Git — like sticky notes for your working directory. It lets you group files into named changelists before [staging](https://git-scm.com/about/staging-area) or [committing](https://git-scm.com/docs/git-commit), helping you manage multiple parallel changes and make partial commits with intent and clarity. It acts as a pre-staging review layer, and supports late-binding branching — promoting changelists to dedicated branches when the time is right.
+[git-cl](https://github.com/BHFock/git-cl) is a command-line tool that brings changelists to Git — like sticky notes for your working directory. It lets you group files into named changelists before staging or committing, acting as a pre-staging review layer for managing multiple parallel changes with intent and clarity.
+
+Changelists can be stashed selectively and promoted to dedicated branches — an approach called late-binding branching.​​​​​​​​​​​​​​​​
 
 ## Why git-cl?
 

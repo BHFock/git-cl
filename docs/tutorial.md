@@ -22,8 +22,7 @@ This helps when:
 
 Changelists are saved locally in `.git/cl.json`. They’re private to your workspace and not shared or committed. Think of them as quick labels on piles of work.
 
-Read more: [Why git-cl exists: A personal history](why-git-cl.md) of changelists from SVN to Git and the concept paper [git-cl: A Pre-Staging Layer for Organising Changes in Git](https://github.com/BHFock/git-cl/blob/main/docs/paper.md).
-
+Read more: Why [Why git-cl exists](why-git-cl.md) for the personal history, and the [concept paper](https://github.com/BHFock/git-cl/blob/main/docs/paper.md) for design and related work.
 
 ## How changelists fit into Git workflows
 

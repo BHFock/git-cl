@@ -369,7 +369,7 @@ What happens under the hood:
 2. Creates and checks out the new branch.
 3. Restores only the chosen changelist on that branch — the other changelists remain stashed and can be restored with `git cl unstash` later.
 
-See [Section 4.2](#42-branching-mid-feature-with-git-cl-branch) for a worked example.
+See [Section 4.2](#42-late-binding-branching-with-git-cl-branch) for a worked example.
 
 <p align="left">
   <img src="git-cl_br.svg"
@@ -411,7 +411,7 @@ git commit -m "Implement core feature"
 The other changelists remain untouched, keeping your workspace organised and uncommitted changes visible.
 
 
-### 4.2 Branching Mid-Feature with git cl branch
+### 4.2 Late-Binding Branching with git cl branch
 
 Sometimes you’re deep in the middle of a changelist — maybe tweaking numerical algorithms or refactoring simulation code — and you realise it would be cleaner to finish the work on a separate branch.
 `git cl branch` makes that move painless, without committing incomplete work.

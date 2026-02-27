@@ -85,15 +85,15 @@ git cl br docs-fix
 
 ## Documentation
 
-📘 [Tutorial](docs/tutorial.md): Guide with examples and FAQ
+📘 [Tutorial](https://github.com/BHFock/git-cl/blob/main/docs/tutorial.md): Guide with examples and FAQ
 
-📘 [Design Notes](docs/design-notes.md): Technical architecture
+📘 [Design Notes](https://github.com/BHFock/git-cl/blob/main/docs/design-notes.md): Technical architecture
 
-📘 [Tests](tests/README.md): Test suite and shell walkthroughs
+📘 [Tests](https://github.com/BHFock/git-cl/blob/main/tests/README.md): Test suite and shell walkthroughs
 
-📘 [Why git-cl?](docs/why-git-cl.md): History and motivation
+📘 [Why git-cl?](https://github.com/BHFock/git-cl/blob/main/docs/why-git-cl.md): History and motivation
 
-📘 [Paper](docs/paper.md): Design, workflow, and related work
+📘 [Paper](https://github.com/BHFock/git-cl/blob/main/docs/paper.md): Design, workflow, and related work
 
 
 ## Notes
@@ -101,11 +101,11 @@ git cl br docs-fix
 - Requires Python 3.9+ and Git
 - Local-only; designed for single-user workflows
 - Always inspect downloaded scripts before executing, see [source](https://github.com/BHFock/git-cl/blob/main/git-cl)
-- For security concerns, see [SECURITY](./SECURITY.md)
+- For security concerns, see [SECURITY](https://github.com/BHFock/git-cl/blob/main/SECURITY.md)
 
 ## License
 
-BSD 3-Clause — see [LICENSE](./LICENSE) | [CONTRIBUTING](CONTRIBUTING.md)
+BSD 3-Clause — see [LICENSE](https://github.com/BHFock/git-cl/blob/main/LICENSE) | [CONTRIBUTING](https://github.com/BHFock/git-cl/blob/main/CONTRIBUTING.md)
 
 <!--
 Keywords: git changelist, svn changelist, partial commit, group files, perforce, git extension, organise changes, subversion, named staging area, pre-staging, commit logical units, selective commit, late-binding branching

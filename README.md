@@ -33,9 +33,12 @@ git-cl is a minimal Git subcommand that brings changelist support to Git. Organi
 ## Quick Start
 
 ### Install via pip
+
 ```
 pip install git-changelists
 ```
+
+The PyPI package is named git-changelists to avoid namespace conflicts; it installs the git-cl command.
 
 ### Install via wget
 ```

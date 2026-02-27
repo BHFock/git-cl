@@ -26,7 +26,7 @@ git-cl is a minimal Git subcommand that brings changelist support to Git. Organi
 ## Demo 
 
 <a href="https://github.com/BHFock/git-cl/blob/main/docs/tutorial.md">
-  <img src="docs/demo/git-cl-demo.gif" alt="git-cl demo: creating changelists, viewing status, and branching" width="750"/>
+  <img src="https://raw.githubusercontent.com/BHFock/git-cl/refs/heads/main/docs/demo/git-cl-demo.gif" alt="git-cl demo: creating changelists, viewing status, and branching" width="750"/>
 </a>
 
 ## Quick Start

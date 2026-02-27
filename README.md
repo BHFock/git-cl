@@ -8,6 +8,7 @@ git-cl is a minimal Git subcommand that brings changelist support to Git. Organi
 [![Tutorial](https://img.shields.io/badge/Tutorial-View-blue)](https://github.com/BHFock/git-cl/blob/main/docs/tutorial.md)
 [![Paper](https://img.shields.io/badge/Paper-Read-blue)](https://github.com/BHFock/git-cl/blob/main/docs/paper.md)
 [![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.18722077-blue)](https://doi.org/10.5281/zenodo.18722077)
+[![PyPI](https://img.shields.io/pypi/v/git-changelists)](https://pypi.org/project/git-changelists/)
 [![Tests](https://github.com/BHFock/git-cl/actions/workflows/test.yml/badge.svg)](https://github.com/BHFock/git-cl/actions/workflows/test.yml)
 [![GitHub stars](https://img.shields.io/github/stars/BHFock/git-cl?style=social)](https://github.com/BHFock/git-cl/stargazers)
 
@@ -26,27 +27,36 @@ git-cl is a minimal Git subcommand that brings changelist support to Git. Organi
 ## Demo 
 
 <a href="https://github.com/BHFock/git-cl/blob/main/docs/tutorial.md">
-  <img src="docs/demo/git-cl-demo.gif" alt="git-cl demo: creating changelists, viewing status, and branching" width="750"/>
+  <img src="https://raw.githubusercontent.com/BHFock/git-cl/refs/heads/main/docs/demo/git-cl-demo.gif" alt="git-cl demo: creating changelists, viewing status, and branching" width="750"/>
 </a>
 
 ## Quick Start
+
+### Install via pip
 ```
-# Install
+pip install git-changelists
+```
+
+### Install via wget
+```
 mkdir -p ~/bin
 wget https://raw.githubusercontent.com/BHFock/git-cl/main/git-cl -O ~/bin/git-cl
 chmod +x ~/bin/git-cl
+```
+Make sure `~/bin` is listed in your `$PATH`.
 
-# Verify Installation
+### Verify installation
+```
 git cl --version
 git cl help
+```
 
-# Use changelists inside a Git repository
+### Use changelists inside a Git repository
+```bash
 git cl add fixup file1.py
 git cl status
 git cl commit fixup -m "Fix file1"
 ```
-
-Make sure `~/bin` is listed in your `$PATH`. 
 
 ## Common Commands
 ```bash
@@ -75,15 +85,15 @@ git cl br docs-fix
 
 ## Documentation
 
-📘 [Tutorial](docs/tutorial.md): Guide with examples and FAQ
+📘 [Tutorial](https://github.com/BHFock/git-cl/blob/main/docs/tutorial.md): Guide with examples and FAQ
 
-📘 [Design Notes](docs/design-notes.md): Technical architecture
+📘 [Design Notes](https://github.com/BHFock/git-cl/blob/main/docs/design-notes.md): Technical architecture
 
-📘 [Tests](tests/README.md): Test suite and shell walkthroughs
+📘 [Tests](https://github.com/BHFock/git-cl/blob/main/tests/README.md): Test suite and shell walkthroughs
 
-📘 [Why git-cl?](docs/why-git-cl.md): History and motivation
+📘 [Why git-cl?](https://github.com/BHFock/git-cl/blob/main/docs/why-git-cl.md): History and motivation
 
-📘 [Paper](docs/paper.md): Design, workflow, and related work
+📘 [Paper](https://github.com/BHFock/git-cl/blob/main/docs/paper.md): Design, workflow, and related work
 
 
 ## Notes
@@ -91,11 +101,11 @@ git cl br docs-fix
 - Requires Python 3.9+ and Git
 - Local-only; designed for single-user workflows
 - Always inspect downloaded scripts before executing, see [source](https://github.com/BHFock/git-cl/blob/main/git-cl)
-- For security concerns, see [SECURITY](./SECURITY.md)
+- For security concerns, see [SECURITY](https://github.com/BHFock/git-cl/blob/main/SECURITY.md)
 
 ## License
 
-BSD 3-Clause — see [LICENSE](./LICENSE) | [CONTRIBUTING](CONTRIBUTING.md)
+BSD 3-Clause — see [LICENSE](https://github.com/BHFock/git-cl/blob/main/LICENSE) | [CONTRIBUTING](https://github.com/BHFock/git-cl/blob/main/CONTRIBUTING.md)
 
 <!--
 Keywords: git changelist, svn changelist, partial commit, group files, perforce, git extension, organise changes, subversion, named staging area, pre-staging, commit logical units, selective commit, late-binding branching

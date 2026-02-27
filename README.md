@@ -30,23 +30,32 @@ git-cl is a minimal Git subcommand that brings changelist support to Git. Organi
 </a>
 
 ## Quick Start
+
+### Install via pip
 ```
-# Install
+pip install git-changelists
+```
+
+### Install via wget
+```
 mkdir -p ~/bin
 wget https://raw.githubusercontent.com/BHFock/git-cl/main/git-cl -O ~/bin/git-cl
 chmod +x ~/bin/git-cl
+```
+Make sure `~/bin` is listed in your `$PATH`.
 
-# Verify Installation
+### Verify installation
+```
 git cl --version
 git cl help
+```
 
-# Use changelists inside a Git repository
+### Use changelists inside a Git repository
+```bash
 git cl add fixup file1.py
 git cl status
 git cl commit fixup -m "Fix file1"
 ```
-
-Make sure `~/bin` is listed in your `$PATH`. 
 
 ## Common Commands
 ```bash

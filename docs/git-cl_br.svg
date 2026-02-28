@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg"
-     viewBox="0 0 1120 540"
+     viewBox="0 0 1120 465"
      width="1120"
-     height="540">
+     height="465">
 
   <!-- =======================
        Styles
@@ -79,7 +79,7 @@
   </defs>
 
   <!-- Background -->
-  <rect x="0" y="0" width="1120" height="540"
+  <rect x="0" y="0" width="1120" height="465"
         rx="12"
         fill="#f8fafc"
         stroke="#e2e8f0"/>
@@ -205,48 +205,45 @@
   </text>
 
   <!-- Annotation (aligned to bugfix) -->
-  <text x="700" y="295" class="annotation">
+  <text x="700" y="300" class="annotation">
     Only this changelist is restored on the branch
   </text>
-  <text x="700" y="313" class="annotation">
-    — others are stashed below
-  </text>
 
-  <!-- Stashed: docs + experiment (below feature/bugfix panel) -->
-  <rect x="670" y="356" width="410" height="118" rx="10"
+  <!-- Stashed: docs + experiment side by side (below feature/bugfix panel) -->
+  <rect x="670" y="350" width="410" height="96" rx="10"
         fill="#fef3c7" stroke="#f59e0b" filter="url(#shadow)"/>
-  <text x="690" y="379"
+
+  <text x="690" y="370"
         font-family="system-ui, sans-serif" font-size="15px" font-weight="600" fill="#374151">
     Stashed
   </text>
+  <text x="760" y="370"
+        font-family="system-ui, sans-serif" font-size="12px" fill="#6b7280" font-style="italic">
+    — other changelists remain untouched on main
+  </text>
 
-  <!-- Stashed: docs -->
-  <rect x="700" y="388" width="174" height="28" rx="6"
+  <!-- Stashed: docs (left pill) -->
+  <rect x="685" y="380" width="185" height="50" rx="6"
         fill="#fde68a" stroke="#f59e0b"/>
-  <text x="714" y="407"
+  <text x="700" y="401"
         font-family="system-ui, sans-serif" font-size="13px" font-weight="600" fill="#374151">
     docs
   </text>
-  <text x="790" y="407"
+  <text x="700" y="420"
         font-family="system-ui, sans-serif" font-size="12px" fill="#6b7280" font-style="italic">
     2 files
   </text>
 
-  <!-- Stashed: experiment -->
-  <rect x="700" y="424" width="174" height="28" rx="6"
+  <!-- Stashed: experiment (right pill) -->
+  <rect x="880" y="380" width="185" height="50" rx="6"
         fill="#fde68a" stroke="#f59e0b"/>
-  <text x="714" y="443"
+  <text x="895" y="401"
         font-family="system-ui, sans-serif" font-size="13px" font-weight="600" fill="#374151">
     experiment
   </text>
-  <text x="814" y="443"
+  <text x="895" y="420"
         font-family="system-ui, sans-serif" font-size="12px" fill="#6b7280" font-style="italic">
     1 file
-  </text>
-
-  <!-- Footer -->
-  <text x="40" y="510" class="subtitle">
-    Other changelists are automatically stashed and remain untouched.
   </text>
 
 </svg>

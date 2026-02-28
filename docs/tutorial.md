@@ -47,7 +47,15 @@ Use changelists as your own labelled workspace, keep unrelated edits separate, o
 
 ## 1. Installation
 
-### Method 1: Download the script
+### Method 1: Install via pip
+
+```
+pip install git-changelists
+```
+
+This is the easiest method if you already have Python and pip available.
+
+### Method 2: Download the script
 
 For the latest stable version, download directly from the [git-cl repository](https://github.com/BHFock/git-cl):
 
@@ -63,7 +71,7 @@ Make sure `~/bin` is in your `$PATH`. You can add this line to your shell config
 export PATH="$HOME/bin:$PATH"
 ```
 
-### Method 2: Clone the repository
+### Method 3: Clone the repository
 
 Clone the complete [git-cl project](https://github.com/BHFock/git-cl) including documentation and [tests](https://github.com/BHFock/git-cl/blob/main/tests/README.md):
 

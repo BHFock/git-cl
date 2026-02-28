@@ -147,18 +147,18 @@
 
   <!-- Stash area with both changelists -->
   <rect x="310" y="285" width="180" height="110" rx="10"
-        fill="#fef3c7" stroke="#f59e0b" filter="url(#shadow)"/>
+        fill="#fef8e3" stroke="#e09a20" filter="url(#shadow)"/>
   <text x="325" y="308" class="heading">Stashed</text>
 
   <!-- Stashed: solver -->
   <rect x="322" y="320" width="156" height="28" rx="6"
-        fill="#fde68a" stroke="#f59e0b"/>
+        fill="#fae8a0" stroke="#e09a20"/>
   <text x="334" y="339" class="label">solver</text>
   <text x="402" y="339" class="stash-label">2 files</text>
 
   <!-- Stashed: io-fix -->
   <rect x="322" y="356" width="156" height="28" rx="6"
-        fill="#fde68a" stroke="#f59e0b"/>
+        fill="#fae8a0" stroke="#e09a20"/>
   <text x="334" y="375" class="label">io-fix</text>
   <text x="402" y="375" class="stash-label">2 files</text>
 
@@ -196,12 +196,12 @@
 
   <!-- Stash area with io-fix only -->
   <rect x="610" y="285" width="180" height="75" rx="10"
-        fill="#fef3c7" stroke="#f59e0b" filter="url(#shadow)"/>
+        fill="#fef8e3" stroke="#e09a20" filter="url(#shadow)"/>
   <text x="625" y="308" class="heading">Stashed</text>
 
   <!-- Stashed: io-fix -->
   <rect x="622" y="320" width="156" height="28" rx="6"
-        fill="#fde68a" stroke="#f59e0b"/>
+        fill="#fae8a0" stroke="#e09a20"/>
   <text x="634" y="339" class="label">io-fix</text>
   <text x="702" y="339" class="stash-label">2 files</text>
 

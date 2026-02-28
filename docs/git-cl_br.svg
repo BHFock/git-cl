@@ -76,6 +76,10 @@
       <feDropShadow dx="0" dy="2" stdDeviation="3"
                     flood-color="#000" flood-opacity="0.1"/>
     </filter>
+    <filter id="shadow-branch" x="-20%" y="-20%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6"
+                    flood-color="#7c3aed" flood-opacity="0.22"/>
+    </filter>
   </defs>
 
   <!-- Background -->
@@ -173,9 +177,10 @@
   <!-- RIGHT: New Branch -->
   <rect x="670" y="120" width="410" height="220"
         rx="14"
-        fill="#f5f3ff"
-        stroke="#8b5cf6"
-        filter="url(#shadow)"/>
+        fill="#ede9fe"
+        stroke="#7c3aed"
+        stroke-width="2.5"
+        filter="url(#shadow-branch)"/>
 
   <text x="690" y="150" class="label">
     feature/bugfix — git cl st
@@ -211,7 +216,7 @@
 
   <!-- Stashed: docs + experiment side by side (below feature/bugfix panel) -->
   <rect x="670" y="350" width="410" height="96" rx="10"
-        fill="#fef3c7" stroke="#f59e0b" filter="url(#shadow)"/>
+        fill="#fef8e3" stroke="#e09a20" filter="url(#shadow)"/>
 
   <text x="690" y="370"
         font-family="system-ui, sans-serif" font-size="15px" font-weight="600" fill="#374151">
@@ -224,7 +229,7 @@
 
   <!-- Stashed: docs (left pill) -->
   <rect x="685" y="380" width="185" height="50" rx="6"
-        fill="#fde68a" stroke="#f59e0b"/>
+        fill="#fae8a0" stroke="#e09a20"/>
   <text x="700" y="401"
         font-family="system-ui, sans-serif" font-size="13px" font-weight="600" fill="#374151">
     docs
@@ -236,7 +241,7 @@
 
   <!-- Stashed: experiment (right pill) -->
   <rect x="880" y="380" width="185" height="50" rx="6"
-        fill="#fde68a" stroke="#f59e0b"/>
+        fill="#fae8a0" stroke="#e09a20"/>
   <text x="895" y="401"
         font-family="system-ui, sans-serif" font-size="13px" font-weight="600" fill="#374151">
     experiment

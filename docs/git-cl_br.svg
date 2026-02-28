@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg"
-     viewBox="0 0 1120 465"
+     viewBox="0 0 1120 450"
      width="1120"
-     height="465">
+     height="450">
 
   <!-- =======================
        Styles
@@ -83,7 +83,7 @@
   </defs>
 
   <!-- Background -->
-  <rect x="0" y="0" width="1120" height="465"
+  <rect x="0" y="0" width="1120" height="450"
         rx="12"
         fill="#f8fafc"
         stroke="#e2e8f0"/>
@@ -175,7 +175,7 @@
   </text>
 
   <!-- RIGHT: New Branch -->
-  <rect x="670" y="120" width="410" height="220"
+  <rect x="670" y="120" width="410" height="200"
         rx="14"
         fill="#ede9fe"
         stroke="#7c3aed"
@@ -215,38 +215,38 @@
   </text>
 
   <!-- Stashed: docs + experiment side by side (below feature/bugfix panel) -->
-  <rect x="670" y="350" width="410" height="96" rx="10"
+  <rect x="670" y="338" width="410" height="96" rx="10"
         fill="#fef8e3" stroke="#e09a20" filter="url(#shadow)"/>
 
-  <text x="690" y="370"
+  <text x="690" y="358"
         font-family="system-ui, sans-serif" font-size="15px" font-weight="600" fill="#374151">
     Stashed
   </text>
-  <text x="760" y="370"
+  <text x="760" y="358"
         font-family="system-ui, sans-serif" font-size="12px" fill="#6b7280" font-style="italic">
     — other changelists remain untouched on main
   </text>
 
   <!-- Stashed: docs (left pill) -->
-  <rect x="685" y="380" width="185" height="50" rx="6"
+  <rect x="685" y="368" width="185" height="50" rx="6"
         fill="#fae8a0" stroke="#e09a20"/>
-  <text x="700" y="401"
+  <text x="700" y="389"
         font-family="system-ui, sans-serif" font-size="13px" font-weight="600" fill="#374151">
     docs
   </text>
-  <text x="700" y="420"
+  <text x="700" y="408"
         font-family="system-ui, sans-serif" font-size="12px" fill="#6b7280" font-style="italic">
     2 files
   </text>
 
   <!-- Stashed: experiment (right pill) -->
-  <rect x="880" y="380" width="185" height="50" rx="6"
+  <rect x="880" y="368" width="185" height="50" rx="6"
         fill="#fae8a0" stroke="#e09a20"/>
-  <text x="895" y="401"
+  <text x="895" y="389"
         font-family="system-ui, sans-serif" font-size="13px" font-weight="600" fill="#374151">
     experiment
   </text>
-  <text x="895" y="420"
+  <text x="895" y="408"
         font-family="system-ui, sans-serif" font-size="12px" fill="#6b7280" font-style="italic">
     1 file
   </text>

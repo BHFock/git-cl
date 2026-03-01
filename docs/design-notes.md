@@ -358,8 +358,6 @@ Memory usage scales with the number of files in active changelists rather than t
 #### Git Command Optimisation
 Leverages Git's native commands (`git status`, `git stash`, etc.) rather than reimplementing Git functionality. File operations are batched where possible (e.g., `git add` with multiple files) to minimise subprocess overhead. Path conversion caching could be added for very large changelists if needed.
 
-
-
 ## Design Decisions FAQ
 
 ### Why store metadata in .git/ instead of tracked files?
@@ -372,7 +370,6 @@ Leverages Git's native commands (`git status`, `git stash`, etc.) rather than re
 
 ### Why JSON for metadata storage?
 - Human readable with native [Python support](https://docs.python.org/3/library/json.html) for [read](https://github.com/BHFock/git-cl/blob/4e75779b6c06365adaa148eb92ab7062fbdd68ba/git-cl#L219) and [write](https://github.com/BHFock/git-cl/blob/4e75779b6c06365adaa148eb92ab7062fbdd68ba/git-cl#L239) operations
-
   
 ### Why relative paths in cl.json?
 - Repository portability (can move anywhere)
@@ -387,6 +384,12 @@ Leverages Git's native commands (`git status`, `git stash`, etc.) rather than re
 ### Why use argparse instead of a more modern CLI framework?
 - Part of Python standard library with automatic help generation
 - Sufficient for git-cl's simple command structure
+
+### Do changelists work with Git worktrees?
+
+Each worktree maintains its own independent set of changelists. This follows naturally from how `git rev-parse --git-dir` works: in a linked worktree it returns a worktree-specific path inside `.git/worktrees/<name>/` rather than the main `.git/` directory, so cl.json is stored and read independently per worktree. Changelists created in one worktree are not visible in another, which is consistent with worktrees representing separate working contexts on separate branches.
+
+`git cl` branch correctly detects branch name conflicts arising from worktrees and reports them with a clear error and suggested fix.
 
 ## Future direction
 

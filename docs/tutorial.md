@@ -540,6 +540,10 @@ This will show all files, including those with status codes like `[UU]` (unmerge
 
 Yes. If the changelist was deleted after a stage or commit, you can create a new one with the same name — it's just a label, not a persistent identity.
 
+### Do changelists work with Git worktrees?
+
+Yes, but each worktree has its own independent set of changelists. This follows naturally from how Git worktrees work: `git rev-parse --git-dir` returns a worktree-specific path inside `.git/worktrees/<name>/`, so git-cl stores and reads `cl.json` independently per worktree. Changelists created in one worktree are not visible in another, which is consistent with worktrees representing separate working contexts on separate branches.
+
 [↑ Back to top](#git-cl-a-git-subcommand-for-changelist-management)
 
 ## 6. Command Summary

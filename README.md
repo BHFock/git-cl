@@ -14,6 +14,8 @@ git-cl is a minimal Git subcommand that brings changelist support to Git. Organi
 
 `git-cl` is a command-line tool that brings changelist support to Git, inspired by Subversion. It adds a pre-staging review layer that lets you organise modified files into named groups before staging or committing. Changelists can be stashed selectively and promoted to dedicated branches — enabling a late-binding branching workflow where the branch decision follows the code, not the other way around.
 
+`git‑cl` operates on file level. It groups and stages whole files by intent, while leaving patch‑level editing to other Git tools.
+
 ## Why git-cl?
 
 - Pre-staging review: group changed files by intent before staging

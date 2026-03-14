@@ -540,6 +540,10 @@ This will show all files, including those with status codes like `[UU]` (unmerge
 
 Yes. If the changelist was deleted after a stage or commit, you can create a new one with the same name — it's just a label, not a persistent identity.
 
+### Can git-cl split changes within a single file across multiple changelists?
+
+No. A file can only belong to one changelist at a time. For patch-level splitting within a file, use `git add -p` alongside `git-cl` — the two tools complement each other.
+
 ### Do changelists work with Git worktrees?
 
 Yes. Each worktree has its own independent set of changelists — changes made in one worktree are not visible in another. This means you can use git-cl freely in each worktree without them interfering with each other.

@@ -13,8 +13,8 @@ on:
       - 'git-cl'
       - 'tests/**'
   schedule:
-    # First Friday of every month at 18:00 UTC
-      - cron: '0 18 1-7 * 5'
+      # First Friday of Jan/Apr/Jul/Oct
+      - cron: '0 18 1-7 1,4,7,10 5'
 
 jobs:
   test:

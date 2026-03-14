@@ -28,6 +28,8 @@ This document describes the design of `git-cl` to help future maintenance. Note 
 
 The changelist layer supports intentional workflows: grouping related changes for review, isolating work before staging, and enabling targeted operations without relying on Git’s index or history. By decoupling file organisation from Git’s internal state, [git-cl](https://github.com/BHFock/git-cl) offers a stable and portable way to manage work-in-progress.
 
+git-cl operates at the file level — it groups whole files by intent, not hunks or patches. Patch-level editing is intentionally left to other Git tools.
+
 ## Technical Architecture
 
 ### Code and Data Organisation

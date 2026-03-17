@@ -25,6 +25,7 @@ git-cl is a minimal Git subcommand that brings changelist support to Git. Organi
 - Late-binding branching: promote a changelist to a dedicated branch
 - Local-only metadata (`.git/cl.json`)
 - Simple CLI: `git cl <command>`
+- Interoperable with community VS Code extension [git-cl-vscode](https://github.com/WayLit/git-cl-vscode)
 
 ## Demo 
 

@@ -5,12 +5,13 @@ git-cl is a minimal Git subcommand that brings changelist support to Git. Organi
 
 > A pre-staging layer for organising changes in Git
 
-[![Tutorial](https://img.shields.io/badge/Tutorial-View-blue)](https://github.com/BHFock/git-cl/blob/main/docs/tutorial.md)
-[![Paper](https://img.shields.io/badge/Paper-Read-blue)](https://github.com/BHFock/git-cl/blob/main/docs/paper.md)
-[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.18722077-blue)](https://doi.org/10.5281/zenodo.18722077)
-[![PyPI](https://img.shields.io/pypi/v/git-changelists)](https://pypi.org/project/git-changelists/)
-[![Tests](https://github.com/BHFock/git-cl/actions/workflows/test.yml/badge.svg)](https://github.com/BHFock/git-cl/actions/workflows/test.yml)
-[![GitHub stars](https://img.shields.io/github/stars/BHFock/git-cl?style=social)](https://github.com/BHFock/git-cl/stargazers)
+[![Tutorial](https://img.shields.io/badge/Tutorial-View-4D90FE)](https://github.com/BHFock/git-cl/blob/main/docs/tutorial.md)
+[![Paper](https://img.shields.io/badge/Paper-Read-3B7DDD)](https://github.com/BHFock/git-cl/blob/main/docs/paper.md)
+[![Story](https://img.shields.io/badge/Story-History-2E6AB5)](https://github.com/BHFock/git-cl/blob/main/docs/why-git-cl.md)
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.18722077-1F5DB3)](https://doi.org/10.5281/zenodo.18722077)
+[![PyPI](https://img.shields.io/pypi/v/git-changelists?color=6E6E6E)](https://pypi.org/project/git-changelists/)
+[![Tests](https://github.com/BHFock/git-cl/actions/workflows/test.yml/badge.svg?style=flat&color=0D6E99)](https://github.com/BHFock/git-cl/actions/workflows/test.yml)
+[![GitHub stars](https://img.shields.io/github/stars/BHFock/git-cl?style=social&color=444)](https://github.com/BHFock/git-cl/stargazers)
 
 `git-cl` is a command-line tool that brings changelist support to Git, inspired by Subversion. It adds a pre-staging review layer that lets you organise modified files into named groups before staging or committing. Changelists can be stashed selectively and promoted to dedicated branches — enabling a late-binding branching workflow where the branch decision follows the code, not the other way around.
 

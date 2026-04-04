@@ -36,7 +36,7 @@ git-cl is intentionally a focused CLI tool and GUI development is out of scope f
 Emacs/Magit, VSCode, JetBrains) are very welcome as **separate, independently maintained projects**.
 
 If you want to build a GUI integration, everything you need is available:
-- The changelist data is stored in `.git/git-cl.json` — a stable, documented format that won't change
+- The changelist data is stored in `.git/cl.json` — a stable, documented format that won't change
 - Combine it with standard `git status` output for a full picture of the working tree
 - Call `git cl add`, `git cl stage`, `git cl commit`, `git cl stash`, `git cl branch` etc. directly for all operations
 

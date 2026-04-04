@@ -18,13 +18,16 @@ git-cl is a minimal Git subcommand that brings changelist support to Git. Organi
 
 ## Why git-cl?
 
-- Pre-staging review: group changed files by intent before staging
-- Organise multiple concerns on a single branch
-- Stage and commit changes by intent
-- Stash changelists and resume work later
-- Late-binding branching: promote a changelist to a dedicated branch
-- Local-only metadata (`.git/cl.json`)
-- Simple CLI: `git cl <command>`
+### Workflow  
+- Pre-staging review: group changed files by intent before staging  
+- Organise multiple concerns on a single branch  
+- Stage and commit changes by intent  
+- Stash changelists and resume work later  
+- Late-binding branching: promote a changelist to a dedicated branch  
+
+### Technical  
+- Local-only metadata (`.git/cl.json`)  
+- Simple CLI: `git cl <command>`  
 - Interoperable with community [VS Code extension](https://github.com/WayLit/git-cl-vscode)
 
 ## Demo 

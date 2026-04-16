@@ -64,6 +64,7 @@ import json
 import os
 import subprocess
 import sys
+import tempfile
 if sys.platform == "win32":
     import msvcrt
 else:
@@ -257,6 +258,10 @@ def clutil_save(data: dict[str, list[str]]) -> None:
     """
     Saves the changelist data to 'cl.json', omitting empty changelists.
 
+    Writes are atomic: the data is first written to a temporary file in the
+    same directory, then renamed over the target. If the process is
+    interrupted mid-write, the original file is left untouched.
+
     Args:
         data (dict): Mapping of changelist names to lists of files.
     """
@@ -264,11 +269,25 @@ def clutil_save(data: dict[str, list[str]]) -> None:
     lock_file = changelist_file.with_suffix('.lock')
     cleaned = {k: v for k, v in data.items() if v}
     with clutil_file_lock(lock_file):
+        tmp_path = None
         try:
-            with open(changelist_file, "w", encoding="utf-8") as file_handle:
+            fd, tmp_path = tempfile.mkstemp(
+                dir=changelist_file.parent,
+                prefix='.cl.json.',
+                suffix='.tmp'
+            )
+            with os.fdopen(fd, 'w', encoding='utf-8') as file_handle:
                 json.dump(cleaned, file_handle, indent=2)
+            os.replace(tmp_path, changelist_file)
+            tmp_path = None  # successfully renamed, nothing to clean up
         except OSError as error:
             print(f"Error saving changelists: {error}")
+        finally:
+            if tmp_path is not None:
+                try:
+                    os.unlink(tmp_path)
+                except OSError:
+                    pass
 
 
 def clutil_validate_name(name: str) -> bool:
@@ -644,17 +663,35 @@ def clutil_save_stashes(data: dict[str, dict]) -> None:
     """
     Saves the stash metadata to 'cl-stashes.json'.
 
+    Writes are atomic: the data is first written to a temporary file in the
+    same directory, then renamed over the target. If the process is
+    interrupted mid-write, the original file is left untouched.
+
     Args:
         data (dict): Mapping of stashed changelist names to metadata.
     """
     stash_file = clutil_get_stash_file()
     lock_file = stash_file.with_suffix('.lock')
     with clutil_file_lock(lock_file):
+        tmp_path = None
         try:
-            with open(stash_file, "w", encoding="utf-8") as file_handle:
+            fd, tmp_path = tempfile.mkstemp(
+                dir=stash_file.parent,
+                prefix='.cl-stashes.json.',
+                suffix='.tmp'
+            )
+            with os.fdopen(fd, 'w', encoding='utf-8') as file_handle:
                 json.dump(data, file_handle, indent=2)
+            os.replace(tmp_path, stash_file)
+            tmp_path = None
         except OSError as error:
             print(f"Error saving stash metadata: {error}")
+        finally:
+            if tmp_path is not None:
+                try:
+                    os.unlink(tmp_path)
+                except OSError:
+                    pass
 
 
 def clutil_check_files_unstaged(files: list[str],

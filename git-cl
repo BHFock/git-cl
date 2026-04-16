@@ -56,7 +56,7 @@ Single file, zero dependencies beyond Python 3.9+ and Git.
 Cross-platform: Unix (fcntl) and Windows (msvcrt) file locking.
 """
 
-__version__ = "1.1.4"
+__version__ = "1.1.5"
 
 import argparse
 import datetime
@@ -622,6 +622,27 @@ def clutil_is_file_untracked(
                 return True
 
     return False
+
+
+def clutil_is_file_untracked_cached(
+        file_path_rel_to_git_root: str,
+        status_map: dict[str, str]) -> bool:
+    """
+    Check if a file is untracked using a precomputed status map.
+
+    This is a faster alternative to clutil_is_file_untracked for use
+    inside loops, avoiding a separate `git status` shellout per file.
+    The caller is responsible for obtaining the status map once via
+    clutil_get_file_status_map(show_all=True) before the loop.
+
+    Args:
+        file_path_rel_to_git_root: File path relative to git repository root
+        status_map: Precomputed status map from clutil_get_file_status_map
+
+    Returns:
+        True if the file is untracked, False otherwise.
+    """
+    return status_map.get(file_path_rel_to_git_root, "  ") == "??"
 
 
 def clutil_get_stash_file() -> Path:
@@ -2322,6 +2343,9 @@ def cl_stage(args: argparse.Namespace) -> None:
     git_root = clutil_get_git_root()
     to_stage = []
 
+    # Fetch git status once and reuse for all files in the changelist
+    status_map = clutil_get_file_status_map(show_all=True)
+
     for stored_path in changelists[name]:
         # Convert stored path (relative to git root) to absolute path
         abs_path = (git_root / stored_path).resolve()
@@ -2333,8 +2357,7 @@ def cl_stage(args: argparse.Namespace) -> None:
         # Convert to path relative to current working directory for Git command
         rel_to_cwd = _relpath(abs_path, Path.cwd().resolve())
 
-        # Check if this file is tracked (not untracked)
-        if not clutil_is_file_untracked(stored_path, git_root):
+        if not clutil_is_file_untracked_cached(stored_path, status_map):
             to_stage.append(rel_to_cwd)
 
     if not to_stage:
@@ -2714,6 +2737,9 @@ def cl_commit(args: argparse.Namespace) -> None:
     git_root = clutil_get_git_root()
     to_commit = []
 
+    # Fetch git status once and reuse for all files in the changelist
+    status_map = clutil_get_file_status_map(show_all=True)
+
     for stored_path in changelists[name]:
         # Convert stored path (relative to git root) to absolute path
         abs_path = (git_root / stored_path).resolve()
@@ -2725,8 +2751,7 @@ def cl_commit(args: argparse.Namespace) -> None:
         # Convert to path relative to current working directory for Git command
         rel_to_cwd = _relpath(abs_path, Path.cwd().resolve())
 
-        # Check if this file is tracked (not untracked)
-        if not clutil_is_file_untracked(stored_path, git_root):
+        if not clutil_is_file_untracked_cached(stored_path, status_map):
             to_commit.append(rel_to_cwd)
 
     if not to_commit:

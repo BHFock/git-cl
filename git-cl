@@ -645,6 +645,66 @@ def clutil_is_file_untracked_cached(
     return status_map.get(file_path_rel_to_git_root, "  ") == "??"
 
 
+def clutil_detect_merge_conflicts(status_map: dict[str, str]) -> list[str]:
+    """
+    Return a list of files currently in a merge-conflict (unmerged) state.
+
+    Unmerged status codes per git-status(1):
+      UU - both sides modified
+      AA - both sides added
+      DD - both sides deleted
+      AU - added by us, modified by them
+      UA - added by them, modified by us
+      DU - deleted by us, modified by them
+      UD - modified by us, deleted by them
+
+    A file in any of these states cannot be safely staged, committed,
+    stashed, or checked out via git-cl while the merge is unresolved.
+
+    Args:
+        status_map: Precomputed status map from clutil_get_file_status_map
+
+    Returns:
+        Sorted list of file paths (relative to git root) in a conflict state.
+    """
+    conflict_codes = {'UU', 'AA', 'DD', 'AU', 'UA', 'DU', 'UD'}
+    return sorted(path for path, code in status_map.items()
+                  if code in conflict_codes)
+
+
+def clutil_refuse_on_merge_conflict(
+        status_map: dict[str, str], operation: str) -> bool:
+    """
+    Check for merge conflicts and print a refusal message if any are found.
+
+    Used at the top of state-mutating commands (stage, unstage, commit,
+    stash, checkout) to bail out cleanly rather than letting git produce
+    cryptic errors or leave the repo in an inconsistent state.
+
+    Args:
+        status_map: Precomputed status map from clutil_get_file_status_map
+        operation: Short verb for the error message (e.g. 'stage', 'commit')
+
+    Returns:
+        True if a conflict was detected and the caller should return.
+        False if the caller may proceed.
+    """
+    conflicts = clutil_detect_merge_conflicts(status_map)
+    if not conflicts:
+        return False
+
+    print(f"Error: Cannot {operation} while merge conflicts are unresolved.")
+    print("The following files have conflicts:")
+    for path in conflicts:
+        print(f"  [{status_map[path]}] {path}")
+    print("\nResolve conflicts first:")
+    print("  1. Edit the files to resolve conflicts")
+    print("  2. Stage resolved files: git add <files>")
+    print("  3. Complete the merge: git commit")
+    print("\nOr abort the merge: git merge --abort")
+    return True
+
+
 def clutil_get_stash_file() -> Path:
     """
     Returns the path to the stash metadata file inside the Git directory.
@@ -2346,6 +2406,9 @@ def cl_stage(args: argparse.Namespace) -> None:
     # Fetch git status once and reuse for all files in the changelist
     status_map = clutil_get_file_status_map(show_all=True)
 
+    if clutil_refuse_on_merge_conflict(status_map, "stage"):
+        return
+
     for stored_path in changelists[name]:
         # Convert stored path (relative to git root) to absolute path
         abs_path = (git_root / stored_path).resolve()
@@ -2399,6 +2462,9 @@ def cl_unstage(args: argparse.Namespace) -> None:
 
     # Get current status to identify staged files
     status_map = clutil_get_file_status_map(show_all=True)
+
+    if clutil_refuse_on_merge_conflict(status_map, "unstage"):
+        return
 
     for stored_path in changelists[name]:
         # Convert stored path (relative to git root) to absolute path
@@ -2546,6 +2612,11 @@ def cl_checkout(args: argparse.Namespace) -> None:
     """
     changelists = clutil_load()
     git_root = clutil_get_git_root()
+
+    # Check for merge conflicts before doing anything destructive
+    status_map = clutil_get_file_status_map(show_all=True)
+    if clutil_refuse_on_merge_conflict(status_map, "checkout"):
+        return
 
     # Collect all files from specified changelists
     all_files = []
@@ -2740,6 +2811,9 @@ def cl_commit(args: argparse.Namespace) -> None:
     # Fetch git status once and reuse for all files in the changelist
     status_map = clutil_get_file_status_map(show_all=True)
 
+    if clutil_refuse_on_merge_conflict(status_map, "commit"):
+        return
+
     for stored_path in changelists[name]:
         # Convert stored path (relative to git root) to absolute path
         abs_path = (git_root / stored_path).resolve()
@@ -2821,6 +2895,10 @@ def cl_stash(args: argparse.Namespace, quiet: bool = False) -> None:
 
     # Get file statuses and categorize
     status_map = clutil_get_file_status_map(show_all=True)
+
+    if clutil_refuse_on_merge_conflict(status_map, "stash"):
+        return
+
     categorization = clutil_categorize_files_for_stash(
         existing_files, missing_files, status_map, git_root
     )
@@ -2892,6 +2970,10 @@ def cl_unstash(args: argparse.Namespace, quiet: bool = False) -> None:
     """
     stashes = clutil_load_stashes()
     changelists = clutil_load()
+
+    status_map = clutil_get_file_status_map(show_all=True)
+    if clutil_refuse_on_merge_conflict(status_map, "unstash"):
+        return
 
     # Handle --all flag
     if getattr(args, 'all', False):

@@ -152,9 +152,8 @@ git cl st docs --include-no-cl
 
 #### Showing all Git status codes
 
-By default, `git cl status` shows only the most [common status codes](#common-status-codes) (like [M ], [??], [ D], etc.) for clarity.
-
-To include all Git status codes — including merge conflicts and type changes — use the `--all` flag:
+By default, `git cl status` shows common status codes (like [M ], [??], [ D]) together with merge-conflict codes ([UU], [AA], etc.), since conflicts require your immediate attention. Less common codes such as type changes ([T ]) are hidden to keep the output readable.
+To include every Git status code, use the `--all` flag:
 
 ```
 git cl st --all
@@ -526,15 +525,12 @@ Use `git cl stash <name>`, then switch branches and [git cl unstash](#31-stash-a
 
 ### Why don’t I see all files in git cl status?
 
-By default, [git cl status](#22-view-status-by-changelist) filters out files with uncommon Git status codes (e.g. merge conflicts or type changes) to keep the output clean.
-
-If you want to include everything, use the `--all` flag:
+By default, [git cl status](#22-view-status-by-changelist) shows the status codes you normally need to act on — common working-directory states plus merge conflicts — while hiding rare codes like [T ] (type change) to keep output clean.
+To include every Git status code without filtering, use the `--all` flag:
 
 ```
 git cl status --all
 ```
-
-This will show all files, including those with status codes like `[UU]` (unmerged) or `[T ]` (type change).
 
 ### Can I reuse a changelist name later?
 
@@ -591,8 +587,9 @@ Yes. Each worktree has its own independent set of changelists — changes made i
 | `[ D]` | Deletion (unstaged)    | File deleted but not yet staged                    |
 | `[R ]` | Renamed                | File renamed and staged                            |
 | `[RM]` | Renamed + Modified     | Renamed and then modified before staging           |
+| `[UU]` | Unmerged (conflict)    | Both sides modified; resolve before staging        |
 
-To show all codes, including rare ones like `[UU]` (conflicts), use:
+To show all codes, including rare ones, use:
 
 ```
 git cl status --all
@@ -602,7 +599,6 @@ git cl status --all
 
 | Code  | Description             |
 | ----- | ----------------------- |
-| `[UU]` | Unmerged (conflict)     |
 | `[T ]` | Type change             |
 
 #### Color Key
@@ -611,6 +607,7 @@ git cl status --all
 |---------|-------------------------------|
 | Green   | Staged changes (`[M ]`, `[A ]`)|
 | Red     | Unstaged changes (`[ M]`, `[ D]`)|
+| Red     | Needs attention: unstaged changes (`[ M]`, `[ D]`) or merge conflicts (`[UU]`, `[AA]`, …) |
 | Magenta | Both staged and unstaged (`[MM]`, `[AM]`)|
 | Blue    | Untracked (`[??]`)            |
 

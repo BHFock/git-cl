@@ -213,6 +213,46 @@ def run_tests(repo: TestRepo):
     repo.assert_exit_code(0, "remove succeeds during merge conflict")
 
     # =================================================================
+    # Test: status shows conflicts in default view
+    # =================================================================
+    # Previously, conflicts were hidden behind --all. Now they're
+    # shown by default because they're states the user needs to act on.
+
+    repo.section("status shows conflicts in default view")
+
+    output = repo.run("git cl status")
+    repo.assert_exit_code(0, "git cl status succeeds during merge")
+    repo.assert_in("shared.txt", output,
+                   "conflicted file visible in default status view")
+    repo.assert_in("[UU]", output,
+                   "conflict code shown in status output")
+    repo.assert_not_in("uncommon Git status codes", output,
+                       "conflicts no longer reported as 'uncommon'")
+
+    # =================================================================
+    # Test: status shows advisory when conflicts present
+    # =================================================================
+
+    repo.section("status shows advisory when conflicts present")
+
+    output = repo.run("git cl status")
+    repo.assert_in("merge conflicts", output,
+                   "status mentions merge conflicts")
+    repo.assert_in("Resolve before", output,
+                   "advisory tells user to resolve")
+
+    # =================================================================
+    # Test: status alias 'st' shows same conflict handling
+    # =================================================================
+
+    repo.section("'st' alias shows conflicts identically")
+
+    output_full = repo.run("git cl status")
+    output_alias = repo.run("git cl st")
+    repo.assert_equal(output_full, output_alias,
+                       "status and st produce identical output during merge")
+
+    # =================================================================
     # Test: commands work again after resolving the conflict
     # =================================================================
 

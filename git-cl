@@ -446,7 +446,8 @@ def clutil_get_file_status_map(show_all: bool = False) -> dict[str, str]:
 
     # Allowlist of known meaningful status codes
     INTERESTING_CODES = {
-        '??', ' M', 'M ', 'MM', 'A ', 'AM', ' D', 'D ', 'R ', 'RM'
+        '??', ' M', 'M ', 'MM', 'A ', 'AM', ' D', 'D ', 'R ', 'RM',
+        'UU', 'AA', 'DD', 'AU', 'UA', 'DU', 'UD',  # merge conflicts
     }
 
     status_map = {}
@@ -510,7 +511,12 @@ def clutil_format_file_status(
 
     staged, unstaged = status[0], status[1]
 
-    if status == "??":
+
+    CONFLICT_CODES = {'UU', 'AA', 'DD', 'AU', 'UA', 'DU', 'UD'}
+
+    if status in CONFLICT_CODES:
+        color = Fore.RED
+    elif status == "??":
         color = Fore.BLUE
     elif staged == 'A':
         color = Fore.GREEN
@@ -2543,6 +2549,13 @@ def cl_status(args: argparse.Namespace) -> None:
             print("No Changelist:")
             for file in sorted(no_cl_files):
                 print(clutil_format_file_status(file, status_map, git_root, use_color))
+
+    # Advise user if conflicts are present
+    conflicts = clutil_detect_merge_conflicts(status_map)
+    if conflicts:
+        print()
+        print(f"Note: {len(conflicts)} file(s) with merge conflicts. "
+              "Resolve before staging, committing, or stashing.")
 
 
 def cl_diff(args: argparse.Namespace) -> None:

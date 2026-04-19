@@ -144,6 +144,17 @@ This section also includes the definition of the command line help. Defining the
 
 `git-cl` exits with code `0` on success and non-zero codes on errors. Error messages are printed to `stderr`. Some functions terminate execution immediately on fatal errors using [sys.exit()](https://docs.python.org/3/library/sys.html#sys.exit), ensuring no partial metadata changes are written.
 
+#### Command Categories and Git State
+
+`git-cl` commands fall into three categories based on what they touch:
+
+* **Metadata-only** (`add`, `remove`, `delete`) — modify `cl.json` without affecting Git state.
+* **Read-only** (`status`, `diff`) — inspect Git state but do not modify it.
+* **State-mutating** (`stage`, `unstage`, `commit`, `stash`, `unstash`, `checkout`, `branch`) — call Git commands that change repository state.
+
+This distinction matters during unresolved merges. State-mutating commands detect merge-conflict status codes (`UU`, `AA`, `DD`, `AU`, `UA`, `DU`, `UD`) and refuse cleanly with a message pointing at `git merge --abort` or manual resolution. Without this guard, the underlying Git calls would either fail with cryptic errors or, worse, proceed with partial operations that leave the repository in an unclear state.
+Metadata-only commands are deliberately exempt: a user mid-merge may legitimately want to reorganise changelists — for example, to pull a conflicted file out of a changelist so they can resolve it separately. Read-only commands surface conflicts in their output rather than refusing.
+
 ### Security and Safety
 
 `git-cl` implements multiple security layers to protect against malicious input and filesystem vulnerabilities whilst maintaining safe operation across different environments.

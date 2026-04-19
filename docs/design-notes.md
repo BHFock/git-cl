@@ -263,15 +263,11 @@ Files must have unstaged changes, be newly added to the index, or be untracked (
 
 ### Unstash Conflict Detection
 
-**The Problem:** When you unstash a changelist, some file states will cause Git conflicts or failures.
+Unstashing a changelist needs to distinguish file states that genuinely block `git stash pop` from states that merely look concerning but are fine. Being too conservative here would make unstash refuse in cases where it would actually succeed; being too permissive would let users hit cryptic Git errors mid-operation.
 
-**The Solution:** Check file states before unstashing and provide specific guidance for resolving issues.
+`clutil_check_unstash_conflicts_optimized` performs this check using a lookup table (`UNSTASH_STATUS_ANALYSIS`) keyed on the two-character status code. Real blocking conflicts are untracked files at the target path (which would be overwritten by the stash restoration) and working-directory modifications or deletions (which would conflict with the stashed changes). Staged changes and clean files are safe — the stash applies on top without collision. Missing files are treated as ideal: the stash will restore them with no conflict at all.
 
-**How it works:** Similar to stash categorisation, unstash operations require conflict detection optimised for the 'stash→branch→unstash' workflow.
-
-`clutil_check_unstash_conflicts_optimized` flags conflicts that would actually prevent [git stash pop](https://git-scm.com/docs/git-stash#Documentation/git-stash.txt-pop--index-q--quietstash) from succeeding. It uses a lookup table (`UNSTASH_STATUS_ANALYSIS`) to categorise Git status codes, with missing files treated as ideal for unstashing since they'll be restored without conflict.
-
-The algorithm distinguishes real blocking conflicts (untracked files, working directory modifications) from safe states (staged changes, clean files). `clutil_suggest_workflow_actions()` provides actionable suggestions tailored to the git-cl workflow.
+When conflicts are detected, `clutil_suggest_workflow_actions` produces context-specific advice — for example, suggesting `git checkout -- <file>` for working-directory modifications or `git rm` for files deleted in the working directory. The suggestions are tailored to the stash→branch→unstash workflow that `cl_branch` automates, since that's where most unstash operations happen in practice.
 
 ### Branching Workflow
 

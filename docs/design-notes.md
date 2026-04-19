@@ -371,7 +371,8 @@ Uses `fcntl` on Unix and `msvcrt` on Windows for metadata locking. On Unix, `fcn
 Memory usage scales with the number of files in active changelists rather than total repository size. Metadata is stored in lightweight JSON files and loaded only when needed. The largest memory consumers are Git subprocess calls and status parsing, which are handled efficiently by the standard library.
 
 #### Git Command Optimisation
-Leverages Git's native commands (`git status`, `git stash`, etc.) rather than reimplementing Git functionality. File operations are batched where possible (e.g., `git add` with multiple files) to minimise subprocess overhead. Path conversion caching could be added for very large changelists if needed.
+
+Leverages Git's native commands (`git status`, `git stash`, etc.) rather than reimplementing Git functionality. File operations are batched where possible (e.g., `git add` with multiple files) to minimise subprocess overhead. Within commands that iterate over changelist files, the result of `git status --porcelain` is fetched once and reused rather than re-queried per file.
 
 ## Design Decisions FAQ
 

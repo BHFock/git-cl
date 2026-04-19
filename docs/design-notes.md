@@ -20,7 +20,6 @@ This document describes the design of `git-cl` to help future maintenance.
   - [Platform Considerations](#platform-considerations)
   - [Performance Considerations](#performance-considerations)
 - [Design Decisions FAQ](#design-decisions-faq)
-- [Future Direction](#future-direction)
 
 ## Conceptual Model
 
@@ -351,6 +350,3 @@ Each worktree maintains its own independent set of changelists. This follows nat
 
 `git cl` branch correctly detects branch name conflicts arising from worktrees and reports them with a clear error and suggested fix.
 
-## Future direction
-
-The aim is to keep functionality focused while improving code quality. Priority areas include handling edge cases, general refactoring for maintainability, and improving tests. The single-file structure should be preserved for deployment simplicity.

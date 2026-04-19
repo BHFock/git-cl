@@ -245,13 +245,11 @@ If the `colorama` module isn't available, the formatter falls back to plain text
 
 ### Stash Categorisation Rules
 
-> **Why this matters:** Stashing the wrong files can cause Git errors or lose work. This categorisation prevents those problems by matching Git's own stash behavior.
+`git cl stash` will only stash files that `git stash push` can actually handle. Categorising files up front, before any Git command runs, means failures are reported against the changelist rather than surfacing as cryptic errors from a half-completed stash.
 
-The stash system needs to determine which files can safely be stashed. Git has many possible file states, but only some work with `git stash push`. Here's how git-cl categorizes files: `git cl stash` uses pre-validation to ensure only compatible files are included. This is handled by `clutil_categorize_files_for_stash` which determines if files are "stashable".
+`clutil_categorize_files_for_stash` checks each file's Git status and sorts it into one of these buckets:
 
-Files are grouped into categories based on what Git thinks of them:
-
-|Git status                                                | Stashable?    |
+| Git status                                                | Stashable?    |
 |----------------------------------------------------------|---------------|
 | Unstaged changes (modified/deleted in working directory) | stashable     |
 | Staged additions (newly added to index)                  | stashable     |

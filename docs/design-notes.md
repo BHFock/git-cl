@@ -271,41 +271,31 @@ When conflicts are detected, `clutil_suggest_workflow_actions` produces context-
 
 ### Branching Workflow
 
-The cl_branch command automates the common "stash→branch→unstash" workflow in a single operation. This allows users to move a changelist to its own dedicated branch without losing work or changelist organization.
+`cl_branch` automates the stash→branch→unstash sequence in a single operation, so users can move a changelist to its own branch without manually coordinating the three steps.
 
-#### Workflow Steps:
+Before doing anything destructive, the command performs three safety checks. `clutil_validate_branch_preconditions` ensures the target changelist exists and is active (not already stashed). `clutil_check_branch_exists` refuses if a branch with the target name already exists. `clutil_check_unassigned_changes` detects uncommitted changes that aren't assigned to any changelist and aborts with an error — this prevents accidental data loss, since unassigned changes would otherwise get caught up in the stash-all step with no clear way to identify them afterwards.
 
-**Safety Checks:**
+Once the checks pass, `clutil_stash_all_changelists` stashes every active changelist (including the target), leaving a clean working directory. `clutil_create_branch` creates and checks out the new branch from the specified base, or from the current HEAD if `--from` wasn't given. `clutil_unstash_changelist` then restores only the target changelist onto the new branch. The other changelists stay stashed and can be restored later with `git cl unstash`.
 
-1. Precondition Validation - `clutil_validate_branch_preconditions` ensures the target changelist exists and is active (not stashed). `clutil_check_branch_exists` prevents conflicts with existing branch names.
+If branch creation or the final unstash fails, `clutil_handle_branch_creation_failure` attempts to restore all stashed changelists by calling `cl_unstash --all --force`. This isn't a perfect rollback — if the failure happened after the branch checkout, the restoration lands on the new branch rather than the original one — but it avoids leaving changelists stranded in the stash with no obvious recovery path. Partial failures are reported for manual cleanup.
 
-2. Workspace Safety Check - `clutil_check_unassigned_changes` detects uncommitted changes not assigned to any changelist. The operation aborts if unassigned changes exist, preventing accidental data loss.
+#### Example
 
-**Execution:**
-
-3. Workspace Cleanup - `clutil_execute_stash_all` stashes all active changelists (including the target changelist), creating a clean working directory. Each changelist is stashed individually with metadata tracking.
-
-4. Branch Creation - `clutil_create_branch` creates and checks out the new branch from the specified base (or current HEAD). The branch is created only after successful stashing.
-
-5. Selective Restore - `clutil_unstash_changelist` restores only the target changelist to the new branch. Other changelists remain stashed and can be restored later with git cl unstash.
-
-**Error Handling:**
-
-6. Failure Recovery - `clutil_handle_branch_creation_failure` attempts to restore all stashed changelists if branch creation or unstashing fails, preventing partial state corruption.
-
-#### Example Flow:
+Starting on `main` with two changelists:
 
 ```
-Before: Working on main branch with two changelists
-├── feature-a (5 files)
-└── bugfix (3 files) 
-git cl branch feature-a my-feature-branch
-After: Clean separation
-├── main branch: feature-a and bugfix stashed, available for unstash
-└── * my-feature-branch: feature-a unstashed, ready for development
+feature-a  (5 files)
+bugfix     (3 files)
 ```
 
-This atomic operation eliminates the manual coordination required for branching workflows while preserving changelist metadata and ensuring workspace safety.
+After `git cl branch feature-a`:
+
+```
+main:       feature-a and bugfix both stashed
+feature-a:  feature-a unstashed, ready for development
+```
+
+The other changelists are available via `git cl unstash` whenever needed.
 
 ### Platform Considerations
 

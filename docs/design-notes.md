@@ -223,65 +223,25 @@ This three-stage approach ensures repository portability (paths work regardless 
 
 ### Git Status Parsing
 
-**Summary:** Takes `git status` output, filters for common file states, groups by changelist, adds colors.
+Git's `status --porcelain` output needs to be transformed into changelist-grouped display. The transformation has four stages: collection, parsing with filtering, changelist grouping, and display formatting.
 
-Git's `status --porcelain` output needs to be transformed into changelist-grouped display. This happens in several stages to handle the complexity of Git's many possible file states while keeping the display clean and useful.
+`clutil_get_git_status` runs `git status --porcelain` with the `--untracked-files=all` flag and returns the raw output lines. `clutil_get_file_status_map` then parses each line, extracting the two-character status code and the file path. Renamed files (which appear as `old -> new`) are normalised to the new path. Paths are converted to repository-root-relative form using `Path.relative_to(git_root).as_posix()` for consistent internal representation, and the result is returned as a `dict[str, str]` mapping paths to status codes.
 
-> **Key Insight:** The pipeline filters out uncommon Git status codes by default (like merge conflicts `UU` or type changes `T `) to keep `git cl st` output focused on everyday development. Use `--all` to see everything.
+During parsing, codes are filtered against an allowlist rather than a denylist. The `INTERESTING_CODES` set contains the common working-directory states (`??`, ` M`, `M `, `MM`, `A `, `AM`, ` D`, `D `, `R `, `RM`) together with the seven merge-conflict codes (`UU`, `AA`, `DD`, `AU`, `UA`, `DU`, `UD`). Merge conflicts are included in the default view because they require immediate user action; rare codes like type changes (`T `) and copy renames are filtered unless `--all` is passed. Files with filtered codes are counted and reported with a summary note, so the user knows something was hidden.
 
-#### Processing Pipeline
+`cl_status` iterates through loaded changelists, looks up each file's status in the map, and passes it to `clutil_format_file_status` for display. The formatter converts repo-relative paths back to current-working-directory-relative using `os.path.relpath()`, applies colour, and returns a string with the `[XX]` status prefix.
 
-**Overview:** Raw Git status → Filter interesting files → Group by changelist → Add colors → Display
+The colour rules are:
 
-**1. Status Collection**
-`clutil_get_git_status` runs `git status --porcelain` with optional `--untracked-files=all` flag. Returns raw output lines as a list.
+- `??` — blue (untracked)
+- Staged-only (`X `) — green (ready to commit)
+- Unstaged-only (` X`) — red (working-directory changes)
+- Merge conflict (`UU`, `AA`, etc.) — red (blocking state, matches git's own convention)
+- Mixed staged+unstaged (`XX`) — magenta (both staged and unstaged changes in the same file)
 
-**2. Parsing and Filtering**
-`clutil_get_file_status_map` processes each line:
-- Extracts 2-character Git status codes (`M `, `??`, `A `) and file paths
-- Handles renamed files by parsing `old -> new` syntax  
-- Filters against `INTERESTING_CODES` allowlist
-- Counts and reports skipped files unless `--all` specified
-- Returns `dict[str, str]` mapping file paths to status codes
+The merge-conflict branch sits at the top of the colour-selection chain in `clutil_format_file_status`. Without that placement, codes like `AA` would fall through to the `staged == 'A'` branch and render green, which would be actively misleading for a file that actually needs resolving.
 
-**File Status Filtering Design**
-
-By default, only a subset of Git status codes are shown through the `INTERESTING_CODES` allowlist. This reduces clutter by filtering uncommon states like merge conflicts, type changes, and copied files.
-
-**Current allowlist:** `??`, ` M`, `M `, `MM`, `A `, `AM`, ` D`, `D `, `R `, `RM`
-
-**Rationale:** Focuses on common development workflow states (untracked, modifications, additions, deletions, renames) while keeping output clean for everyday use. Users can access filtered codes with the `--all` flag.
-
-**Status:** Conservative initial implementation. Will be refined based on real-world usage patterns as adoption grows.
-
-**3. Path Normalisation**
-Converts all paths to repository-root relative format using `Path.relative_to(git_root).as_posix()` for consistent internal representation.
-
-**4. Changelist Grouping**
-`cl_status` iterates through loaded changelists, checking file membership and calling display formatting for each group.
-
-**5. Display Formatting**
-`clutil_format_file_status` handles final presentation:
-- Converts repo-relative paths back to current-directory-relative using `os.path.relpath()`
-- Applies color coding based on file state
-- Returns formatted string with `[XX]` status prefix
-
-#### Color Logic
-
-Status codes are mapped to colors to quickly identify file states:
-
-- `??` → **Blue** (untracked files)
-- Staged-only (`X `) → **Green** (ready to commit)  
-- Unstaged-only (` X`) → **Red** (working directory changes)
-- Mixed staged+unstaged (`XX`) → **Magenta** (both staged and unstaged changes)
-- Fallback → No color
-
-> **Graceful Degradation:** The system falls back to plain text when the `colorama` module is unavailable through dummy color objects.
-
-#### Common Pitfalls
-- **Status code confusion:** `M ` (staged) vs ` M` (unstaged) vs `MM` (both)
-- **Renamed file handling:** Git shows `R  old -> new` which needs special parsing
-- **Path relativity:** Git output uses repo-relative paths, but display needs current-directory-relative paths
+If the `colorama` module isn't available, the formatter falls back to plain text via dummy colour objects, so output works uncoloured rather than failing.
 
 ### Stash Categorisation Rules
 

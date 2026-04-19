@@ -326,6 +326,9 @@ Leverages Git's native commands (`git status`, `git stash`, etc.) rather than re
 ### Why use a single file instead of a Python package?
 - Zero-dependency installation and easy deployment
 - Self-contained for air-gapped systems
+- Easy to vendor into other projects
+
+The single-file structure is preserved deliberately in future refactoring.
 
 ### Why JSON for metadata storage?
 - Human readable with native [Python support](https://docs.python.org/3/library/json.html) for read and write operations

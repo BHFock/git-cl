@@ -351,5 +351,3 @@ The single-file structure is preserved deliberately in future refactoring.
 
 Each worktree maintains its own independent set of changelists. This follows naturally from how `git rev-parse --git-dir` works: in a linked worktree it returns a worktree-specific path inside `.git/worktrees/<name>/` rather than the main `.git/` directory, so cl.json is stored and read independently per worktree. Changelists created in one worktree are not visible in another, which is consistent with worktrees representing separate working contexts on separate branches.
 
-`git cl` branch correctly detects branch name conflicts arising from worktrees and reports them with a clear error and suggested fix.
-

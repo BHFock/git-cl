@@ -17,7 +17,7 @@ git-cl is a minimal Git subcommand that brings changelist support to Git. Organi
 
 `git‑cl` operates on file level. It groups and stages whole files by intent, while leaving patch‑level editing to other Git tools.
 
-## Why?
+## Features
 
 ### Workflow  
 - Pre-staging review: group changed files by intent before staging  

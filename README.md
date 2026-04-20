@@ -101,7 +101,7 @@ git cl br docs-fix
 
 📘 [Tests](https://github.com/BHFock/git-cl/blob/main/tests/README.md): Test suite and shell walkthroughs
 
-📘 [Why git-cl?](https://github.com/BHFock/git-cl/blob/main/docs/why-git-cl.md): History and motivation
+📘 [Why git-cl exists](https://github.com/BHFock/git-cl/blob/main/docs/why-git-cl.md): History and motivation
 
 📘 [Paper](https://github.com/BHFock/git-cl/blob/main/docs/paper.md): Design, workflow, and related work
 

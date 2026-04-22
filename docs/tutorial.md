@@ -417,8 +417,43 @@ git commit -m "Implement core feature"
 
 The other changelists remain untouched, keeping your workspace organised and uncommitted changes visible.
 
+### 4.2 Changelists as Review Stages
 
-### 4.2 Late-Binding Branching with git cl branch
+Changelists can also track where each file is in your review process. Instead of grouping by feature, you group by review stage — files move from one changelist to the next as they pass each check.
+
+Start with all modified files in `review_1`:
+
+```
+git cl add review_1 src/core.py src/utils.py tests/test_core.py
+```
+
+Do whatever your first check is — linter, formatting, self-review. As each file passes, move it on:
+
+```
+git cl add review_2 src/core.py
+```
+
+The file is now in `review_2` and automatically removed from `review_1`. Continue through as many stages as you need. `git cl status` shows the state of every file at a glance:
+
+```
+$ git cl status
+review_1:
+  [ M] src/utils.py
+review_2:
+  [ M] tests/test_core.py
+review_3:
+  [ M] src/core.py
+```
+
+When files reach the final stage, commit just that changelist:
+
+```
+git cl commit review_3 -m "Implement core feature"
+```
+
+What each stage means is up to you — numbered (`review_1`, `review_2`), named by what’s been checked (`linted`, `tested`, `profiled`), or by what’s been approved (`self_review_ok`, `ai_review_ok`, `ready_to_commit`). The pattern is the same: changelists as a lightweight state machine, with `git cl status` as the dashboard.
+
+### 4.3 Late-Binding Branching with git cl branch
 
 Sometimes you’re deep in the middle of a changelist — maybe tweaking numerical algorithms or refactoring simulation code — and you realise it would be cleaner to finish the work on a separate branch.
 `git cl branch` makes that move painless, without committing incomplete work.

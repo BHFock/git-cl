@@ -388,7 +388,7 @@ See [Section 4.2](#42-late-binding-branching-with-git-cl-branch) for a worked ex
 
 ## 4. Example Workflows
 
-Changelists adapt to your mental model: group parallel tasks by intent, move files through a personal review pipeline, or promote a changelist to its own branch when it outgrows the workspace. The goal is to organise your work logically from the start, rather than rewriting commit history afterwards.
+Changelists adapt to your mental model: group parallel tasks by intent, move files through a personal review pipeline, or promote a changelist to its own branch when it outgrows the workspace.
 
 ### 4.1 Changelists as Named Staging Areas
 

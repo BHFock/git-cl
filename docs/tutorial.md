@@ -392,30 +392,49 @@ Perfect for developers who prefer to organise their work logically from the star
 
 ### 4.1 Changelists as Named Staging Areas
 
-`git-cl` changelists function as named pre-staging areas. Instead of staging files directly, you organise them into changelists — then selectively [stage](#stage-a-changelist) or [commit](#25-commit-a-changelist) based on those names.
+Git gives you one staging area. Everything you `git add` lands there, waiting for a single commit. That works fine when your changes all belong together — but less well when you’re mid-feature and notice a typo, some whitespace to clean up, or a stray `print` statement.
 
-Let’s say you're working on a feature that involves several types of changes. You can group your work like this:
+Changelists are groups of files you *plan to commit together*. They’re not commits themselves, and nothing about them touches Git’s index or history until you decide to stage and commit. Unlike the staging area, you can have as many changelists as you need, side by side, all labelled by intent.
 
-```
-git cl add ok src/core.py tests/test_core.py
-git cl add test_only tests/setup_test_env.sh
-git cl add do_not_commit notes/tmp.txt
-```
-
-This separates clean changes from experimental ones. You can check your progress with:
+Let’s say you’re implementing a feature across `src/core.py`, `src/helpers.py`, and `tests/test_core.py`, and along the way you notice a typo in the README and some whitespace to clean up in a utility file. Group them:
 
 ```
-git cl status
+git cl add feature src/core.py src/helpers.py tests/test_core.py
+git cl add typo-fix README.md
+git cl add whitespace src/utils.py
 ```
 
-Once you're satisfied with the files in the changelist `ok`, you stage and commit them:
+All three sets of edits live in your working directory at once — you can run tests, see the full picture, keep editing. Nothing is staged yet. At any point, [git cl status](#22-view-status-by-changelist) shows you what’s grouped where:
 
 ```
-git cl stage ok
+$ git cl status
+feature:
+  [ M] src/core.py
+  [ M] src/helpers.py
+  [ M] tests/test_core.py
+typo-fix:
+  [ M] README.md
+whitespace:
+  [ M] src/utils.py
+```
+
+When you’re ready, stage and commit one changelist at a time:
+
+```
+git cl stage feature
 git commit -m "Implement core feature"
 ```
 
-The other changelists remain untouched, keeping your workspace organised and uncommitted changes visible.
+`git cl stage` moves all three files of the `feature` changelist into Git’s staging area in one step; `git commit` then turns them into a single commit. You can also use `git cl commit` as a shortcut that stages and commits in one step:
+
+```
+git cl commit typo-fix -m "Fix typo in README"
+git cl commit whitespace -m "Clean up whitespace in utils"
+```
+
+Three focused commits, each from its own changelist, without ever switching branches or shuffling the staging area manually.
+
+This is where changelists shine over branches: when the work is small, related in *context* but unrelated in *intent*, and doesn’t warrant the overhead of a separate line of development. For larger or longer-running work, branches are still the right tool — and [git cl branch](#43-late-binding-branching-with-git-cl-branch) helps when a changelist grows into something that deserves one.
 
 ### 4.2 Changelists as Review Stages
 

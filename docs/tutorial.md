@@ -655,9 +655,9 @@ git cl status --all
 | ----- | ----------------------- |
 | `[T ]` | Type change             |
 
-#### Color Key
+#### Colour Key
 
-| Color   | Meaning                       |
+| Colour   | Meaning                       |
 |---------|-------------------------------|
 | Green   | Staged changes (`[M ]`, `[A ]`)|
 | Red     | Unstaged changes (`[ M]`, `[ D]`)|

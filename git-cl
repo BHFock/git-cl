@@ -56,7 +56,7 @@ Single file, zero dependencies beyond Python 3.9+ and Git.
 Cross-platform: Unix (fcntl) and Windows (msvcrt) file locking.
 """
 
-__version__ = "1.1.6"
+__version__ = "1.1.7"
 
 import argparse
 import datetime
@@ -370,6 +370,8 @@ def clutil_get_git_status(include_untracked: bool = False) -> list[str]:
     cmd = ["git", "status", "--porcelain"]
     if include_untracked:
         cmd.append("--untracked-files=all")
+    else:
+        cmd.append("--untracked-files=no")
 
     try:
         return subprocess.check_output(cmd, text=True).splitlines()
@@ -422,7 +424,9 @@ def clutil_sanitize_path(file_path: str, git_root: Path) -> Optional[str]:
         return None
 
 
-def clutil_get_file_status_map(show_all: bool = False) -> dict[str, str]:
+def clutil_get_file_status_map(
+        show_all: bool = False,
+        include_untracked: bool = True) -> dict[str, str]:
     """
     Get a mapping of files to their Git 2-letter status codes.
 
@@ -436,13 +440,15 @@ def clutil_get_file_status_map(show_all: bool = False) -> dict[str, str]:
 
     Args:
         show_all (bool): If True, include all files regardless of status code.
+        include_untracked (bool): If True (default), list every untracked file.
+            If False, untracked files are excluded entirely from the status map.
 
     Returns:
         dict[str, str]: Mapping of relative file paths
                         to their Git status codes.
     """
     git_root = clutil_get_git_root()
-    output = clutil_get_git_status(include_untracked=True)
+    output = clutil_get_git_status(include_untracked=include_untracked)
 
     # Allowlist of known meaningful status codes
     INTERESTING_CODES = {
@@ -2525,7 +2531,9 @@ def cl_status(args: argparse.Namespace) -> None:
     changelists = clutil_load()
     stashes = clutil_load_stashes()
     git_root = clutil_get_git_root()
-    status_map = clutil_get_file_status_map(show_all=args.all)
+    status_map = clutil_get_file_status_map(
+        show_all=args.all,
+        include_untracked=not args.no_untracked)
 
     use_color = clutil_should_use_color(args)
 
@@ -3241,6 +3249,8 @@ def main() -> None:
     status_parser.add_argument('--all', action='store_true',
                                help=("Include files with uncommon Git "
                                      "status codes"))
+    status_parser.add_argument('--no-untracked', action='store_true',
+                               help='Hide untracked files (??) from output')
     status_parser.add_argument('--no-color', action='store_true',
                                help='Disable colored output')
     status_parser.set_defaults(func=cl_status)

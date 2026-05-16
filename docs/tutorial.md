@@ -167,6 +167,16 @@ Example output of `git cl st`, showing files grouped by changelist with standard
      alt="git cl st output showing changelists feature1, feature2, and No Changelist with colour-coded status codes"
      width="200"/>
 
+#### Hiding untracked files
+
+If your repository has many untracked files that clutter the output, you can hide them with `--no-untracked`:
+
+```
+git cl st --no-untracked
+```
+
+This is useful when working on a focused task and you only want to see files already known to Git.
+
 ### 2.3 Diff a changelist
 
 ```
@@ -609,7 +619,7 @@ Yes. Each worktree has its own independent set of changelists — changes made i
 | Task                            | Command                                                   | Alias         | 
 | ------------------------------- | --------------------------------------------------------- | ------------- |
 | Add files to a changelist       | `git cl add <name> <files...>`                            | `git cl a`    |
-| View grouped status             | `git cl status [--all] [--no-color] `                     | `git cl st`   | 
+| View grouped status             | `git cl status [--all] [--no-untracked] [--no-color]`     | `git cl st`   |
 | Show diff for changelist(s)     | `git cl diff <name1> [<name2> ...] [--staged]`            |               |
 | Stage a changelist              | `git cl stage <name> [--delete]`                          |               |
 | Unstage a changelist            | `git cl unstage <name> [--delete]`                        |               |

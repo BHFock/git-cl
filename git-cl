@@ -370,6 +370,8 @@ def clutil_get_git_status(include_untracked: bool = False) -> list[str]:
     cmd = ["git", "status", "--porcelain"]
     if include_untracked:
         cmd.append("--untracked-files=all")
+    else:
+        cmd.append("--untracked-files=no")
 
     try:
         return subprocess.check_output(cmd, text=True).splitlines()

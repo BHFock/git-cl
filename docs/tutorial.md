@@ -604,6 +604,16 @@ Yes. If the changelist was deleted after a stage or commit, you can create a new
 
 No. A file can only belong to one changelist at a time. For patch-level splitting within a file, use `git add -p` alongside `git-cl` — the two tools complement each other.
 
+### How do I add currently staged files to a changelist?
+
+`git-cl` doesn't have a dedicated command for this, but you can use git's own tooling:
+
+```
+git cl add my-changelist $(git diff --staged --name-only)
+```
+
+This is useful when you've already staged a meaningful set of changes and want to capture that grouping as a changelist. The files remain staged in git's index — if you also want to unstage them, follow up with git cl unstage my-changelist.
+
 ### Do changelists work with Git worktrees?
 
 Yes. Each worktree has its own independent set of changelists — changes made in one worktree are not visible in another. This means you can use git-cl freely in each worktree without them interfering with each other.

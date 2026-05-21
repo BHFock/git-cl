@@ -2143,27 +2143,24 @@ def clutil_show_active_changelists(
     shown_any = False
 
     for cl_name, files in changelists.items():
-        # Skip any remaining stashed entries (cleanup from old implementation)
         if cl_name.endswith('_stashed'):
             continue
+
+        for f in files:
+            try:
+                abs_path = (git_root / f).resolve()
+                assigned_files.add(abs_path.relative_to(git_root).as_posix())
+            except (ValueError, OSError) as error:
+                print(f"Error resolving path: {error}")
 
         if selected_names is not None and cl_name not in selected_names:
             continue
 
-        if files:  # Only show non-empty changelists
+        if files:
             print(f"{cl_name}:")
             shown_any = True
             for file in files:
                 print(clutil_format_file_status(file, status_map, git_root, use_color))
-
-            # Track assigned files
-            for f in files:
-                try:
-                    abs_path = (git_root / f).resolve()
-                    rel_path = abs_path.relative_to(git_root).as_posix()
-                    assigned_files.add(rel_path)
-                except (ValueError, OSError) as error:
-                    print(f"Error resolving path: {error}")
 
     return shown_any, assigned_files
 

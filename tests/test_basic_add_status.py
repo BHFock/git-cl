@@ -197,6 +197,56 @@ def run_tests(repo: TestRepo):
     repo.assert_equal(output_st, output_status,
                        "'git cl st' and 'git cl status' produce identical output")
 
+    # =================================================================
+    # Test: Filtering does not leak other changelists into No Changelist
+    # =================================================================
+    # Regression: `git cl st <name> --include-no-cl` previously listed
+    # files belonging to other (filtered-out) changelists under
+    # "No Changelist". Assigned-file tracking was skipped for changelists
+    # that weren't displayed, so their files looked unassigned. The leak
+    # was not specific to untracked files — a tracked modification leaked
+    # too, so we check both.
+
+    repo.section("Filtering does not leak other changelists into No Changelist")
+
+    repo.run("git cl delete --all")
+
+    # Two tracked files, committed then modified
+    repo.write_file("leak-a.txt", "a")
+    repo.write_file("leak-b.txt", "b")
+    repo.run("git add leak-a.txt leak-b.txt")
+    repo.run(["git", "commit", "--quiet", "-m", "Add leak-test files"])
+    repo.write_file("leak-a.txt", "a modified")   # [ M] tracked, in list1
+    repo.write_file("leak-b.txt", "b modified")   # [ M] tracked, in list2
+
+    # An untracked file for list2, plus a genuinely unassigned untracked
+    # file that SHOULD appear under No Changelist.
+    repo.write_file("leak-c.txt", "c")            # [??] untracked, in list2
+    repo.write_file("unassigned.txt", "u")        # [??] untracked, no changelist
+
+    repo.run("git cl add list1 leak-a.txt")
+    repo.run("git cl add list2 leak-b.txt leak-c.txt")
+
+    output = repo.run("git cl st list1 --include-no-cl")
+
+    # list1 (the filtered changelist) is shown with its file
+    repo.assert_in("list1:", output, "filtered changelist list1 is shown")
+    repo.assert_in("leak-a.txt", output, "list1's file is shown")
+
+    # The genuinely unassigned file appears under No Changelist
+    repo.assert_in("No Changelist:", output, "No Changelist section shown")
+    repo.assert_in("unassigned.txt", output,
+                    "genuinely unassigned file shown under No Changelist")
+
+    # list2 is filtered out, so neither its tracked nor its untracked file
+    # should appear anywhere — if either does, it has leaked into No Changelist.
+    repo.assert_not_in("leak-b.txt", output,
+                        "tracked file from filtered-out list2 does not leak")
+    repo.assert_not_in("leak-c.txt", output,
+                        "untracked file from filtered-out list2 does not leak")
+
+    repo.run("git cl delete --all")
+
 
 # =================================================================
 # Entry point

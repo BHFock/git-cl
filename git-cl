@@ -2667,12 +2667,20 @@ def cl_checkout(args: argparse.Namespace) -> None:
     # Convert to paths relative to current working directory for git command
     checkout_files = []
     missing_files = []
+    untracked_files = []
 
     for stored_path in all_files:
         abs_path = (git_root / stored_path).resolve()
 
         if not abs_path.exists():
             missing_files.append(stored_path)
+            continue
+
+        # Untracked files have no HEAD state to revert to. git checkout
+        # would reject the whole pathspec, so filter them out (matching the
+        # way stage/commit ignore untracked files) and report separately.
+        if clutil_is_file_untracked_cached(stored_path, status_map):
+            untracked_files.append(stored_path)
             continue
 
         rel_to_cwd = _relpath(abs_path, Path.cwd().resolve())
@@ -2682,6 +2690,13 @@ def cl_checkout(args: argparse.Namespace) -> None:
     if missing_files:
         print("Warning: The following files do not exist and will be skipped:")
         for file_path in missing_files:
+            print(f"  {file_path}")
+
+    # Report untracked files (cannot be reverted - no committed state)
+    if untracked_files:
+        print("Warning: The following untracked files cannot be reverted "
+              "and will be skipped:")
+        for file_path in untracked_files:
             print(f"  {file_path}")
 
     if not checkout_files:

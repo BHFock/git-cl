@@ -2726,13 +2726,19 @@ def cl_checkout(args: argparse.Namespace) -> None:
                        check=True)
         print(f"Successfully reverted {len(checkout_files)} file(s) to HEAD state.")
 
-        # Show summary by changelist
+
+        # Show summary by changelist. Untracked files were skipped above
+        # (no HEAD state to revert to), so exclude them — otherwise the
+        # count overstates what actually changed.
+        untracked_set = set(untracked_files)
         print("\nFiles reverted by changelist:")
         for name in args.names:
             if name in changelists and changelists[name]:
-                reverted_count = sum(1 for f in changelists[name]
-                                     if f in all_files and
-                                     (git_root / f).resolve().exists())
+                reverted_count = sum(
+                    1 for f in changelists[name]
+                    if f in all_files
+                    and f not in untracked_set
+                    and (git_root / f).resolve().exists())
                 if reverted_count > 0:
                     print(f"  {name}: {reverted_count} files")
 

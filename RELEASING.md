@@ -124,7 +124,7 @@ environment, not your `base` environment.
 
 ## 8. Create the GitHub release
 
-In the web UI: **Releases → Draft a new release →** choose the existing `1.1.9`
+In the web UI: **[Releases](https://github.com/BHFock/git-cl/releases) → Draft a new release →** choose the existing `1.1.9`
 tag → **Generate release notes** → publish. No file uploads needed; PyPI is the
 download source.
 

@@ -604,9 +604,9 @@ def clutil_is_file_untracked_cached(
     """
     Check if a file is untracked using a precomputed status map.
 
-    This is a faster alternative to clutil_is_file_untracked for use
-    inside loops, avoiding a separate `git status` shellout per file.
-    The caller is responsible for obtaining the status map once via
+    Looks the path up directly in the status map rather than shelling out
+    to `git status` per file, which matters inside loops over changelist
+    files. The caller is responsible for obtaining the status map once via
     clutil_get_file_status_map(show_all=True) before the loop.
 
     Args:

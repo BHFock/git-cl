@@ -598,44 +598,6 @@ def clutil_read_commit_message_file(file_path: str) -> str:
     return processed_content
 
 
-def clutil_is_file_untracked(
-        file_path_rel_to_git_root: str, git_root: Path) -> bool:
-    """
-    Check if a file (specified relative to git root) is untracked.
-
-    Args:
-        file_path_rel_to_git_root: File path relative to git repository root
-        git_root: Absolute path to git repository root
-
-    Returns:
-        True if the file is untracked, False if it's tracked
-    """
-    # Get git status output
-    output = clutil_get_git_status(include_untracked=True)
-
-    # Get absolute path of the file we're checking
-    abs_file_path = (git_root / file_path_rel_to_git_root).resolve()
-
-    # Check untracked files and directories
-    for line in output:
-        if line.startswith("??"):
-            raw_path = line[3:].strip()
-            abs_untracked = (git_root / raw_path).resolve()
-
-            # Direct match for files
-            if abs_file_path == abs_untracked:
-                return True
-
-            # Check if file is under an untracked directory
-            if (
-                abs_untracked.is_dir()
-                and abs_file_path.is_relative_to(abs_untracked)
-            ):
-                return True
-
-    return False
-
-
 def clutil_is_file_untracked_cached(
         file_path_rel_to_git_root: str,
         status_map: dict[str, str]) -> bool:

@@ -2180,13 +2180,6 @@ def clutil_check_unassigned_changes(changelists: dict,
             if file_path not in assigned_files and status != "??"]
 
 
-def clutil_execute_stash_all() -> None:
-    """Execute stash all operation."""
-    temp_args = argparse.Namespace()
-    temp_args.all = True
-    cl_stash(temp_args)
-
-
 def clutil_create_branch(branch_name: str,
                          base_branch: str, current_branch: str) -> None:
     """Create new branch from base."""

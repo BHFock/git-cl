@@ -14,6 +14,7 @@ prefix (e.g. `1.1.9`).
 > this repository. This document references where the token lives; it does not
 > contain one.
 
+
 ## 1. Bump the version
 
 The version number is recorded in three places and **all three must match**:
@@ -22,8 +23,11 @@ The version number is recorded in three places and **all three must match**:
 - `git-cl` (the `__version__` string)
 - `CITATION.cff`
 
-Update all three to the new version before tagging. Releasing from a tree where
-these disagree will ship an inconsistent version string.
+In `CITATION.cff`, also update the `date-released:` field to today's date — it
+is tied to the version and will otherwise carry the previous release's date.
+
+Update all of these before tagging. Releasing from a tree where the version
+strings disagree will ship an inconsistent version string.
 
 ## 2. Pre-release checks
 

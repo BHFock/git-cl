@@ -105,14 +105,18 @@ With an API token configured in `~/.pypirc`, this runs without prompting.
 > instead. For this reason, do the tag-and-upload only when you are sure the
 > release is final.
 
-## 7. Verify
 
-After a short propagation delay, confirm the release installs and reports the
-right version:
+## 7. Verify the published package installs
+
+After a short propagation delay, install it into a throwaway Conda environment:
 
 ```bash
-pip install --upgrade git-changelists
-git cl --version
+conda create -n gitcl-test python=3.12 -y
+conda activate gitcl-test
+pip install git-changelists
+git cl --version          # should print the version you just released
+conda deactivate
+conda env remove -n gitcl-test -y
 ```
 
 ## 8. Create the GitHub release

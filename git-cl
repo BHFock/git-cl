@@ -1033,27 +1033,6 @@ def clutil_get_stash_source_branch(stash_data: dict) -> Optional[str]:
     return stash_data.get('source_branch')
 
 
-def clutil_find_stash_by_message(message: str) -> Optional[str]:
-    """
-    Find a stash reference by its commit message.
-
-    Args:
-        message: The stash message to search for
-
-    Returns:
-        The stash reference (e.g. "stash@{0}") or None if not found
-    """
-    try:
-        stash_list = subprocess.check_output(["git", "stash", "list"],
-                                             text=True)
-        for line in stash_list.strip().split('\n'):
-            if line and message in line:
-                return line.split(':')[0]
-    except subprocess.CalledProcessError:
-        pass
-    return None
-
-
 def clutil_create_unique_stash_message(changelist_name: str) -> str:
     """
     Create a unique stash message that includes changelist name and timestamp.

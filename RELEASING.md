@@ -111,6 +111,15 @@ pip install --upgrade git-changelists
 git cl --version
 ```
 
+## 8. Create the GitHub release
+
+In the web UI: **Releases → Draft a new release →** choose the existing `1.1.9`
+tag → **Generate release notes** → publish. No file uploads needed; PyPI is the
+download source.
+
+Unlike the PyPI upload, a GitHub release is not final — you can edit or delete
+it at any time.
+
 ## Quick reference
 
 ```bash

@@ -56,7 +56,7 @@ Single file, zero dependencies beyond Python 3.9+ and Git.
 Cross-platform: Unix (fcntl) and Windows (msvcrt) file locking.
 """
 
-__version__ = "1.1.10"
+__version__ = "1.1.11"
 
 import argparse
 import datetime
@@ -598,53 +598,15 @@ def clutil_read_commit_message_file(file_path: str) -> str:
     return processed_content
 
 
-def clutil_is_file_untracked(
-        file_path_rel_to_git_root: str, git_root: Path) -> bool:
-    """
-    Check if a file (specified relative to git root) is untracked.
-
-    Args:
-        file_path_rel_to_git_root: File path relative to git repository root
-        git_root: Absolute path to git repository root
-
-    Returns:
-        True if the file is untracked, False if it's tracked
-    """
-    # Get git status output
-    output = clutil_get_git_status(include_untracked=True)
-
-    # Get absolute path of the file we're checking
-    abs_file_path = (git_root / file_path_rel_to_git_root).resolve()
-
-    # Check untracked files and directories
-    for line in output:
-        if line.startswith("??"):
-            raw_path = line[3:].strip()
-            abs_untracked = (git_root / raw_path).resolve()
-
-            # Direct match for files
-            if abs_file_path == abs_untracked:
-                return True
-
-            # Check if file is under an untracked directory
-            if (
-                abs_untracked.is_dir()
-                and abs_file_path.is_relative_to(abs_untracked)
-            ):
-                return True
-
-    return False
-
-
 def clutil_is_file_untracked_cached(
         file_path_rel_to_git_root: str,
         status_map: dict[str, str]) -> bool:
     """
     Check if a file is untracked using a precomputed status map.
 
-    This is a faster alternative to clutil_is_file_untracked for use
-    inside loops, avoiding a separate `git status` shellout per file.
-    The caller is responsible for obtaining the status map once via
+    Looks the path up directly in the status map rather than shelling out
+    to `git status` per file, which matters inside loops over changelist
+    files. The caller is responsible for obtaining the status map once via
     clutil_get_file_status_map(show_all=True) before the loop.
 
     Args:
@@ -785,41 +747,6 @@ def clutil_save_stashes(data: dict[str, dict]) -> None:
                     os.unlink(tmp_path)
                 except OSError:
                     pass
-
-
-def clutil_check_files_unstaged(files: list[str],
-                                git_root: Path) -> tuple[list[str], list[str]]:
-    """
-    Check which files in the list have staged vs unstaged changes.
-
-    Args:
-        files: List of file paths relative to git root
-        git_root: Path to git repository root
-
-    Returns:
-        tuple: (unstaged_files, staged_files)
-               files that can/cannot be stashed
-    """
-    status_map = clutil_get_file_status_map(show_all=True)
-
-    unstaged_files = []
-    staged_files = []
-
-    for file_path in files:
-        abs_path = (git_root / file_path).resolve()
-        if not abs_path.exists():
-            continue
-
-        rel_to_git_root = abs_path.relative_to(git_root).as_posix()
-        status = status_map.get(rel_to_git_root, "  ")
-
-        # Check if file has staged changes (first character is not space)
-        if status[0] != " ":
-            staged_files.append(file_path)
-        else:
-            unstaged_files.append(file_path)
-
-    return unstaged_files, staged_files
 
 
 # Git status analysis for unstash conflicts
@@ -1068,27 +995,6 @@ def clutil_get_stash_source_branch(stash_data: dict) -> Optional[str]:
     return stash_data.get('source_branch')
 
 
-def clutil_find_stash_by_message(message: str) -> Optional[str]:
-    """
-    Find a stash reference by its commit message.
-
-    Args:
-        message: The stash message to search for
-
-    Returns:
-        The stash reference (e.g. "stash@{0}") or None if not found
-    """
-    try:
-        stash_list = subprocess.check_output(["git", "stash", "list"],
-                                             text=True)
-        for line in stash_list.strip().split('\n'):
-            if line and message in line:
-                return line.split(':')[0]
-    except subprocess.CalledProcessError:
-        pass
-    return None
-
-
 def clutil_create_unique_stash_message(changelist_name: str) -> str:
     """
     Create a unique stash message that includes changelist name and timestamp.
@@ -1102,29 +1008,6 @@ def clutil_create_unique_stash_message(changelist_name: str) -> str:
     """
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     return f"git-cl-stash:{changelist_name}:{timestamp}"
-
-
-def clutil_parse_stash_message(
-        stash_message: str) -> Optional[tuple[str, str]]:
-    """
-    Parse our stash message format to extract changelist name and timestamp.
-
-    Args:
-        stash_message: The stash message to parse
-
-    Returns:
-        Tuple of (changelist_name, timestamp) or None if not our format
-    """
-    if stash_message.startswith("git-cl-stash:"):
-        try:
-            parts = stash_message.split(":")
-            if len(parts) >= 3:
-                changelist_name = parts[1]
-                timestamp = parts[2]
-                return changelist_name, timestamp
-        except (IndexError, ValueError):
-            pass
-    return None
 
 
 def clutil_find_stash_by_message_substring(
@@ -2295,13 +2178,6 @@ def clutil_check_unassigned_changes(changelists: dict,
     # Check for unassigned changes (ignore untracked files)
     return [file_path for file_path, status in status_map.items()
             if file_path not in assigned_files and status != "??"]
-
-
-def clutil_execute_stash_all() -> None:
-    """Execute stash all operation."""
-    temp_args = argparse.Namespace()
-    temp_args.all = True
-    cl_stash(temp_args)
 
 
 def clutil_create_branch(branch_name: str,

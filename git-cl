@@ -787,41 +787,6 @@ def clutil_save_stashes(data: dict[str, dict]) -> None:
                     pass
 
 
-def clutil_check_files_unstaged(files: list[str],
-                                git_root: Path) -> tuple[list[str], list[str]]:
-    """
-    Check which files in the list have staged vs unstaged changes.
-
-    Args:
-        files: List of file paths relative to git root
-        git_root: Path to git repository root
-
-    Returns:
-        tuple: (unstaged_files, staged_files)
-               files that can/cannot be stashed
-    """
-    status_map = clutil_get_file_status_map(show_all=True)
-
-    unstaged_files = []
-    staged_files = []
-
-    for file_path in files:
-        abs_path = (git_root / file_path).resolve()
-        if not abs_path.exists():
-            continue
-
-        rel_to_git_root = abs_path.relative_to(git_root).as_posix()
-        status = status_map.get(rel_to_git_root, "  ")
-
-        # Check if file has staged changes (first character is not space)
-        if status[0] != " ":
-            staged_files.append(file_path)
-        else:
-            unstaged_files.append(file_path)
-
-    return unstaged_files, staged_files
-
-
 # Git status analysis for unstash conflicts
 # Maps (staged_char, unstaged_char) -> (is_conflict, description)
 UNSTASH_STATUS_ANALYSIS = {

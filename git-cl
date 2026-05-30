@@ -2338,7 +2338,7 @@ def cl_unstage(args: argparse.Namespace) -> None:
     to the working directory as unstaged changes.
 
     Args:
-        args: argparse.Namespace with 'name' and 'keep' attributes.
+        args: argparse.Namespace with 'name' and 'delete' attributes.
     """
     changelists = clutil_load()
     name = args.name

@@ -14,7 +14,6 @@ prefix (e.g. `1.1.9`).
 > this repository. This document references where the token lives; it does not
 > contain one.
 
-
 ## 1. Bump the version
 
 The version number is recorded in three places and **all three must match**:
@@ -105,10 +104,10 @@ With an API token configured in `~/.pypirc`, this runs without prompting.
 > instead. For this reason, do the tag-and-upload only when you are sure the
 > release is final.
 
-
 ## 7. Verify the published package installs
 
-After a short propagation delay, install it into a throwaway Conda environment:
+This confirms the uploaded package is installable and starts cleanly. After a
+short propagation delay, install it into a throwaway Conda environment:
 
 ```bash
 conda create -n gitcl-test python=3.12 -y
@@ -118,6 +117,10 @@ git cl --version          # should print the version you just released
 conda deactivate
 conda env remove -n gitcl-test -y
 ```
+
+The environment is isolated, so this tests a clean install rather than your
+existing setup. Make sure you install inside the activated `gitcl-test`
+environment, not your `base` environment.
 
 ## 8. Create the GitHub release
 
@@ -132,6 +135,7 @@ it at any time.
 
 ```bash
 # 1. Bump version in setup.cfg, git-cl, CITATION.cff (all must match)
+#    Also update date-released: in CITATION.cff
 # 2. Pre-release
 git checkout main && git pull && git status
 ./tests/run_tests.py
@@ -145,6 +149,11 @@ python3 -m build
 twine check dist/*
 # 6. Upload
 twine upload dist/*
-# 7. Verify
-pip install --upgrade git-changelists && git cl --version
+# 7. Verify in a throwaway Conda environment
+conda create -n gitcl-test python=3.12 -y
+conda activate gitcl-test
+pip install git-changelists && git cl --version
+conda deactivate
+conda env remove -n gitcl-test -y
+# 8. Create GitHub release in web UI (choose tag, Generate release notes, publish)
 ```

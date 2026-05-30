@@ -56,7 +56,7 @@ Single file, zero dependencies beyond Python 3.9+ and Git.
 Cross-platform: Unix (fcntl) and Windows (msvcrt) file locking.
 """
 
-__version__ = "1.1.9"
+__version__ = "1.1.10"
 
 import argparse
 import datetime
@@ -1470,6 +1470,7 @@ def clutil_prepare_files_for_git_stash(
 
 def clutil_execute_git_stash(
     name: str,
+    stash_message: str,
     files_for_git: list[str],
     untracked_files_for_git: list[str]
 ) -> str:
@@ -1477,7 +1478,9 @@ def clutil_execute_git_stash(
     Execute the git stash command.
 
     Args:
-        name: Changelist name
+        name: Changelist name (used to locate the created stash)
+        stash_message: Pre-generated unique stash message, shared with the
+            metadata save so the two can never diverge across a second boundary
         files_for_git: Files to stash
         untracked_files_for_git: Untracked files that were temporarily added
 
@@ -1487,7 +1490,6 @@ def clutil_execute_git_stash(
     Raises:
         subprocess.CalledProcessError: If stash fails
     """
-    stash_message = clutil_create_unique_stash_message(name)
 
     try:
         cmd = ["git", "stash", "push", "-m", stash_message, "--"] + files_for_git
@@ -1532,7 +1534,7 @@ def clutil_execute_git_stash(
 
 
 def clutil_build_stash_metadata(
-    name: str,
+    stash_message: str,
     stash_ref: str,
     files: list[str],
     file_categories: dict[str, list[str]],
@@ -1542,7 +1544,8 @@ def clutil_build_stash_metadata(
     Build stash metadata dictionary.
 
     Args:
-        name: Changelist name
+        stash_message: Pre-generated unique stash message — the same string
+            passed to `git stash push`, so metadata and git never diverge
         stash_ref: Git stash reference
         files: Files in the changelist
         file_categories: Categorized files
@@ -1551,8 +1554,6 @@ def clutil_build_stash_metadata(
     Returns:
         Dictionary containing stash metadata
     """
-    stash_message = clutil_create_unique_stash_message(name)
-
     return {
         "stash_ref": stash_ref,
         "stash_message": stash_message,
@@ -1571,6 +1572,7 @@ def clutil_build_stash_metadata(
 # pylint: disable-next=too-many-arguments
 def clutil_save_stash_metadata_atomic(
     name: str,
+    stash_message: str,
     stash_ref: str,
     files: list[str],
     file_categories: dict[str, list[str]],
@@ -1582,6 +1584,8 @@ def clutil_save_stash_metadata_atomic(
 
     Args:
         name: Changelist name
+        stash_message: Pre-generated unique stash message (shared with the
+            git stash push call)
         stash_ref: Git stash reference
         files: Files in the changelist
         file_categories: Categorized files
@@ -1595,7 +1599,7 @@ def clutil_save_stash_metadata_atomic(
 
     # Build stash metadata
     stash_metadata = clutil_build_stash_metadata(
-        name, stash_ref, files, file_categories, current_branch
+        stash_message, stash_ref, files, file_categories, current_branch
     )
 
     # Save stash metadata
@@ -2967,12 +2971,19 @@ def cl_stash(args: argparse.Namespace, quiet: bool = False) -> None:
         stashable_files, file_categories, git_root, quiet=quiet
     )
 
+    # Generate the unique stash message once and thread it through both the
+    # git stash push and the metadata save. Generating it independently in
+    # each place risks the two timestamps differing across a second boundary,
+    # leaving cl-stashes.json with a message that doesn't match git's stash.
+    stash_message = clutil_create_unique_stash_message(name)
+
     # Execute git stash with safe directory handling
     try:
         with clutil_safe_stash_context(
                 git_root, files_for_git,
                 untracked_files_for_git) as (safe_files, safe_untracked_files):
-            stash_ref = clutil_execute_git_stash(name, safe_files,
+            stash_ref = clutil_execute_git_stash(name, stash_message,
+                                                 safe_files,
                                                  safe_untracked_files)
     except (subprocess.CalledProcessError, ValueError):
         return
@@ -2982,9 +2993,9 @@ def cl_stash(args: argparse.Namespace, quiet: bool = False) -> None:
 
     try:
         clutil_save_stash_metadata_atomic(
-            name, stash_ref, files, file_categories, changelists, stashes
+            name, stash_message, stash_ref, files,
+            file_categories, changelists, stashes
         )
-
         # Success! Print appropriate message based on context
         if not quiet:
             clutil_print_stash_success(name, stashable_files,

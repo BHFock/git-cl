@@ -1584,6 +1584,8 @@ def clutil_save_stash_metadata_atomic(
 
     Args:
         name: Changelist name
+        stash_message: Pre-generated unique stash message (shared with the
+            git stash push call)
         stash_ref: Git stash reference
         files: Files in the changelist
         file_categories: Categorized files

@@ -1010,29 +1010,6 @@ def clutil_create_unique_stash_message(changelist_name: str) -> str:
     return f"git-cl-stash:{changelist_name}:{timestamp}"
 
 
-def clutil_parse_stash_message(
-        stash_message: str) -> Optional[tuple[str, str]]:
-    """
-    Parse our stash message format to extract changelist name and timestamp.
-
-    Args:
-        stash_message: The stash message to parse
-
-    Returns:
-        Tuple of (changelist_name, timestamp) or None if not our format
-    """
-    if stash_message.startswith("git-cl-stash:"):
-        try:
-            parts = stash_message.split(":")
-            if len(parts) >= 3:
-                changelist_name = parts[1]
-                timestamp = parts[2]
-                return changelist_name, timestamp
-        except (IndexError, ValueError):
-            pass
-    return None
-
-
 def clutil_find_stash_by_message_substring(
         message_substring: str) -> Optional[str]:
     """

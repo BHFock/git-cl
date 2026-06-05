@@ -6,8 +6,6 @@ git-cl is a minimal Git subcommand that brings changelist support to Git. Organi
 > A pre-staging layer for organising changes in Git
 
 [![Tutorial](https://img.shields.io/badge/Tutorial-View-4D90FE)](https://github.com/BHFock/git-cl/blob/main/docs/tutorial.md)
-[![Paper](https://img.shields.io/badge/Paper-Read-3B7DDD)](https://github.com/BHFock/git-cl/blob/main/docs/paper.md)
-[![Story](https://img.shields.io/badge/Story-History-2E6AB5)](https://github.com/BHFock/git-cl/blob/main/docs/why-git-cl.md)
 [![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.18722077-1F5DB3)](https://doi.org/10.5281/zenodo.18722077)
 [![PyPI](https://img.shields.io/pypi/v/git-changelists?color=6E6E6E)](https://pypi.org/project/git-changelists/)
 [![PyPI Downloads](https://static.pepy.tech/personalized-badge/git-changelists?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/git-changelists)

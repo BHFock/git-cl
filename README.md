@@ -8,9 +8,7 @@ git-cl is a minimal Git subcommand that brings changelist support to Git. Organi
 [![Tutorial](https://img.shields.io/badge/Tutorial-View-4D90FE)](https://github.com/BHFock/git-cl/blob/main/docs/tutorial.md)
 [![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.18722077-1F5DB3)](https://doi.org/10.5281/zenodo.18722077)
 [![PyPI](https://img.shields.io/pypi/v/git-changelists?color=6E6E6E)](https://pypi.org/project/git-changelists/)
-[![PyPI Downloads](https://static.pepy.tech/personalized-badge/git-changelists?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/git-changelists)
 [![Tests](https://github.com/BHFock/git-cl/actions/workflows/test.yml/badge.svg?style=flat&color=0D6E99)](https://github.com/BHFock/git-cl/actions/workflows/test.yml)
-[![GitHub stars](https://img.shields.io/github/stars/BHFock/git-cl?style=social&color=444)](https://github.com/BHFock/git-cl/stargazers)
 
 `git-cl` is a command-line tool that brings changelist support to Git, inspired by Subversion. It adds a pre-staging review layer that lets you organise modified files into named groups before staging or committing. Changelists can be stashed selectively and promoted to dedicated branches — enabling a late-binding branching workflow where the branch decision follows the code, not the other way around.
 

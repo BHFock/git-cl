@@ -2214,6 +2214,14 @@ def clutil_validate_changelists_stashable(
     This function reports all problems up front, before any state is
     mutated, so the user can clean up first.
 
+    Additionally, when more than one changelist is stashed, no file may
+    have a staged component (e.g. 'A ' staged additions): git builds a
+    pathspec-limited stash from the FULL index, so any staged file —
+    even one belonging to another changelist — leaks into every stash
+    created while it is staged, and reappears when that stash is
+    applied. Staged files must be removed from the index first, e.g.
+    with 'git cl unstage <changelist>' (issue #51).
+
     Args:
         changelists: Active (non-empty) changelists to validate
         git_root: Git repository root
@@ -2227,10 +2235,10 @@ def clutil_validate_changelists_stashable(
     """
     problems: dict[str, list[str]] = {}
 
-    for name, files in sorted(changelists.items()):
-        if not files:
-            continue
+    active = {name: files for name, files in changelists.items() if files}
+    multiple_changelists = len(active) > 1
 
+    for name, files in sorted(active.items()):
         existing_files, missing_files = clutil_prepare_stash_files(
             files, git_root)
         file_categories, stashable_files, unstashable_files = (
@@ -2249,6 +2257,19 @@ def clutil_validate_changelists_stashable(
                 messages.append(f"{file_path} (not stashable)")
         if not unstashable_files and not stashable_files:
             messages.append("(changelist has no stashable changes)")
+
+        # Staged components leak into every pathspec stash created while
+        # they sit in the index (git records the full index state). With
+        # a single changelist there is nothing to leak into; with several
+        # the file would silently reappear when another stash is applied.
+        if multiple_changelists:
+            for stored_path, abs_path in existing_files:
+                rel = abs_path.relative_to(git_root).as_posix()
+                status = status_map.get(rel, "  ")
+                if status[0] not in (' ', '?'):
+                    messages.append(
+                        f"{stored_path} (staged - remove from index "
+                        "before stashing)")
 
         if messages:
             problems[name] = messages
@@ -3112,11 +3133,14 @@ def cl_branch(args: argparse.Namespace) -> None:
                 print(f"    {message}")
         print("\n'git cl br' must stash every active changelist before "
               "creating the branch.")
+        print("Staged files must be removed from the index first: git "
+              "builds each stash\nfrom the full index, so staged files "
+              "leak into other changelists' stashes.")
         print("Clean up the changelists above first, for example:")
+        print("  - Remove staged files from the index: "
+              "git cl unstage <changelist>")
         print("  - Remove clean files from a changelist: git cl rm <files>")
         print("  - Or commit them: git cl commit <changelist> -m '...'")
-        print("  - Move staged-only changes back to unstaged: "
-              "git cl unstage <changelist>")
         print("  - Delete obsolete changelists: git cl delete <changelist>")
         print("\nThen retry: git cl br "
               f"{changelist_name} {branch_name}")

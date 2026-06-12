@@ -54,7 +54,7 @@ def run_tests(repo: TestRepo):
     # =================================================================
     # Test: changelist with a clean file blocks the workflow (issue #51)
     # =================================================================
-    # Changelist A holds one modified and one clean file. cl_stash
+    # Changelist 'docs' holds one modified and one clean file. cl_stash
     # refuses changelists containing clean files, so 'git cl branch'
     # must abort BEFORE stashing anything or creating the branch.
 
@@ -62,10 +62,10 @@ def run_tests(repo: TestRepo):
 
     repo.write_file("mod_a.txt", "a modified")
     repo.write_file("mod_c.txt", "c modified")
-    repo.run("git cl add A mod_a.txt clean_b.txt")
-    repo.run("git cl add B mod_c.txt")
+    repo.run("git cl add docs mod_a.txt clean_b.txt")
+    repo.run("git cl add feature mod_c.txt")
 
-    output = repo.run("git cl branch B")
+    output = repo.run("git cl branch feature")
     repo.assert_in("clean_b.txt", output,
                    "error message names the clean file")
     repo.assert_in("clean", output,
@@ -84,11 +84,11 @@ def run_tests(repo: TestRepo):
                       "no git stashes were created")
 
     cl = repo.load_cl_json()
-    repo.assert_true("A" in cl and "B" in cl,
+    repo.assert_true("docs" in cl and "feature" in cl,
                      "both changelists still active")
 
     stash = repo.load_stash_json()
-    repo.assert_true("A" not in stash and "B" not in stash,
+    repo.assert_true("docs" not in stash and "feature" not in stash,
                      "no changelist was stashed")
 
     repo.assert_equal("a modified", repo.read_file("mod_a.txt"),
@@ -104,24 +104,25 @@ def run_tests(repo: TestRepo):
 
     repo.run("git cl rm clean_b.txt")
 
-    output = repo.run("git cl branch B")
+    output = repo.run("git cl branch feature")
     repo.assert_exit_code(0, "git cl branch should succeed after cleanup")
 
     branch = repo.get_current_branch()
-    repo.assert_equal("B", branch, "now on branch 'B'")
+    repo.assert_equal("feature", branch, "now on branch 'feature'")
 
     cl = repo.load_cl_json()
-    repo.assert_true("B" in cl, "changelist B active on new branch")
+    repo.assert_true("feature" in cl,
+                     "changelist 'feature' active on new branch")
 
     repo.assert_equal("c modified", repo.read_file("mod_c.txt"),
                       "mod_c.txt modifications present on new branch")
 
-    # Changelist A was stashed, so its modification must be gone
+    # Changelist 'docs' was stashed, so its modification must be gone
     repo.assert_equal("a", repo.read_file("mod_a.txt"),
-                      "mod_a.txt reverted (changelist A stashed)")
+                      "mod_a.txt reverted (changelist 'docs' stashed)")
 
     stash = repo.load_stash_json()
-    repo.assert_true("A" in stash, "changelist A is stashed")
+    repo.assert_true("docs" in stash, "changelist 'docs' is stashed")
 
     # =================================================================
     # Test: staged files in multiple changelists block the workflow
@@ -134,28 +135,28 @@ def run_tests(repo: TestRepo):
 
     # Clean up the previous scenario: restore the stashed changelist,
     # revert all modifications and remove the changelists
-    repo.run("git cl unstash A --force")
+    repo.run("git cl unstash docs --force")
     repo.run("git checkout --quiet " + default_branch)
     repo.run("git reset --quiet --hard HEAD")
     repo.run("git cl delete --all")
 
-    repo.write_file("folder1/file1.txt", "f1")
-    repo.write_file("dddd", "d")
-    repo.run("git add folder1/file1.txt dddd")
+    repo.write_file("src/new_a.txt", "new file a")
+    repo.write_file("new_b.txt", "new file b")
+    repo.run("git add src/new_a.txt new_b.txt")
     repo.write_file("mod_a.txt", "a modified again")
 
-    repo.run("git cl add ok folder1/file1.txt")
-    repo.run("git cl add xxx dddd mod_a.txt")
+    repo.run("git cl add feature-a src/new_a.txt")
+    repo.run("git cl add feature-b new_b.txt mod_a.txt")
 
-    output = repo.run("git cl branch ok")
+    output = repo.run("git cl branch feature-a")
     repo.assert_in("staged", output,
                    "error message mentions staged files")
     repo.assert_in("git cl unstage", output,
                    "error message suggests 'git cl unstage'")
-    repo.assert_in("dddd", output,
-                   "error message names the staged file dddd")
-    repo.assert_in("folder1/file1.txt", output,
-                   "error message names the staged file folder1/file1.txt")
+    repo.assert_in("new_b.txt", output,
+                   "error message names the staged file new_b.txt")
+    repo.assert_in("src/new_a.txt", output,
+                   "error message names the staged file src/new_a.txt")
 
     branch = repo.get_current_branch()
     repo.assert_equal(default_branch, branch,
@@ -166,40 +167,43 @@ def run_tests(repo: TestRepo):
                       "no git stashes were created")
 
     staged = repo.get_staged_files()
-    repo.assert_in("dddd", staged, "dddd still staged (state untouched)")
+    repo.assert_in("new_b.txt", staged,
+                   "new_b.txt still staged (state untouched)")
 
     # =================================================================
     # Test: after unstaging, the workflow succeeds without leaks
     # =================================================================
-    # This is the leak scenario from issue #51: previously dddd
+    # This is the leak scenario from issue #51: previously new_b.txt
     # reappeared (staged) on the new branch although it belongs to the
-    # stashed changelist xxx.
+    # stashed changelist 'feature-b'.
 
     repo.section("After unstaging the workflow succeeds without leaks")
 
-    repo.run("git cl unstage ok")
-    repo.run("git cl unstage xxx")
+    repo.run("git cl unstage feature-a")
+    repo.run("git cl unstage feature-b")
 
-    output = repo.run("git cl branch ok")
+    output = repo.run("git cl branch feature-a")
     repo.assert_exit_code(0, "git cl branch should succeed after unstaging")
 
     branch = repo.get_current_branch()
-    repo.assert_equal("ok", branch, "now on branch 'ok'")
+    repo.assert_equal("feature-a", branch, "now on branch 'feature-a'")
 
     cl = repo.load_cl_json()
-    repo.assert_true("ok" in cl, "changelist ok active on new branch")
-    repo.assert_true(repo.file_exists("folder1/file1.txt"),
-                     "folder1/file1.txt restored on new branch")
+    repo.assert_true("feature-a" in cl,
+                     "changelist 'feature-a' active on new branch")
+    repo.assert_true(repo.file_exists("src/new_a.txt"),
+                     "src/new_a.txt restored on new branch")
 
-    # The crucial check: files of the stashed changelist xxx must NOT
-    # leak onto the new branch
-    repo.assert_true(not repo.file_exists("dddd"),
-                     "dddd did NOT leak onto the new branch")
+    # The crucial check: files of the stashed changelist 'feature-b'
+    # must NOT leak onto the new branch
+    repo.assert_true(not repo.file_exists("new_b.txt"),
+                     "new_b.txt did NOT leak onto the new branch")
     repo.assert_equal("a", repo.read_file("mod_a.txt"),
-                      "mod_a.txt reverted (changelist xxx stashed)")
+                      "mod_a.txt reverted (changelist 'feature-b' stashed)")
 
     stash = repo.load_stash_json()
-    repo.assert_true("xxx" in stash, "changelist xxx is stashed")
+    repo.assert_true("feature-b" in stash,
+                     "changelist 'feature-b' is stashed")
 
     # =================================================================
     # Test: a single changelist with staged files still works
@@ -212,27 +216,27 @@ def run_tests(repo: TestRepo):
     # Clean up the previous scenario: restore the stashed changelist,
     # revert everything (staged-new files become untracked and are
     # removed by git clean) and delete the changelists
-    repo.run("git cl unstash xxx --force")
+    repo.run("git cl unstash feature-b --force")
     repo.run("git checkout --quiet " + default_branch)
     repo.run("git reset --quiet --hard HEAD")
     repo.run("git clean --quiet -fd")
     repo.run("git cl delete --all")
 
-    repo.write_file("solo.txt", "solo")
-    repo.run("git add solo.txt")
-    repo.run("git cl add solo solo.txt")
+    repo.write_file("standalone.txt", "standalone")
+    repo.run("git add standalone.txt")
+    repo.run("git cl add standalone standalone.txt")
 
-    output = repo.run("git cl branch solo")
+    output = repo.run("git cl branch standalone")
     repo.assert_exit_code(0,
                           "git cl branch with single staged changelist "
                           "should succeed")
 
     branch = repo.get_current_branch()
-    repo.assert_equal("solo", branch, "now on branch 'solo'")
+    repo.assert_equal("standalone", branch, "now on branch 'standalone'")
 
     staged = repo.get_staged_files()
-    repo.assert_in("solo.txt", staged,
-                   "solo.txt restored as staged on the new branch")
+    repo.assert_in("standalone.txt", staged,
+                   "standalone.txt restored as staged on the new branch")
 
 
 # =================================================================

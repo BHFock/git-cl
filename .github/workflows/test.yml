@@ -1,5 +1,4 @@
 name: Tests
-
 on:
   workflow_dispatch:
   push:
@@ -15,9 +14,8 @@ on:
       - 'tests/**'
       - '.github/workflows/test.yml'
   schedule:
-      # First Friday of Jan/Apr/Jul/Oct
-      - cron: '0 18 1-7 1,4,7,10 5'
-
+    # 1. Januar/April/Juli/Oktober, 18:00 UTC (einmal pro Quartal)
+    - cron: '0 18 1 1,4,7,10 *'
 jobs:
   test:
     strategy:
@@ -37,7 +35,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-
       - name: Install git-cl (Unix)
         if: runner.os != 'Windows'
         run: |
@@ -45,19 +42,16 @@ jobs:
           cp git-cl ~/bin/git-cl
           chmod +x ~/bin/git-cl
           echo "$HOME/bin" >> $GITHUB_PATH
-
       - name: Install git-cl (Windows)
         if: runner.os == 'Windows'
         run: |
           mkdir "$env:USERPROFILE\bin" -Force
           Copy-Item git-cl "$env:USERPROFILE\bin\git-cl"
           echo "$env:USERPROFILE\bin" | Out-File -Append $env:GITHUB_PATH
-
       - name: Verify installation
         run: |
           git cl --version
           python3 --version
           git --version
-
       - name: Run tests
         run: python3 tests/run_tests.py

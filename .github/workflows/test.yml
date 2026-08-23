@@ -14,7 +14,7 @@ on:
       - 'tests/**'
       - '.github/workflows/test.yml'
   schedule:
-    # 1. Januar/April/Juli/Oktober, 18:00 UTC (einmal pro Quartal)
+    # 1 Jan/Apr/Jul/Oct at 18:00 UTC (once per quarter)
     - cron: '0 18 1 1,4,7,10 *'
 jobs:
   test:

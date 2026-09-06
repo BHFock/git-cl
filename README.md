@@ -107,7 +107,7 @@ git-cl is CLI-only by design. Its stable metadata format and command interface a
 
 - VS Code: [git-cl-vscode](https://github.com/WayLit/git-cl-vscode) (community maintained)
 
-Further independently maintained integrations are welcome, see [CONTRIBUTING](https://github.com/BHFock/git-cl/blob/main/CONTRIBUTING.md).
+Further independently maintained integrations are welcome, see [integration guidance](https://github.com/BHFock/git-cl/blob/main/CONTRIBUTING.md#external-gui-projects).
 
 ## Notes
 
@@ -118,7 +118,7 @@ Further independently maintained integrations are welcome, see [CONTRIBUTING](ht
 
 ## License
 
-BSD 3-Clause, see [LICENSE](https://github.com/BHFock/git-cl/blob/main/LICENSE)
+BSD 3-Clause, see [LICENSE](https://github.com/BHFock/git-cl/blob/main/LICENSE) | [CONTRIBUTING](https://github.com/BHFock/git-cl/blob/main/CONTRIBUTING.md).
 
 <!--
 Keywords: git changelist, svn changelist, partial commit, group files, perforce, git extension, organise changes, subversion, named staging area, pre-staging, commit logical units, selective commit, late-binding branching

@@ -107,7 +107,7 @@ git-cl is CLI-only by design. Its stable metadata format and command interface a
 
 - VS Code: [git-cl-vscode](https://github.com/WayLit/git-cl-vscode) (community maintained)
 
-Further independently maintained integrations are welcome, see [integration guidance](https://github.com/BHFock/git-cl/blob/main/CONTRIBUTING.md#external-gui-projects).
+Further independently maintained integrations are welcome, see [integration guidance](https://github.com/BHFock/git-cl/blob/main/CONTRIBUTING.md#external-integrations).
 
 ## Notes
 

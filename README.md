@@ -85,6 +85,10 @@ git cl remove README.md
 # Delete a changelist
 git cl delete docs-fix
 
+# Set a changelist aside and restore it later
+git cl stash docs-fix
+git cl unstash docs-fix
+
 # Late-binding branching: create a branch from a changelist (auto-stash/unstash)
 git cl br docs-fix
 ```

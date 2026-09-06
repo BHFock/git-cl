@@ -26,7 +26,6 @@ git-cl is a minimal Git subcommand that brings changelist support to Git. Organi
 ### Technical  
 - Local-only metadata (`.git/cl.json`)  
 - Simple CLI: `git cl <command>`  
-- Interoperable with community [VS Code extension](https://github.com/WayLit/git-cl-vscode)
 
 ## Demo 
 
@@ -102,6 +101,13 @@ git cl br docs-fix
 
 📘 [Paper](https://github.com/BHFock/git-cl/blob/main/docs/paper.md): Design, workflow, and related work
 
+## Ecosystem
+
+git-cl is CLI-only by design. Its stable metadata format and command interface allow editors and other tools to build on it.
+
+- VS Code: [git-cl-vscode](https://github.com/WayLit/git-cl-vscode) (community maintained)
+
+Further independently maintained integrations are welcome, see [CONTRIBUTING](https://github.com/BHFock/git-cl/blob/main/CONTRIBUTING.md).
 
 ## Notes
 
@@ -112,7 +118,7 @@ git cl br docs-fix
 
 ## License
 
-BSD 3-Clause — see [LICENSE](https://github.com/BHFock/git-cl/blob/main/LICENSE) | [CONTRIBUTING](https://github.com/BHFock/git-cl/blob/main/CONTRIBUTING.md)
+BSD 3-Clause, see [LICENSE](https://github.com/BHFock/git-cl/blob/main/LICENSE)
 
 <!--
 Keywords: git changelist, svn changelist, partial commit, group files, perforce, git extension, organise changes, subversion, named staging area, pre-staging, commit logical units, selective commit, late-binding branching

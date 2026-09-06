@@ -40,7 +40,7 @@ If you want to build a GUI integration, everything you need is available:
 - Combine it with standard `git status` output for a full picture of the working tree
 - Call `git cl add`, `git cl stage`, `git cl commit`, `git cl stash`, `git cl branch` etc. directly for all operations
 
-If you build a GUI integration, open an issue — I'll link to it from the README.
+If you build a GUI integration, open an issue — I'll link to it from the README's Ecosystem section.
 
 ## What I'm Not Looking For
 

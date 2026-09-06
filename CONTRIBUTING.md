@@ -31,9 +31,9 @@ git-cl is a feature complete, focused tool with a clear scope. While I appreciat
 - **Test** on different operating systems
 - **Share** edge cases you've tried
 
-### External GUI Projects
-git-cl is intentionally a focused CLI tool and GUI development is out of scope for this repository. However, GUI integrations (e.g. 
-Emacs/Magit, VSCode, JetBrains) are very welcome as **separate, independently maintained projects**.
+### External Integrations
+
+git-cl is intentionally a focused CLI tool and GUI development is out of scope for this repository. However, editor and GUI integrations (e.g. Emacs/Magit, VSCode, JetBrains) are very welcome as **separate, independently maintained projects**.
 
 If you want to build a GUI integration, everything you need is available:
 - The changelist data is stored in `.git/cl.json` — a stable, documented format that won't change

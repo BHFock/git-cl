@@ -107,7 +107,7 @@ git cl br docs-fix
 
 ## Ecosystem
 
-git-cl is CLI-only by design. Its stable metadata format and command interface allow editors and other tools to build on it.
+git-cl is CLI-only by design. Its stable metadata files and command interface allow editors and other tools to build on it.
 
 - VS Code: [git-cl-vscode](https://github.com/WayLit/git-cl-vscode) (community maintained)
 

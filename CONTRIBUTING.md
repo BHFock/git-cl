@@ -17,6 +17,8 @@ git-cl is a feature complete, focused tool with a clear scope. While I appreciat
 - **Provide** clear steps to reproduce
 - **Attach** relevant error messages or **describe** unexpected behaviour
 
+> Security issues: please do **not** open a public issue — see [SECURITY.md](SECURITY.md).
+
 ### Documentation Improvements
 
 - **Fix** typos, broken links, unclear explanations
@@ -28,7 +30,7 @@ git-cl is a feature complete, focused tool with a clear scope. While I appreciat
 ### Testing & Compatibility Reports
 
 - **Report** compatibility with different Python/Git versions
-- **Test** on different operating systems
+- **Run** the [test suite](https://github.com/BHFock/git-cl/blob/main/tests/README.md) on different operating systems
 - **Share** edge cases you've tried
 
 ### External Integrations
@@ -42,14 +44,27 @@ If you want to build a GUI integration, everything you need is available:
 
 If you build a GUI integration, open an issue — I'll link to it from the README's Ecosystem section.
 
+### Packaging
+
+git-cl is published on [PyPI](https://pypi.org/project/git-changelists/) and can also be installed by downloading the single script. I don't plan to maintain distribution packages myself.
+
+Packaging for Homebrew, AUR, nixpkgs, conda-forge or a Linux distribution is welcome as an **independently maintained** effort — no coordination with me is needed. Each release is tagged in Git and published to PyPI, so the source is stable to build from.
+
+Please note in the package that it is community maintained, and point bug reports here only for issues reproducible with a pip or direct-script install — see [Before Opening an Issue](#before-opening-an-issue). I can't support packaging problems in downstream builds.
+
+### Pull Requests
+
+Please **open an issue before writing code**. For a feature complete project, an unsolicited pull request is likely to be declined — not because the work is bad, but because it may not fit the intended scope. Typo and documentation fixes are the exception: send those directly. Contributions are accepted under the BSD 3-Clause License.
+
 ## What I'm Not Looking For
 
-To keep git-cl simple and maintainable, I don’t plan to add:
+To keep git-cl simple and maintainable, I don't plan to add:
 
 - New features or commands
 - Major architectural changes
 - Alternative file formats or storage backends
 - GUI or web interfaces as part of this repository
+- Distribution packaging (Homebrew, AUR, distro packages) as part of this repository
 
 ## Before Opening an Issue
 

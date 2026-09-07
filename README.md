@@ -24,7 +24,7 @@ git-cl is a minimal Git subcommand that brings changelist support to Git. Organi
 *Scope: operates at file level — patch-level editing is left to other Git tools.*
 
 ### Technical  
-- Local-only metadata (`.git/cl.json`)  
+- Local-only metadata (`.git/cl.json`, `.git/cl-stashes.json`)
 - Simple CLI: `git cl <command>`  
 
 ## Demo 

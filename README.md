@@ -125,5 +125,5 @@ Further independently maintained integrations are welcome, see [integration guid
 BSD 3-Clause, see [LICENSE](https://github.com/BHFock/git-cl/blob/main/LICENSE) | [CONTRIBUTING](https://github.com/BHFock/git-cl/blob/main/CONTRIBUTING.md).
 
 <!--
-Keywords: git changelist, svn changelist, partial commit, group files, perforce, git extension, organise changes, subversion, named staging area, pre-staging, commit logical units, selective commit, late-binding branching
+Keywords: git changelist, svn changelist, group files, perforce, git extension, organise changes, subversion, named staging area, pre-staging, commit logical units, late-binding branching
 -->

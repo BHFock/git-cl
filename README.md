@@ -1,5 +1,5 @@
 <!--
-git-cl is a minimal Git subcommand that brings changelist support to Git. Organise modified files into named changelists before staging or committing. Ideal for managing partial commits.
+git-cl is a minimal Git subcommand that brings changelist support to Git. Organise modified files into named changelists before staging or committing.
 -->
 # git-cl
 

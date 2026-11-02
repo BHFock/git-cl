@@ -115,6 +115,8 @@ git-cl is CLI-only by design. Its stable metadata files and command interface al
 
 Further independently maintained integrations are welcome, see [integration guidance](https://github.com/BHFock/git-cl/blob/main/CONTRIBUTING.md#external-integrations).
 
+git-cl was mentioned in [Git Rev News Edition #140](https://git.github.io/rev_news/2026/10/31/edition-140/).
+
 ## Notes
 
 - Requires Python 3.9+ and Git

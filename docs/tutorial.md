@@ -6,7 +6,7 @@ git-cl: A Git subcommand to manage changelists in Git. Group files by intent, ma
 
 [git-cl](https://github.com/BHFock/git-cl) is a command-line tool that brings changelists to Git — like sticky notes for your working directory. It lets you group files into named changelists before staging or committing, acting as a pre-staging review layer for managing multiple parallel changes with intent and clarity.
 
-Changelists can be stashed selectively and promoted to dedicated branches — an approach called late-binding branching.​​​​​​​​​​​​​​​​
+Changelists can be stashed selectively and promoted to dedicated branches — an approach called late-binding branching.
 
 ## Why git-cl?
 
@@ -24,7 +24,7 @@ This helps when:
 
 Changelists are saved locally in `.git/cl.json`. They’re private to your workspace and not shared or committed. Think of them as quick labels on piles of work.
 
-Read more: Why [Why git-cl exists](why-git-cl.md) for the personal history, and the [concept paper](https://github.com/BHFock/git-cl/blob/main/docs/paper.md) for design and related work.
+Read more: [Why git-cl exists](why-git-cl.md) for the personal history, and the [concept paper](https://github.com/BHFock/git-cl/blob/main/docs/paper.md) for design and related work.
 
 ## How changelists fit into Git workflows
 
@@ -98,7 +98,7 @@ git cl --version
 git cl help
 ```
 
-Git will recognise `git-cl` as a [subcommand]( https://git.github.io/htmldocs/howto/new-command.html): you can now run `git cl` just like `git commit` or `git status`.
+Git will recognise `git-cl` as a [subcommand](https://git.github.io/htmldocs/howto/new-command.html): you can now run `git cl` just like `git commit` or `git status`.
 
 
 [↑ Back to top](#git-cl-a-git-subcommand-for-changelist-management)
@@ -176,6 +176,16 @@ git cl st --no-untracked
 ```
 
 This is useful when working on a focused task and you only want to see files already known to Git.
+
+#### Coloured output
+
+Status codes are colour-coded (see the [colour key](#colour-key)) when the optional [colorama](https://pypi.org/project/colorama/) package is installed. `git-cl` itself has no dependencies, so `pip install git-changelists` does not install colorama for you. To get colour, install it separately:
+
+```
+pip install colorama
+```
+
+Without colorama, `git cl status` works the same but prints plain text.
 
 ### 2.3 Diff a changelist
 
@@ -297,15 +307,20 @@ Only changelist metadata is deleted — no file content or Git history is lost.
 ### 2.8 Checkout a Changelist
 
 ```
-git cl checkout <changelist-name>
+git cl checkout <changelist-name> [<changelist-name> ...]
 # or
 git cl co <changelist-name>
 ```
 
-- Reverts all files in the changelist to their last committed state ([HEAD](https://git-scm.com/book/ms/v2/Git-Tools-Reset-Demystified.html#_the_head)).
+- Reverts all files in the changelist to their last committed state ([HEAD](https://git-scm.com/book/en/v2/Git-Tools-Reset-Demystified.html#_the_head)).
 - Useful for discarding local changes by intent, not just by filename.
-- Prompts for confirmation before proceeding.
+- Accepts one or more changelist names.
+- Prompts for confirmation before proceeding; use `--force` (or `-f`) to skip the prompt.
+- Untracked files (`[??]`) are skipped with a warning, because they have no committed state to revert to. They stay in your working directory.
 - Shows a summary of reverted files.
+- The changelist is kept unless you pass `--delete`.
+
+Warning: checkout discards your local changes to those files. Run [git cl diff](#23-diff-a-changelist) first if you are unsure.
 
 ### 2.9 Getting Help from the Command Line
 
@@ -343,11 +358,9 @@ Stash saves those changes aside, and unstash brings them back later.
 git cl stash <changelist-name>
 ```
 
-Tip: Run stash commands from your repository root to avoid path issues.
-
-- Saves all unstaged and untracked files from the changelist.
-- Staged files are left alone (so you can commit them separately).
+- Saves files with unstaged changes, newly added files (`[A ]`) and untracked files from the changelist.
 - The stash is named after your changelist and timestamped.
+- Refuses to stash the changelist if any of its files has only staged changes (e.g. `[M ]`) or no changes at all, and lists those files. Git's stash cannot set them aside on their own, so commit or unstage them first, or [remove](#26-remove-files-from-changelists) them from the changelist.
 
 #### Unstash a changelist
 
@@ -385,6 +398,8 @@ What happens under the hood:
 1. Saves (stashes) all active changelists.
 2. Creates and checks out the new branch.
 3. Restores only the chosen changelist on that branch — the other changelists remain stashed and can be restored with `git cl unstash` later.
+
+Before it starts, `git cl branch` checks that every modified tracked file belongs to a changelist. If any changes are not assigned to a changelist, it stops without changing anything, because those changes would otherwise be stashed with no changelist to restore them from. Add them to a changelist (or commit or discard them), then run the command again.
 
 See [Section 4.3](#43-late-binding-branching-with-git-cl-branch) for a worked example.
 
@@ -537,7 +552,7 @@ This automatically reassigns the file to new-list.
 
 ### Why are changelists deleted after I commit?
 
-[git cl commit](#25-Commit-a-changelist) always deletes the changelist after committing, unless you explicitly use the `--keep` flag:
+[git cl commit](#25-commit-a-changelist) always deletes the changelist after committing, unless you explicitly use the `--keep` flag:
 
 ```
 git cl commit my-list -m "Implement my feature" --keep
@@ -546,8 +561,8 @@ git cl commit my-list -m "Implement my feature" --keep
 [git cl stage](#24-stage-and-unstage-a-changelist), [git cl unstage](#unstage-a-changelist), and [git cl checkout](#28-checkout-a-changelist) behave differently — they keep the changelist by default. If you want to remove it in those cases, pass `--delete`:
 
 ```
-git cl stage my-list
-git cl unstage my-list 
+git cl stage my-list --delete
+git cl unstage my-list --delete
 git cl checkout my-list --delete
 ```
 
@@ -586,6 +601,14 @@ git cl delete old-list
 ### How do I pause work in progress without committing?
 
 Use `git cl stash <name>`, then switch branches and [git cl unstash](#31-stash-and-unstash-changelists) when ready.
+
+### Why does git cl branch refuse to run?
+
+[git cl branch](#32-create-a-branch-from-a-changelist) stops if you have modified tracked files that are not in any changelist. It stashes every changelist before switching branch, and unassigned changes would be swept up with no changelist to bring them back. Run [git cl status](#22-view-status-by-changelist) to see what is listed under 'No Changelist', then add those files to a changelist, commit them, or discard them, and try again.
+
+### Why does git cl stash refuse my changelist?
+
+Git's stash can only set aside files with unstaged changes, newly added files and untracked files. If a changelist contains a file that has only staged changes or no changes at all, [git cl stash](#31-stash-and-unstash-changelists) refuses the whole changelist and lists the files that are in the way. Commit or unstage them, or move them out of the changelist with [git cl remove](#26-remove-files-from-changelists).
 
 ### Why don’t I see all files in git cl status?
 
@@ -635,7 +658,7 @@ Yes. Each worktree has its own independent set of changelists — changes made i
 | Unstage a changelist            | `git cl unstage <name> [--delete]`                        |               |
 | Commit with inline message      | `git cl commit <name> -m "Message" [--keep]`              | `git cl ci`   |
 | Commit using message from file  | `git cl commit <name> -F message.txt [--keep]`            |               |
-| Revert changelist to HEAD	      | `git cl checkout <name>`                                  | `git cl co`   |
+| Revert changelist to HEAD       | `git cl checkout <name>`                                  | `git cl co`   |
 | Remove files from changelists   | `git cl remove <file1> <file2> ...`                       | `git cl rm`   |
 | Delete changelists              | `git cl delete <name1> <name2> ...`                       | `git cl del`  | 
 | Stash a changelist              | `git cl stash <name>`                                     |               |
@@ -685,7 +708,7 @@ git cl status --all
 | Magenta | Both staged and unstaged (`[MM]`, `[AM]`)|
 | Blue    | Untracked (`[??]`)            |
 
-You can disable color output with:
+You can disable colour output with:
 
 ```
 git cl status --no-color

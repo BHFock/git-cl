@@ -120,6 +120,7 @@ git-cl was mentioned in [Git Rev News Edition #140](https://git.github.io/rev_ne
 ## Notes
 
 - Requires Python 3.9+ and Git
+- Coloured `git cl status` output needs the optional [colorama](https://pypi.org/project/colorama/) package (`pip install colorama`); without it, output is plain text
 - Local-only; designed for single-user workflows
 - Always inspect downloaded scripts before executing, see [source](https://github.com/BHFock/git-cl/blob/main/git-cl)
 - For security concerns, see [SECURITY](https://github.com/BHFock/git-cl/blob/main/SECURITY.md)

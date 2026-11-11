@@ -3239,8 +3239,7 @@ def main() -> None:
             "See also: \n"
             "    GitHub: https://github.com/BHFock/git-cl \n"
             "    DOI:    https://doi.org/10.5281/zenodo.18722077"),
-        formatter_class=argparse.RawTextHelpFormatter,
-        add_help=False)
+        formatter_class=argparse.RawTextHelpFormatter)
 
     parser.add_argument(
         '--version',

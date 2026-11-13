@@ -75,8 +75,8 @@ git cl st
 | Script | Commands |
 |---|---|
 | `test_basic_add_status.py` | `add`, `status` / `st`, filtering, `--include-no-cl` |
-| `test_stage_unstage.py` | `stage`, `unstage`, `--delete` flag, round-trip |
-| `test_commit.py` | `commit` / `ci`, `-m`, `-F`, `--keep` flag |
+| `test_stage_unstage.py` | `stage`, `unstage`, `--delete` flag, round-trip, multiple changelists |
+| `test_commit.py` | `commit` / `ci`, `-m`, `-F`, `--keep` flag, multiple changelists |
 | `test_diff.py` | `diff`, multiple changelists, `--staged` |
 | `test_remove_delete.py` | `remove` / `rm`, `delete` / `del`, `--all` |
 | `test_checkout.py` | `checkout` / `co`, `--delete`, `--force` |

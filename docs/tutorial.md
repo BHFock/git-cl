@@ -212,11 +212,12 @@ git cl diff docs --staged # Show staged changes for 'docs' changelist
 #### Stage a changelist
 
 ```
-git cl stage <changelist-name>
+git cl stage <changelist-name> [<changelist-name> ...]
 ```
 
 - Stages all tracked files in the changelist.
 - Untracked files ([??]) are ignored unless added with git add.
+- Several changelists can be staged at once. If any of the named changelists does not exist, nothing is staged.
 - By default, the changelist is kept unless `--delete` is used.
 
 #### Example
@@ -226,22 +227,31 @@ git cl stage docs
 git commit -m "Refactor docs"
 ```
 
+To stage several changelists in one go:
+
+```
+git cl stage docs tests
+```
+
 Tip: Run [git cl diff](#23-diff-a-changelist) first if you want to review changes.
 
 #### Unstage a changelist
 
 ```
-git cl unstage <changelist-name>
+git cl unstage <changelist-name> [<changelist-name> ...]
 ```
 
 - Unstages files from the changelist (i.e. removes them from the index).
 - Only applies to staged files — unchanged or unstaged files are ignored.
 - Files remain in the changelist and your working directory.
+- Several changelists can be unstaged at once, just like with `git cl stage`.
 
 #### Example
 
 ```
 git cl unstage docs
+# or several at once
+git cl unstage docs tests
 ```
 
 This is useful when you've staged something too early and want to pull it back without losing the changelist group.
@@ -661,8 +671,8 @@ Yes. Each worktree has its own independent set of changelists — changes made i
 | Add files to a changelist       | `git cl add <name> <files...>`                            | `git cl a`    |
 | View grouped status             | `git cl status [--all] [--no-untracked] [--no-color]`     | `git cl st`   |
 | Show diff for changelist(s)     | `git cl diff <name1> [<name2> ...] [--staged]`            |               |
-| Stage a changelist              | `git cl stage <name> [--delete]`                          |               |
-| Unstage a changelist            | `git cl unstage <name> [--delete]`                        |               |
+| Stage a changelist              | `git cl stage <name>... [--delete]`                       |               |
+| Unstage a changelist            | `git cl unstage <name>... [--delete]`                     |               |
 | Commit with inline message      | `git cl commit <name>... -m "Message" [--keep]`           | `git cl ci`   |
 | Commit using message from file  | `git cl commit <name>... -F message.txt [--keep]`         |               |
 | Revert changelist to HEAD       | `git cl checkout <name>`                                  | `git cl co`   |

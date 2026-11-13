@@ -6,7 +6,7 @@ maintainers.
 
 git-cl uses manual releases via [`build`](https://pypi.org/project/build/) and
 [`twine`](https://pypi.org/project/twine/). Releases are tagged without a `v`
-prefix (e.g. `1.1.9`).
+prefix (e.g. `1.2.0`).
 
 > **Note on credentials:** uploading requires a PyPI API token. The token is
 > configured separately in `~/.pypirc` (or via the `TWINE_USERNAME` /
@@ -27,6 +27,16 @@ is tied to the version and will otherwise carry the previous release's date.
 
 Update all of these before tagging. Releasing from a tree where the version
 strings disagree will ship an inconsistent version string.
+
+Commit the version bump and push it to `main` before tagging, so that
+`main` and the release tag carry the same version:
+
+```bash
+git commit -am "Set version 1.2.0"
+git push origin main
+```
+
+Pushing only the tag (step 3) leaves `main` on the previous version.
 
 ## 2. Pre-release checks
 
@@ -49,12 +59,12 @@ Run the test suite and confirm it is fully green:
 Create an annotated tag matching the new version (no `v` prefix), then push it:
 
 ```bash
-git tag -a 1.1.9 -m "Release 1.1.9"
-git push origin 1.1.9
+git tag -a 1.2.0 -m "Release 1.2.0"
+git push origin 1.2.0
 ```
 
 A tag is recoverable if you spot a mistake before uploading — delete it locally
-(`git tag -d 1.1.9`) and on the remote (`git push origin :refs/tags/1.1.9`),
+(`git tag -d 1.2.0`) and on the remote (`git push origin :refs/tags/1.2.0`),
 fix the problem, and re-tag. Once step 6 runs, the version is final (see below).
 
 ## 4. Build
@@ -124,7 +134,7 @@ environment, not your `base` environment.
 
 ## 8. Create the GitHub release
 
-In the web UI: **[Releases](https://github.com/BHFock/git-cl/releases) → Draft a new release →** choose the existing `1.1.9`
+In the web UI: **[Releases](https://github.com/BHFock/git-cl/releases) → Draft a new release →** choose the existing `1.2.0`
 tag → **Generate release notes** → publish. No file uploads needed; PyPI is the
 download source.
 
@@ -136,12 +146,13 @@ it at any time.
 ```bash
 # 1. Bump version in setup.cfg, git-cl, CITATION.cff (all must match)
 #    Also update date-released: in CITATION.cff
+git commit -am "Set version 1.2.0" && git push origin main
 # 2. Pre-release
 git checkout main && git pull && git status
 ./tests/run_tests.py
 # 3. Tag
-git tag -a 1.1.9 -m "Release 1.1.9"
-git push origin 1.1.9
+git tag -a 1.2.0 -m "Release 1.2.0"
+git push origin 1.2.0
 # 4. Build
 rm -rf dist/ build/ *.egg-info
 python3 -m build

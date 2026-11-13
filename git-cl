@@ -2808,44 +2808,62 @@ def cl_delete(args: argparse.Namespace) -> None:
 
 def cl_commit(args: argparse.Namespace) -> None:
     """
-    Commits all tracked files in the specified changelist, then optionally
-    deletes it.
+    Commits all tracked files in one or more changelists as a single
+    commit, then optionally deletes them.
+
+    If any named changelist does not exist, nothing is committed.
+    Duplicate names are ignored.
 
     Args:
-        args: argparse.Namespace with 'name', 'message'/'file',
+        args: argparse.Namespace with 'names', 'message'/'file',
               and 'keep' attributes.
     """
     changelists = clutil_load()
-    name = args.name
-    if name not in changelists:
-        print(f"Changelist '{name}' not found.")
+
+    # Remove duplicates while preserving the order given by the user
+    names = list(dict.fromkeys(args.names))
+
+    missing = [name for name in names if name not in changelists]
+    if missing:
+        for name in missing:
+            print(f"Changelist '{name}' not found.")
+        if len(names) > 1:
+            print("Nothing committed.")
         return
 
     git_root = clutil_get_git_root()
     to_commit = []
+    files_by_name = {}
 
-    # Fetch git status once and reuse for all files in the changelist
+    # Fetch git status once and reuse for all files in the changelists
     status_map = clutil_get_file_status_map(show_all=True)
 
     if clutil_refuse_on_merge_conflict(status_map, "commit"):
         return
 
-    for stored_path in changelists[name]:
-        # Convert stored path (relative to git root) to absolute path
-        abs_path = (git_root / stored_path).resolve()
+    for name in names:
+        files_by_name[name] = []
+        for stored_path in changelists[name]:
+            # Convert stored path (relative to git root) to absolute path
+            abs_path = (git_root / stored_path).resolve()
 
-        if not abs_path.exists():
-            print(f"Warning: '{stored_path}' does not exist.")
-            continue
+            if not abs_path.exists():
+                print(f"Warning: '{stored_path}' does not exist.")
+                continue
 
-        # Convert to path relative to current working directory for Git command
-        rel_to_cwd = _relpath(abs_path, Path.cwd().resolve())
+            # Convert to path relative to current working directory for Git
+            rel_to_cwd = _relpath(abs_path, Path.cwd().resolve())
 
-        if not clutil_is_file_untracked_cached(stored_path, status_map):
-            to_commit.append(rel_to_cwd)
+            if (not clutil_is_file_untracked_cached(stored_path, status_map)
+                    and rel_to_cwd not in to_commit):
+                to_commit.append(rel_to_cwd)
+                files_by_name[name].append(rel_to_cwd)
+
+    label = ", ".join(f"'{name}'" for name in names)
+    plural = "s" if len(names) > 1 else ""
 
     if not to_commit:
-        print(f"No tracked files to commit in changelist '{name}'.")
+        print(f"No tracked files to commit in changelist{plural} {label}.")
         return
 
     commit_message = clutil_resolve_commit_message(args)
@@ -2855,19 +2873,31 @@ def cl_commit(args: argparse.Namespace) -> None:
     try:
         subprocess.run(["git", "commit", "-m", commit_message, "--"]
                        + to_commit, check=True)
-        print(f"Committed tracked files from changelist '{name}':")
-        for file in to_commit:
-            print(f"  {file}")
     except subprocess.CalledProcessError as error:
-        print(f"Error committing changelist '{name}': {error}")
+        print(f"Error committing changelist{plural} {label}: {error}")
         return
 
-    if not args.keep:
-        del changelists[name]
-        clutil_save(changelists)
-        print(f"Deleted changelist '{name}'")
+    if len(names) == 1:
+        print(f"Committed tracked files from changelist {label}:")
+        for file in to_commit:
+            print(f"  {file}")
     else:
-        print(f"Kept changelist '{name}'")
+        print(f"Committed tracked files from changelists {label}:")
+        for name in names:
+            print(f"  {name}:")
+            if files_by_name[name]:
+                for file in files_by_name[name]:
+                    print(f"    {file}")
+            else:
+                print("    (no tracked files)")
+
+    if not args.keep:
+        for name in names:
+            del changelists[name]
+        clutil_save(changelists)
+        print(f"Deleted changelist{plural} {label}")
+    else:
+        print(f"Kept changelist{plural} {label}")
 
 
 def cl_stash(args: argparse.Namespace, quiet: bool = False) -> bool:
@@ -3397,28 +3427,32 @@ def main() -> None:
 
     # COMMIT
     commit_parser = subparsers.add_parser('commit', aliases=['ci'],
-                                          help=("Commit tracked files from a "
-                                                "changelist (auto-stages, "
-                                                "ignores untracked)"),
+                                          help=("Commit tracked files from "
+                                                "one or more changelists "
+                                                "(auto-stages, ignores "
+                                                "untracked)"),
                                           description=(
                                               "Stage and commit all tracked "
                                               "files from the specified "
-                                              "changelist using the provided "
+                                              "changelist(s) as a single "
+                                              "commit using the provided "
                                               "message. Untracked files in "
-                                              "the changelist are ignored and "
-                                              "remain untracked. By default, "
-                                              "the changelist is deleted "
-                                              "after committing unless --keep "
-                                              "is used."))
-    commit_parser.add_argument('name', metavar='CHANGELIST',
-                               help='Name of the changelist to commit')
+                                              "the changelists are ignored "
+                                              "and remain untracked. If any "
+                                              "named changelist does not "
+                                              "exist, nothing is committed. "
+                                              "By default, the changelists "
+                                              "are deleted after committing "
+                                              "unless --keep is used."))
+    commit_parser.add_argument('names', metavar='CHANGELIST', nargs='+',
+                               help='Name(s) of the changelist(s) to commit')
     msg_group = commit_parser.add_mutually_exclusive_group(required=True)
     msg_group.add_argument('-m', '--message',
                            help='Commit message')
     msg_group.add_argument('-F', '--file',
                            help='Read commit message from file')
     commit_parser.add_argument('--keep', action='store_true',
-                               help='Keep the changelist after committing')
+                               help='Keep the changelist(s) after committing')
     commit_parser.set_defaults(func=cl_commit)
 
     # STASH

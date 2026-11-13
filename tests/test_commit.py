@@ -6,6 +6,7 @@ Covers:
     git cl commit <n> -m "msg"     — commit with inline message
     git cl commit <n> -F file      — commit with message from file
     git cl commit <n> -m "msg" --keep  — commit but keep the changelist
+    git cl commit <n1> <n2> -m "msg"   — commit several changelists at once
     git cl ci                         — alias for commit
 
 What you'll learn:
@@ -14,6 +15,8 @@ What you'll learn:
     - The changelist is DELETED after commit by default (opposite of stage)
     - Use --keep to preserve the changelist after committing
     - The commit message can come from -m or from a file via -F
+    - Several changelists can be combined into a single commit
+    - If any named changelist is missing, nothing is committed
 
 Run:
     ./test_commit.py
@@ -160,6 +163,108 @@ def run_tests(repo: TestRepo):
                        "-m", "Should fail"])
     repo.assert_in("no-such-list", output,
                    "error message mentions the changelist name")
+
+
+    # =================================================================
+    # Test: Commit multiple changelists as a single commit
+    # =================================================================
+
+    repo.section("Commit multiple changelists as a single commit")
+
+    repo.write_file("file1.txt", "multi 1")
+    repo.write_file("file2.txt", "multi 2")
+    repo.write_file("file3.txt", "multi 3")
+    repo.run("git cl add cl1 file1.txt")
+    repo.run("git cl add cl2 file2.txt")
+    repo.run("git cl add cl3 file3.txt")
+
+    count_before = repo.run("git rev-list --count HEAD")
+
+    output = repo.run(["git", "cl", "commit", "cl1", "cl2", "cl3",
+                       "-m", "Consolidated"])
+    repo.assert_exit_code(0, "commit of multiple changelists should succeed")
+
+    count_after = repo.run("git rev-list --count HEAD")
+    repo.assert_equal(str(int(count_before) + 1), count_after,
+                      "exactly one new commit is created")
+
+    files = repo.run("git show --name-only --format= HEAD")
+    for name in ("file1.txt", "file2.txt", "file3.txt"):
+        repo.assert_in(name, files, f"{name} is part of the commit")
+
+    status = repo.run("git status --porcelain file1.txt file2.txt file3.txt")
+    repo.assert_equal("", status, "all three files are clean after commit")
+
+    cl = repo.load_cl_json()
+    for name in ("cl1", "cl2", "cl3"):
+        repo.assert_true(name not in cl,
+                         f"changelist '{name}' deleted after commit")
+
+    # =================================================================
+    # Test: Multiple changelists with --keep
+    # =================================================================
+
+    repo.section("Commit multiple changelists with --keep")
+
+    repo.write_file("file1.txt", "keep 1")
+    repo.write_file("file2.txt", "keep 2")
+    repo.run("git cl add keep1 file1.txt")
+    repo.run("git cl add keep2 file2.txt")
+
+    output = repo.run(["git", "cl", "commit", "keep1", "keep2",
+                       "-m", "Keep both", "--keep"])
+    repo.assert_exit_code(0, "commit with --keep should succeed")
+
+    cl = repo.load_cl_json()
+    repo.assert_true("keep1" in cl and "keep2" in cl,
+                     "both changelists preserved with --keep")
+    repo.run("git cl delete keep1 keep2")
+
+    # =================================================================
+    # Test: Duplicate changelist names are tolerated
+    # =================================================================
+
+    repo.section("Duplicate changelist names are tolerated")
+
+    repo.write_file("file1.txt", "dup 1")
+    repo.run("git cl add dup file1.txt")
+
+    output = repo.run(["git", "cl", "commit", "dup", "dup",
+                       "-m", "Duplicate names"])
+    repo.assert_exit_code(0, "commit with duplicate names should succeed")
+
+    log = repo.get_git_log_oneline()
+    repo.assert_in("Duplicate names", log, "commit appears in log")
+
+    cl = repo.load_cl_json()
+    repo.assert_true("dup" not in cl, "changelist deleted once")
+
+    # =================================================================
+    # Test: A missing changelist aborts the whole commit
+    # =================================================================
+
+    repo.section("A missing changelist aborts the whole commit")
+
+    repo.write_file("file1.txt", "abort 1")
+    repo.run("git cl add real file1.txt")
+
+    count_before = repo.run("git rev-list --count HEAD")
+
+    output = repo.run(["git", "cl", "commit", "real", "no-such-list",
+                       "-m", "Should not happen"])
+    repo.assert_in("no-such-list", output,
+                   "error message mentions the missing changelist")
+    repo.assert_in("Nothing committed", output,
+                   "output states that nothing was committed")
+
+    count_after = repo.run("git rev-list --count HEAD")
+    repo.assert_equal(count_before, count_after, "no commit is created")
+
+    status = repo.run("git status --porcelain file1.txt")
+    repo.assert_in("M", status, "file1.txt remains modified")
+
+    cl = repo.load_cl_json()
+    repo.assert_true("real" in cl, "existing changelist is preserved")
 
 
 # =================================================================

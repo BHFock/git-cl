@@ -212,11 +212,12 @@ git cl diff docs --staged # Show staged changes for 'docs' changelist
 #### Stage a changelist
 
 ```
-git cl stage <changelist-name>
+git cl stage <changelist-name> [<changelist-name> ...]
 ```
 
 - Stages all tracked files in the changelist.
 - Untracked files ([??]) are ignored unless added with git add.
+- Several changelists can be staged at once. If any of the named changelists does not exist, nothing is staged.
 - By default, the changelist is kept unless `--delete` is used.
 
 #### Example
@@ -226,22 +227,31 @@ git cl stage docs
 git commit -m "Refactor docs"
 ```
 
+To stage several changelists in one go:
+
+```
+git cl stage docs tests
+```
+
 Tip: Run [git cl diff](#23-diff-a-changelist) first if you want to review changes.
 
 #### Unstage a changelist
 
 ```
-git cl unstage <changelist-name>
+git cl unstage <changelist-name> [<changelist-name> ...]
 ```
 
 - Unstages files from the changelist (i.e. removes them from the index).
 - Only applies to staged files — unchanged or unstaged files are ignored.
 - Files remain in the changelist and your working directory.
+- Several changelists can be unstaged at once, just like with `git cl stage`.
 
 #### Example
 
 ```
 git cl unstage docs
+# or several at once
+git cl unstage docs tests
 ```
 
 This is useful when you've staged something too early and want to pull it back without losing the changelist group.
@@ -249,12 +259,13 @@ This is useful when you've staged something too early and want to pull it back w
 ### 2.5 Commit a changelist
 
 ```
-git cl commit <changelist-name> -m "Message"
-git cl commit <changelist-name> -F commit.txt
+git cl commit <changelist-name> [<changelist-name> ...] -m "Message"
+git cl commit <changelist-name> [<changelist-name> ...] -F commit.txt
 ```
 
 - Automatically stages and commits all tracked files in the changelist — no need to run [git add](https://git-scm.com/docs/git-add) or [git cl stage](#stage-a-changelist) first.
 - Untracked files ([see status codes](#common-status-codes)) are ignored unless you add them first with `git add`.
+- Several changelists can be combined into a single commit. If any of the named changelists does not exist, nothing is committed.
 - The changelist is deleted after committing, unless you use `--keep`.
 
 Important: This command automatically stages tracked files before committing them, so you don't need to run `git add` or [git cl stage](#24-stage-and-unstage-a-changelist) first. However, untracked files (`[??]`) in the changelist are safely ignored and will remain untracked.
@@ -274,6 +285,12 @@ If you want to reuse the changelist (e.g. for further edits), use:
 
 ```
 git cl commit tests -m "Partial commit" --keep
+```
+
+To combine several changelists into one commit:
+
+```
+git cl commit tests docs -m "Add tests and update documentation"
 ```
 
 ### 2.6 Remove files from changelists
@@ -654,10 +671,10 @@ Yes. Each worktree has its own independent set of changelists — changes made i
 | Add files to a changelist       | `git cl add <name> <files...>`                            | `git cl a`    |
 | View grouped status             | `git cl status [--all] [--no-untracked] [--no-color]`     | `git cl st`   |
 | Show diff for changelist(s)     | `git cl diff <name1> [<name2> ...] [--staged]`            |               |
-| Stage a changelist              | `git cl stage <name> [--delete]`                          |               |
-| Unstage a changelist            | `git cl unstage <name> [--delete]`                        |               |
-| Commit with inline message      | `git cl commit <name> -m "Message" [--keep]`              | `git cl ci`   |
-| Commit using message from file  | `git cl commit <name> -F message.txt [--keep]`            |               |
+| Stage a changelist              | `git cl stage <name>... [--delete]`                       |               |
+| Unstage a changelist            | `git cl unstage <name>... [--delete]`                     |               |
+| Commit with inline message      | `git cl commit <name>... -m "Message" [--keep]`           | `git cl ci`   |
+| Commit using message from file  | `git cl commit <name>... -F message.txt [--keep]`         |               |
 | Revert changelist to HEAD       | `git cl checkout <name>`                                  | `git cl co`   |
 | Remove files from changelists   | `git cl remove <file1> <file2> ...`                       | `git cl rm`   |
 | Delete changelists              | `git cl delete <name1> <name2> ...`                       | `git cl del`  | 

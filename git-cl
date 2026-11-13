@@ -71,7 +71,7 @@ else:
     import fcntl
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Optional, Iterator
+from typing import Callable, Iterator, Optional
 
 if sys.version_info < (3, 9):
     print("Error: git-cl requires Python 3.9+", file=sys.stderr)
@@ -677,6 +677,120 @@ def clutil_refuse_on_merge_conflict(
     print("  3. Complete the merge: git commit")
     print("\nOr abort the merge: git merge --abort")
     return True
+
+
+def clutil_resolve_changelist_names(
+        names: list[str], changelists: dict[str, list[str]],
+        operation: str) -> Optional[list[str]]:
+    """
+    Validate changelist names for commands that act on several
+    changelists at once (stage, unstage, commit).
+
+    Duplicate names are dropped while preserving the user's order. If any
+    name does not exist, an error is printed for each missing name and
+    None is returned so that the caller changes nothing at all.
+
+    Args:
+        names: Changelist names as given on the command line
+        changelists: Loaded changelist data
+        operation: Past participle for the abort message (e.g. 'staged')
+
+    Returns:
+        The de-duplicated list of names, or None if any name is missing.
+    """
+    unique_names = list(dict.fromkeys(names))
+    missing = [name for name in unique_names if name not in changelists]
+    if not missing:
+        return unique_names
+
+    for name in missing:
+        print(f"Changelist '{name}' not found.")
+    if len(unique_names) > 1:
+        print(f"Nothing {operation}.")
+    return None
+
+
+def clutil_collect_changelist_files(
+        names: list[str], changelists: dict[str, list[str]],
+        git_root: Path,
+        include: Callable[[str], bool]) -> tuple[list[str],
+                                                   dict[str, list[str]]]:
+    """
+    Collect existing files from one or more changelists, as paths relative
+    to the current working directory, filtered by a predicate.
+
+    Missing files produce a warning and are skipped. A file listed in more
+    than one changelist is only returned once.
+
+    Args:
+        names: Changelist names to collect from
+        changelists: Loaded changelist data
+        git_root: Repository root
+        include: Called with the stored path (relative to git root);
+                 return True to include the file
+
+    Returns:
+        A tuple of (all files in order, files grouped by changelist name).
+    """
+    cwd = Path.cwd().resolve()
+    files: list[str] = []
+    files_by_name: dict[str, list[str]] = {}
+
+    for name in names:
+        files_by_name[name] = []
+        for stored_path in changelists[name]:
+            abs_path = (git_root / stored_path).resolve()
+
+            if not abs_path.exists():
+                print(f"Warning: '{stored_path}' does not exist.")
+                continue
+
+            rel_to_cwd = _relpath(abs_path, cwd)
+            if include(stored_path) and rel_to_cwd not in files:
+                files.append(rel_to_cwd)
+                files_by_name[name].append(rel_to_cwd)
+
+    return files, files_by_name
+
+
+def clutil_changelist_label(names: list[str]) -> str:
+    """
+    Format changelist names for messages, e.g. "changelist 'a'" or
+    "changelists 'a', 'b'".
+    """
+    quoted = ", ".join(f"'{name}'" for name in names)
+    plural = "s" if len(names) > 1 else ""
+    return f"changelist{plural} {quoted}"
+
+
+def clutil_print_files_by_changelist(
+        heading: str, names: list[str], files: list[str],
+        files_by_name: dict[str, list[str]]) -> None:
+    """
+    Print the result of a stage, unstage or commit operation.
+
+    For a single changelist the files are listed directly; for several
+    changelists they are grouped by changelist name.
+
+    Args:
+        heading: Leading text, e.g. "Staged tracked files from"
+        names: Changelist names involved
+        files: All files that were processed
+        files_by_name: Files grouped by changelist name
+    """
+    print(f"{heading} {clutil_changelist_label(names)}:")
+    if len(names) == 1:
+        for file in files:
+            print(f"  {file}")
+        return
+
+    for name in names:
+        print(f"  {name}:")
+        if files_by_name[name]:
+            for file in files_by_name[name]:
+                print(f"    {file}")
+        else:
+            print("    (no files)")
 
 
 def clutil_get_stash_file() -> Path:
@@ -2374,77 +2488,71 @@ def cl_add(args: argparse.Namespace) -> None:
 
 def cl_stage(args: argparse.Namespace) -> None:
     """
-    Stages all tracked files in the given changelist and optionally
-    deletes the changelist.
+    Stages all tracked files in one or more changelists and optionally
+    deletes them.
+
+    If any named changelist does not exist, nothing is staged.
 
     Args:
-        args: argparse.Namespace with 'name' and 'delete' attributes.
+        args: argparse.Namespace with 'names' and 'delete' attributes.
     """
     changelists = clutil_load()
-    name = args.name
-    if name not in changelists:
-        print(f"Changelist '{name}' not found.")
+    names = clutil_resolve_changelist_names(args.names, changelists,
+                                            "staged")
+    if names is None:
         return
 
     git_root = clutil_get_git_root()
-    to_stage = []
 
-    # Fetch git status once and reuse for all files in the changelist
+    # Fetch git status once and reuse for all files in the changelists
     status_map = clutil_get_file_status_map(show_all=True)
 
     if clutil_refuse_on_merge_conflict(status_map, "stage"):
         return
 
-    for stored_path in changelists[name]:
-        # Convert stored path (relative to git root) to absolute path
-        abs_path = (git_root / stored_path).resolve()
+    to_stage, files_by_name = clutil_collect_changelist_files(
+        names, changelists, git_root,
+        lambda path: not clutil_is_file_untracked_cached(path, status_map))
 
-        if not abs_path.exists():
-            print(f"Warning: '{stored_path}' does not exist.")
-            continue
-
-        # Convert to path relative to current working directory for Git command
-        rel_to_cwd = _relpath(abs_path, Path.cwd().resolve())
-
-        if not clutil_is_file_untracked_cached(stored_path, status_map):
-            to_stage.append(rel_to_cwd)
-
+    label = clutil_changelist_label(names)
     if not to_stage:
-        print(f"No tracked files to stage in changelist '{name}'.")
+        print(f"No tracked files to stage in {label}.")
         return
 
     try:
         subprocess.run(["git", "add", "--"] + to_stage, check=True)
-        print(f"Staged tracked files from changelist '{name}':")
-        for file in to_stage:
-            print(f"  {file}")
     except subprocess.CalledProcessError as error:
         print(f"Error staging files: {error}")
         return
 
+    clutil_print_files_by_changelist("Staged tracked files from", names,
+                                     to_stage, files_by_name)
+
     # Only delete if --delete flag is set
     if args.delete:
-        del changelists[name]
+        for name in names:
+            del changelists[name]
         clutil_save(changelists)
-        print(f"Deleted changelist '{name}'")
+        print(f"Deleted {label}")
 
 
 def cl_unstage(args: argparse.Namespace) -> None:
     """
-    Unstages all staged files in the specified changelist, moving them back
+    Unstages all staged files in one or more changelists, moving them back
     to the working directory as unstaged changes.
 
+    If any named changelist does not exist, nothing is unstaged.
+
     Args:
-        args: argparse.Namespace with 'name' and 'delete' attributes.
+        args: argparse.Namespace with 'names' and 'delete' attributes.
     """
     changelists = clutil_load()
-    name = args.name
-    if name not in changelists:
-        print(f"Changelist '{name}' not found.")
+    names = clutil_resolve_changelist_names(args.names, changelists,
+                                            "unstaged")
+    if names is None:
         return
 
     git_root = clutil_get_git_root()
-    to_unstage = []
 
     # Get current status to identify staged files
     status_map = clutil_get_file_status_map(show_all=True)
@@ -2452,44 +2560,33 @@ def cl_unstage(args: argparse.Namespace) -> None:
     if clutil_refuse_on_merge_conflict(status_map, "unstage"):
         return
 
-    for stored_path in changelists[name]:
-        # Convert stored path (relative to git root) to absolute path
-        abs_path = (git_root / stored_path).resolve()
+    # A file has staged changes if the first status character is not a space
+    to_unstage, files_by_name = clutil_collect_changelist_files(
+        names, changelists, git_root,
+        lambda path: status_map.get(path, "  ")[0] != " ")
 
-        if not abs_path.exists():
-            print(f"Warning: '{stored_path}' does not exist.")
-            continue
-
-        # Convert to path relative to current working directory for Git command
-        rel_to_cwd = _relpath(abs_path, Path.cwd().resolve())
-
-        # Check if this file has staged changes
-        rel_to_git_root = abs_path.relative_to(git_root).as_posix()
-        status = status_map.get(rel_to_git_root, "  ")
-
-        # File has staged changes if first character is not space
-        if status[0] != " ":
-            to_unstage.append(rel_to_cwd)
-
+    label = clutil_changelist_label(names)
     if not to_unstage:
-        print(f"No staged files to unstage in changelist '{name}'.")
+        print(f"No staged files to unstage in {label}.")
         return
 
     try:
         # Use git reset HEAD to unstage files
-        subprocess.run(["git", "reset", "HEAD", "--"] + to_unstage, check=True)
-        print(f"Unstaged files from changelist '{name}':")
-        for file in to_unstage:
-            print(f"  {file}")
+        subprocess.run(["git", "reset", "HEAD", "--"] + to_unstage,
+                       check=True)
     except subprocess.CalledProcessError as error:
         print(f"Error unstaging files: {error}")
         return
 
+    clutil_print_files_by_changelist("Unstaged files from", names,
+                                     to_unstage, files_by_name)
+
     # Only delete if --delete flag is set
     if args.delete:
-        del changelists[name]
+        for name in names:
+            del changelists[name]
         clutil_save(changelists)
-        print(f"Deleted changelist '{name}'")
+        print(f"Deleted {label}")
 
 
 def cl_status(args: argparse.Namespace) -> None:
@@ -2808,44 +2905,37 @@ def cl_delete(args: argparse.Namespace) -> None:
 
 def cl_commit(args: argparse.Namespace) -> None:
     """
-    Commits all tracked files in the specified changelist, then optionally
-    deletes it.
+    Commits all tracked files in one or more changelists as a single
+    commit, then optionally deletes them.
+
+    If any named changelist does not exist, nothing is committed.
+    Duplicate names are ignored.
 
     Args:
-        args: argparse.Namespace with 'name', 'message'/'file',
+        args: argparse.Namespace with 'names', 'message'/'file',
               and 'keep' attributes.
     """
     changelists = clutil_load()
-    name = args.name
-    if name not in changelists:
-        print(f"Changelist '{name}' not found.")
+    names = clutil_resolve_changelist_names(args.names, changelists,
+                                            "committed")
+    if names is None:
         return
 
     git_root = clutil_get_git_root()
-    to_commit = []
 
-    # Fetch git status once and reuse for all files in the changelist
+    # Fetch git status once and reuse for all files in the changelists
     status_map = clutil_get_file_status_map(show_all=True)
 
     if clutil_refuse_on_merge_conflict(status_map, "commit"):
         return
 
-    for stored_path in changelists[name]:
-        # Convert stored path (relative to git root) to absolute path
-        abs_path = (git_root / stored_path).resolve()
+    to_commit, files_by_name = clutil_collect_changelist_files(
+        names, changelists, git_root,
+        lambda path: not clutil_is_file_untracked_cached(path, status_map))
 
-        if not abs_path.exists():
-            print(f"Warning: '{stored_path}' does not exist.")
-            continue
-
-        # Convert to path relative to current working directory for Git command
-        rel_to_cwd = _relpath(abs_path, Path.cwd().resolve())
-
-        if not clutil_is_file_untracked_cached(stored_path, status_map):
-            to_commit.append(rel_to_cwd)
-
+    label = clutil_changelist_label(names)
     if not to_commit:
-        print(f"No tracked files to commit in changelist '{name}'.")
+        print(f"No tracked files to commit in {label}.")
         return
 
     commit_message = clutil_resolve_commit_message(args)
@@ -2855,19 +2945,20 @@ def cl_commit(args: argparse.Namespace) -> None:
     try:
         subprocess.run(["git", "commit", "-m", commit_message, "--"]
                        + to_commit, check=True)
-        print(f"Committed tracked files from changelist '{name}':")
-        for file in to_commit:
-            print(f"  {file}")
     except subprocess.CalledProcessError as error:
-        print(f"Error committing changelist '{name}': {error}")
+        print(f"Error committing {label}: {error}")
         return
 
+    clutil_print_files_by_changelist("Committed tracked files from", names,
+                                     to_commit, files_by_name)
+
     if not args.keep:
-        del changelists[name]
+        for name in names:
+            del changelists[name]
         clutil_save(changelists)
-        print(f"Deleted changelist '{name}'")
+        print(f"Deleted {label}")
     else:
-        print(f"Kept changelist '{name}'")
+        print(f"Kept {label}")
 
 
 def cl_stash(args: argparse.Namespace, quiet: bool = False) -> bool:
@@ -3360,65 +3451,77 @@ def main() -> None:
 
     # STAGE
     stage_parser = subparsers.add_parser('stage',
-                                         help=("Stage tracked files from a "
-                                               "changelist"),
+                                         help=("Stage tracked files from "
+                                               "one or more changelists"),
                                          description=(
                                              "Stage all tracked files from "
-                                             "the specified changelist. Only "
+                                             "the specified changelist(s). "
+                                             "If any named changelist does "
+                                             "not exist, nothing is staged. "
+                                             "Only "
                                              "files already tracked by Git "
                                              "will be staged. Untracked files "
                                              "in the changelist are safely "
                                              "ignored and remain untracked. "
-                                             "By default, the changelist is "
-                                             "kept unless --delete is used."))
-    stage_parser.add_argument('name', metavar='CHANGELIST',
-                              help='Name of the changelist to stage')
+                                             "By default, the changelists "
+                                             "are kept unless --delete is "
+                                             "used."))
+    stage_parser.add_argument('names', metavar='CHANGELIST', nargs='+',
+                              help='Name(s) of the changelist(s) to stage')
     stage_parser.add_argument('--delete', action='store_true',
-                              help='Delete the changelist after staging')
+                              help='Delete the changelist(s) after staging')
     stage_parser.set_defaults(func=cl_stage)
 
     # UNSTAGE
     unstage_parser = subparsers.add_parser('unstage',
                                            help=("Unstage tracked files from "
-                                                 "a changelist"),
+                                                 "one or more changelists"),
                                            description=(
                                                "Unstage all staged files from "
-                                               "the specified changelist, "
+                                               "the specified changelist(s), "
                                                "moving them back to unstaged "
                                                "state in the working "
-                                               "directory. By default, the "
-                                               "changelist is kept unless "
-                                               "--delete is used."))
-    unstage_parser.add_argument('name', metavar='CHANGELIST',
-                                help='Name of the changelist to unstage')
+                                               "directory. If any named "
+                                               "changelist does not exist, "
+                                               "nothing is unstaged. By "
+                                               "default, the changelists are "
+                                               "kept unless --delete is "
+                                               "used."))
+    unstage_parser.add_argument('names', metavar='CHANGELIST', nargs='+',
+                                help='Name(s) of the changelist(s) to unstage')
     unstage_parser.add_argument('--delete', action='store_true',
-                                help='Delete the changelist after unstaging')
+                                help=('Delete the changelist(s) after '
+                                      'unstaging'))
     unstage_parser.set_defaults(func=cl_unstage)
 
     # COMMIT
     commit_parser = subparsers.add_parser('commit', aliases=['ci'],
-                                          help=("Commit tracked files from a "
-                                                "changelist (auto-stages, "
-                                                "ignores untracked)"),
+                                          help=("Commit tracked files from "
+                                                "one or more changelists "
+                                                "(auto-stages, ignores "
+                                                "untracked)"),
                                           description=(
                                               "Stage and commit all tracked "
                                               "files from the specified "
-                                              "changelist using the provided "
+                                              "changelist(s) as a single "
+                                              "commit using the provided "
                                               "message. Untracked files in "
-                                              "the changelist are ignored and "
-                                              "remain untracked. By default, "
-                                              "the changelist is deleted "
-                                              "after committing unless --keep "
-                                              "is used."))
-    commit_parser.add_argument('name', metavar='CHANGELIST',
-                               help='Name of the changelist to commit')
+                                              "the changelists are ignored "
+                                              "and remain untracked. If any "
+                                              "named changelist does not "
+                                              "exist, nothing is committed. "
+                                              "By default, the changelists "
+                                              "are deleted after committing "
+                                              "unless --keep is used."))
+    commit_parser.add_argument('names', metavar='CHANGELIST', nargs='+',
+                               help='Name(s) of the changelist(s) to commit')
     msg_group = commit_parser.add_mutually_exclusive_group(required=True)
     msg_group.add_argument('-m', '--message',
                            help='Commit message')
     msg_group.add_argument('-F', '--file',
                            help='Read commit message from file')
     commit_parser.add_argument('--keep', action='store_true',
-                               help='Keep the changelist after committing')
+                               help='Keep the changelist(s) after committing')
     commit_parser.set_defaults(func=cl_commit)
 
     # STASH

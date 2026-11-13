@@ -22,12 +22,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-24.04  # no Python 3.9 build for newer Ubuntu
             python-version: '3.9'
           - os: ubuntu-latest
-            python-version: '3.14'
+            python-version: '3.15'
           - os: windows-latest
-            python-version: '3.14'
+            python-version: '3.15'
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4

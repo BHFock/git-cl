@@ -87,6 +87,9 @@ git cl remove README.md
 # Delete a changelist
 git cl delete docs-fix
 
+# Remove files without changes from all changelists
+git cl prune
+
 # Set a changelist aside and restore it later
 git cl stash docs-fix
 git cl unstash docs-fix

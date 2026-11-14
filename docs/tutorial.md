@@ -426,6 +426,39 @@ See [Section 4.3](#43-late-binding-branching-with-git-cl-branch) for a worked ex
        width="850"/>
 </p>
 
+### 3.3 Prune stale entries
+
+```
+git cl prune [--dry-run] [--quiet]
+```
+
+When you commit with plain `git commit` — or an IDE or AI assistant commits for you — the committed files stay in their changelist with nothing left to change. Files you delete and commit stay listed as `[XX]`. `git cl prune` tidies this up across all changelists in one go.
+
+- Removes every entry that Git reports no status for: files without changes (`[  ]`) and files that no longer exist (`[XX]`).
+- Keeps every file that has a Git status — modified, staged, deleted, untracked or conflicted.
+- Keeps a directory entry as long as any file inside it has changes.
+- Deletes changelists that end up empty.
+- Leaves stashed changelists and file contents untouched.
+
+Use `--dry-run` (or `-n`) to see what would be removed without changing anything, and `--quiet` (or `-q`) to suppress the output.
+
+#### Example
+
+```
+git cl add feature app.py util.py
+git commit -m "Update app" app.py    # plain Git commit
+git cl prune
+```
+
+`app.py` is removed from `feature`, and `util.py`, which still has changes, stays.
+
+Note: `git cl prune` only runs when you call it. git-cl never prunes on its own, because you may add a file to a changelist before you start editing it. To prune automatically after every commit, see [How do I keep changelists up to date automatically?](#how-do-i-keep-changelists-up-to-date-automatically)
+
+Two cases to be aware of:
+
+- Changelists are shared across branches, so a file that exists only on another branch is shown as `[XX]` and is pruned too.
+- Files excluded by `.gitignore` have no Git status either, so they are pruned as well.
+
 [↑ Back to top](#git-cl-a-git-subcommand-for-changelist-management)
 
 ## 4. Example Workflows
@@ -585,6 +618,32 @@ git cl checkout my-list --delete
 
 This way, you can choose whether the changelist sticks around after staging or reverting.
 
+### How do I keep changelists up to date automatically?
+
+Run [git cl prune](#33-prune-stale-entries) from a [post-commit hook](https://git-scm.com/docs/githooks#_post_commit). Stale entries are then removed after every commit, however it was made.
+
+With Git 2.54 or later, you can define the hook in your Git configuration:
+
+```
+git config hook.git-cl-prune.event post-commit
+git config hook.git-cl-prune.command "git cl prune --quiet"
+```
+
+Add `--global` to both commands to enable it for all your repositories. To turn it off again — for example, for a single repository — run:
+
+```
+git config hook.git-cl-prune.enabled false
+```
+
+With older Git versions, create the file `.git/hooks/post-commit` in your repository:
+
+```
+#!/bin/sh
+git cl prune --quiet
+```
+
+Then make it executable with `chmod +x .git/hooks/post-commit`.
+
 ### Why aren’t untracked files included when I stage or commit a changelist?
 
 `git cl` only stages or commits files already tracked by Git.
@@ -625,7 +684,7 @@ Use `git cl stash <name>`, then switch branches and [git cl unstash](#31-stash-a
 
 ### Why does git cl stash refuse my changelist?
 
-Git's stash can only set aside files with unstaged changes, newly added files and untracked files. If a changelist contains a file that has only staged changes or no changes at all, [git cl stash](#31-stash-and-unstash-changelists) refuses the whole changelist and lists the files that are in the way. Commit or unstage them, or move them out of the changelist with [git cl remove](#26-remove-files-from-changelists).
+Git's stash can only set aside files with unstaged changes, newly added files and untracked files. If a changelist contains a file that has only staged changes or no changes at all, [git cl stash](#31-stash-and-unstash-changelists) refuses the whole changelist and lists the files that are in the way. Commit or unstage them, or move them out of the changelist with [git cl remove](#26-remove-files-from-changelists). If the files have no changes left, [git cl prune](#33-prune-stale-entries) removes them from all changelists at once.
 
 ### Why don’t I see all files in git cl status?
 
@@ -688,6 +747,7 @@ This prints the installed version, for example `git-cl 1.2.0`. It is useful when
 | Revert changelist to HEAD       | `git cl checkout <name>`                                  | `git cl co`   |
 | Remove files from changelists   | `git cl remove <file1> <file2> ...`                       | `git cl rm`   |
 | Delete changelists              | `git cl delete <name1> <name2> ...`                       | `git cl del`  | 
+| Prune stale entries             | `git cl prune [--dry-run] [--quiet]`                      |               |
 | Stash a changelist              | `git cl stash <name>`                                     |               |
 | Unstash a changelist            | `git cl unstash <name> [--force]`                         |               |
 | Create branch from changelist   | `git cl branch <name> [<branch>] [--from <base>]`         | `git cl br`   |
@@ -721,9 +781,13 @@ git cl status --all
 
 #### Additional Codes
 
-| Code  | Description             |
-| ----- | ----------------------- |
-| `[T ]` | Type change             |
+| Code   | Description                                                                 |
+| ------ | --------------------------------------------------------------------------- |
+| `[T ]` | Type change                                                                 |
+| `[  ]` | No changes — the file is in a changelist but has nothing to stage or commit |
+| `[XX]` | Missing — the file is in a changelist but does not exist (git-cl only)      |
+
+Both `[  ]` and `[XX]` entries can be removed with [git cl prune](#33-prune-stale-entries).
 
 #### Colour Key
 

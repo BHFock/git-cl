@@ -115,6 +115,7 @@ This section includes the definition of the main functions callable in git-cl. T
 | `cl_add`                    | [cl add](tutorial.md#21-add-files-to-a-changelist)        | Changelist Organisation Commands |
 | `cl_remove`                 | [cl rm](tutorial.md#26-remove-files-from-changelists)     |                                  |
 | `cl_delete`                 | [cl del](tutorial.md#27-delete-changelists)               |                                  |
+| `cl_prune`                  | [cl prune](tutorial.md#33-prune-stale-entries)            |                                  |
 | `cl_status`                 | [cl st](tutorial.md#22-view-status-by-changelist)         | Display Commands                 |
 | `cl_diff`                   | [cl diff](tutorial.md#23-diff-a-changelist)               |                                  |
 | `cl_stage`                  | [cl stage](tutorial.md#stage-a-changelist)                | State Changing Commands          |

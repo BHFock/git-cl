@@ -20,6 +20,8 @@ What you'll learn:
     - Pruning unblocks 'git cl stash', which refuses clean files
     - Running 'git cl prune -q' from a post-commit hook keeps
       changelists up to date automatically
+    - The hook does nothing during 'git cl commit', so --keep still
+      keeps the changelist
 
 Run:
     ./test_prune.py
@@ -352,6 +354,55 @@ def run_tests(repo: TestRepo):
     cl = repo.load_cl_json()
     repo.assert_equal(["app.py"], cl.get("hooked"),
                       "hook pruned the committed file automatically")
+
+    # =================================================================
+    # Test: The hook does nothing during 'git cl commit --keep'
+    # =================================================================
+
+    repo.section("The hook does nothing during git cl commit --keep")
+
+    repo.write_file("util.py", "print('util v5')")
+    repo.run("git cl add kept util.py")
+    repo.run("git cl commit kept -m 'Commit util, keep changelist' --keep",
+             check=True)
+
+    cl = repo.load_cl_json()
+    repo.assert_equal(["util.py"], cl.get("kept"),
+                      "--keep keeps the changelist despite the hook")
+
+    # =================================================================
+    # Test: The hook does nothing during 'git cl commit'
+    # =================================================================
+
+    repo.section("The hook does nothing during git cl commit")
+
+    # A clean entry added in advance, before editing the file
+    repo.run("git cl add planned README.md")
+
+    repo.run("git cl commit hooked -m 'Commit app'", check=True)
+
+    cl = repo.load_cl_json()
+    repo.assert_true("hooked" not in cl,
+                     "committed changelist is deleted as usual")
+    repo.assert_equal(["README.md"], cl.get("planned"),
+                      "clean entry in another changelist is left alone")
+    repo.assert_equal(["util.py"], cl.get("kept"),
+                      "changelist kept earlier is left alone")
+
+    # =================================================================
+    # Test: A plain 'git commit' still triggers the hook
+    # =================================================================
+
+    repo.section("A plain git commit still triggers the hook")
+
+    repo.write_file("app.py", "print('app v5')")
+    repo.run("git add app.py", check=True)
+    repo.run(["git", "commit", "--quiet", "-m", "Commit app via git"],
+             check=True)
+
+    cl = repo.load_cl_json()
+    repo.assert_equal({}, cl,
+                      "hook pruned all clean entries after a plain commit")
 
 
 # =================================================================

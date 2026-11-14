@@ -104,6 +104,13 @@ def _relpath(path, start):
 # INTERNAL UTILITIES
 # =============================================================================
 
+# Set by 'git cl commit' for its own 'git commit' call. A post-commit hook
+# running 'git cl prune' then returns immediately, so that the hook only
+# acts on commits made outside git-cl. Otherwise it would empty a
+# changelist committed with --keep, and its changes would be overwritten
+# when 'git cl commit' saves the changelists it loaded before committing.
+NO_PRUNE_ENV = "GIT_CL_NO_PRUNE"
+
 # Note: Some utility functions call CLI command functions like cl_stash and
 #       cl_unstash. These are defined later in the module but are called by
 #       utility functions.
@@ -2918,9 +2925,15 @@ def cl_prune(args: argparse.Namespace) -> None:
     inside it has a Git status. Stashed changelists are not touched, and
     only changelist metadata is changed, never file contents.
 
+    Does nothing when the GIT_CL_NO_PRUNE environment variable is set,
+    which 'git cl commit' does for its own commit (see NO_PRUNE_ENV).
+
     Args:
         args: argparse.Namespace with 'dry_run' and 'quiet' attributes.
     """
+    if os.environ.get(NO_PRUNE_ENV):
+        return
+
     changelists = clutil_load()
     git_root = clutil_get_git_root()
 
@@ -3022,8 +3035,11 @@ def cl_commit(args: argparse.Namespace) -> None:
         return
 
     try:
+        # Keep a post-commit hook running 'git cl prune' from acting on
+        # this commit (see NO_PRUNE_ENV)
         subprocess.run(["git", "commit", "-m", commit_message, "--"]
-                       + to_commit, check=True)
+                       + to_commit, check=True,
+                       env={**os.environ, NO_PRUNE_ENV: "1"})
     except subprocess.CalledProcessError as error:
         print(f"Error committing {label}: {error}")
         return
@@ -3482,7 +3498,11 @@ def main() -> None:
                                              "Stashed changelists are not "
                                              "affected. Files excluded by "
                                              ".gitignore have no Git status "
-                                             "and are removed as well."))
+                                             "and are removed as well. Does "
+                                             "nothing during 'git cl "
+                                             "commit', so that a post-commit "
+                                             "hook only acts on commits made "
+                                             "outside git-cl."))
     prune_parser.add_argument('-n', '--dry-run', action='store_true',
                               help=("Show what would be removed without "
                                     "changing anything"))

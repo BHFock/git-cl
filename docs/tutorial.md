@@ -644,6 +644,8 @@ git cl prune --quiet
 
 Then make it executable with `chmod +x .git/hooks/post-commit`.
 
+The hook only acts on commits made outside git-cl. During [git cl commit](#25-commit-a-changelist), `git cl prune` does nothing, so a changelist committed with `--keep` is kept as usual.
+
 ### Why aren’t untracked files included when I stage or commit a changelist?
 
 `git cl` only stages or commits files already tracked by Git.

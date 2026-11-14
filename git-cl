@@ -47,6 +47,7 @@ integrate transparently with existing Git workflows.
 
 Features:
 - Group files into named changelists (add, remove, status)
+- Prune stale entries left behind by plain 'git commit'
 - Stage, unstage, commit, or diff by changelist
 - Checkout (revert) changelist files to HEAD
 - Stash and unstash changelists selectively
@@ -102,6 +103,13 @@ def _relpath(path, start):
 # =============================================================================
 # INTERNAL UTILITIES
 # =============================================================================
+
+# Set by 'git cl commit' for its own 'git commit' call. A post-commit hook
+# running 'git cl prune' then returns immediately, so that the hook only
+# acts on commits made outside git-cl. Otherwise it would empty a
+# changelist committed with --keep, and its changes would be overwritten
+# when 'git cl commit' saves the changelists it loaded before committing.
+NO_PRUNE_ENV = "GIT_CL_NO_PRUNE"
 
 # Note: Some utility functions call CLI command functions like cl_stash and
 #       cl_unstash. These are defined later in the module but are called by
@@ -2903,6 +2911,90 @@ def cl_delete(args: argparse.Namespace) -> None:
         clutil_save(changelists)
 
 
+def cl_prune(args: argparse.Namespace) -> None:
+    """
+    Removes stale entries from all active changelists.
+
+    An entry is stale when Git reports nothing for it: the file has no
+    staged or unstaged changes, or it no longer exists and is unknown to
+    Git (shown as [XX] in 'git cl status'). Such entries typically remain
+    after committing with plain 'git commit'.
+
+    Entries with any Git status (modified, staged, deleted, untracked,
+    conflicted) are kept. A directory entry is kept as long as any file
+    inside it has a Git status. Stashed changelists are not touched, and
+    only changelist metadata is changed, never file contents.
+
+    Does nothing when the GIT_CL_NO_PRUNE environment variable is set,
+    which 'git cl commit' does for its own commit (see NO_PRUNE_ENV).
+
+    Args:
+        args: argparse.Namespace with 'dry_run' and 'quiet' attributes.
+    """
+    if os.environ.get(NO_PRUNE_ENV):
+        return
+
+    changelists = clutil_load()
+    git_root = clutil_get_git_root()
+
+    # Untracked files are listed individually so that an untracked file
+    # inside an untracked directory still counts as having a status.
+    status_map = clutil_get_file_status_map(show_all=True,
+                                            include_untracked=True)
+
+    def is_stale(stored_path: str) -> bool:
+        if stored_path in status_map:
+            return False
+        if (git_root / stored_path).is_dir():
+            prefix = stored_path.rstrip("/") + "/"
+            return not any(path.startswith(prefix) for path in status_map)
+        return True
+
+    pruned: dict[str, list[str]] = {}
+    for name, files in changelists.items():
+        stale = [f for f in files if is_stale(f)]
+        if stale:
+            pruned[name] = stale
+
+    if not pruned:
+        if not args.quiet:
+            print("Nothing to prune.")
+        return
+
+    # Changelists whose every entry is stale will end up empty
+    emptied = sorted(name for name, stale in pruned.items()
+                     if len(stale) == len(changelists[name]))
+
+    verb = "Would remove" if args.dry_run else "Removed"
+    cwd = Path.cwd().resolve()
+    total = sum(len(stale) for stale in pruned.values())
+    for name, stale in sorted(pruned.items()):
+        if not args.quiet:
+            for stored_path in stale:
+                display = _relpath(git_root / stored_path, cwd)
+                print(f"{verb} '{display}' from changelist '{name}'")
+        if not args.dry_run:
+            changelists[name] = [f for f in changelists[name]
+                                 if f not in stale]
+
+    if args.dry_run:
+        if not args.quiet:
+            for name in emptied:
+                print(f"Changelist '{name}' would become empty "
+                      "and be deleted.")
+            print(f"Dry run: {total} stale entr"
+                  f"{'y' if total == 1 else 'ies'} found, nothing changed.")
+        return
+
+    # clutil_save omits empty changelists, so emptied ones disappear here
+    clutil_save(changelists)
+
+    if not args.quiet:
+        for name in emptied:
+            print(f"Deleted empty changelist '{name}'")
+        print(f"Pruned {total} stale entr{'y' if total == 1 else 'ies'}.")
+
+
 def cl_commit(args: argparse.Namespace) -> None:
     """
     Commits all tracked files in one or more changelists as a single
@@ -2943,8 +3035,11 @@ def cl_commit(args: argparse.Namespace) -> None:
         return
 
     try:
+        # Keep a post-commit hook running 'git cl prune' from acting on
+        # this commit (see NO_PRUNE_ENV)
         subprocess.run(["git", "commit", "-m", commit_message, "--"]
-                       + to_commit, check=True)
+                       + to_commit, check=True,
+                       env={**os.environ, NO_PRUNE_ENV: "1"})
     except subprocess.CalledProcessError as error:
         print(f"Error committing {label}: {error}")
         return
@@ -3382,6 +3477,39 @@ def main() -> None:
     delete_parser.add_argument('--all', action='store_true',
                                help='Delete all changelists')
     delete_parser.set_defaults(func=cl_delete)
+
+    # PRUNE
+    prune_parser = subparsers.add_parser('prune',
+                                         help=("Remove files without "
+                                               "changes from all "
+                                               "changelists"),
+                                         description=(
+                                             "Remove stale entries from all "
+                                             "changelists: files with no "
+                                             "staged or unstaged changes, "
+                                             "and files that no longer "
+                                             "exist and are unknown to Git. "
+                                             "These typically remain after "
+                                             "committing with plain 'git "
+                                             "commit'. Changelists left "
+                                             "empty are deleted. Only "
+                                             "changelist metadata is "
+                                             "changed, never file contents. "
+                                             "Stashed changelists are not "
+                                             "affected. Files excluded by "
+                                             ".gitignore have no Git status "
+                                             "and are removed as well. Does "
+                                             "nothing during 'git cl "
+                                             "commit', so that a post-commit "
+                                             "hook only acts on commits made "
+                                             "outside git-cl."))
+    prune_parser.add_argument('-n', '--dry-run', action='store_true',
+                              help=("Show what would be removed without "
+                                    "changing anything"))
+    prune_parser.add_argument('-q', '--quiet', action='store_true',
+                              help=("Suppress output (useful in a "
+                                    "post-commit hook)"))
+    prune_parser.set_defaults(func=cl_prune)
 
     # STATUS
     status_parser = subparsers.add_parser('status', aliases=['s', 'st'],

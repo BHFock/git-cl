@@ -658,6 +658,16 @@ This is useful when you've already staged a meaningful set of changes and want t
 
 Yes. Each worktree has its own independent set of changelists — changes made in one worktree are not visible in another. This means you can use git-cl freely in each worktree without them interfering with each other.
 
+### How do I check which version of git-cl is installed?
+
+Run:
+
+```
+git cl --version
+```
+
+This prints the installed version, for example `git-cl 1.2.0`. It is useful when [reporting a bug](https://github.com/BHFock/git-cl/issues/new?template=bug_report.md) or checking whether you have the [latest version](https://raw.githubusercontent.com/BHFock/git-cl/main/git-cl).
+
 [↑ Back to top](#git-cl-a-git-subcommand-for-changelist-management)
 
 ## 6. Command Summary

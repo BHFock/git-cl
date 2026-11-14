@@ -79,6 +79,7 @@ git cl st
 | `test_commit.py` | `commit` / `ci`, `-m`, `-F`, `--keep` flag, multiple changelists |
 | `test_diff.py` | `diff`, multiple changelists, `--staged` |
 | `test_remove_delete.py` | `remove` / `rm`, `delete` / `del`, `--all` |
+| `test_prune.py` | `prune`, `--dry-run` / `-n`, `--quiet` / `-q`, post-commit hook |
 | `test_checkout.py` | `checkout` / `co`, `--delete`, `--force` |
 
 ### Advanced Commands

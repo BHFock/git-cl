@@ -142,7 +142,14 @@ This section also includes the definition of the command line help. Defining the
 
 #### Error Handling and Exit Codes
 
-`git-cl` exits with code `0` on success and non-zero codes on errors. Error messages are printed to `stderr`. Some functions terminate execution immediately on fatal errors using [sys.exit()](https://docs.python.org/3/library/sys.html#sys.exit), ensuring no partial metadata changes are written.
+`git-cl` follows Git's conventions so that it can be used in scripts and by integrations:
+
+* **Exit codes** — `0` on success, `1` when a command fails, and `2` for invalid usage such as an unknown command or a missing argument (reported by `argparse` before any command runs). Every `cl_*` command function returns `True` or `False`, and `main()` turns this into the exit code.
+* **Nothing to do is success** — a command that finds nothing to act on, such as `git cl stage` on a changelist without tracked files or `git cl prune` without stale entries, exits with `0`.
+* **Partial failure is failure** — commands that take several names or paths (`add`, `remove`, `delete`, `diff`, `checkout`) still handle the valid ones, but exit with `1` if any of them was rejected, as `rm` does for a missing file. Commands that change Git state across several changelists (`stage`, `unstage`, `commit`) change nothing at all if one name is missing.
+* **Streams** — regular output goes to `stdout`. Errors, warnings and the hints that belong to them go to `stderr` via `clutil_print_error()`. Warnings alone do not change the exit code.
+
+A few helpers terminate execution immediately on fatal errors, such as running outside a Git repository, using [sys.exit()](https://docs.python.org/3/library/sys.html#sys.exit), ensuring no partial metadata changes are written.
 
 #### Command Categories and Git State
 

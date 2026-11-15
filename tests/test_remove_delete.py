@@ -3,8 +3,8 @@
 test_remove_delete.py — Test removing files from changelists and deleting changelists.
 
 Covers:
-    git cl remove <name> <files...>  — remove files from a changelist
-    git cl rm / git cl r                — aliases for remove
+    git cl remove <files...>         — remove files from their changelist
+    git cl rm / git cl r             — aliases for remove
     git cl delete <names...>         — delete one or more changelists
     git cl delete --all              — delete all changelists
     git cl del                       — alias for delete
@@ -57,7 +57,7 @@ def run_tests(repo: TestRepo):
 
     repo.section("Remove a file from a changelist")
 
-    output = repo.run("git cl remove list-a file1.txt")
+    output = repo.run("git cl remove file1.txt")
     repo.assert_exit_code(0, "git cl remove should succeed")
 
     cl = repo.load_cl_json()
@@ -86,7 +86,7 @@ def run_tests(repo: TestRepo):
     # Re-add file1.txt to list-a first
     repo.run("git cl add list-a file1.txt")
 
-    output = repo.run("git cl rm list-a file1.txt")
+    output = repo.run("git cl rm file1.txt")
     repo.assert_exit_code(0, "git cl rm alias should succeed")
 
     cl = repo.load_cl_json()
@@ -101,7 +101,7 @@ def run_tests(repo: TestRepo):
 
     repo.run("git cl add list-a file1.txt")
 
-    output = repo.run("git cl r list-a file1.txt")
+    output = repo.run("git cl r file1.txt")
     repo.assert_exit_code(0, "git cl r alias should succeed")
 
     cl = repo.load_cl_json()
@@ -178,14 +178,15 @@ def run_tests(repo: TestRepo):
                       "changelist deleted via del alias")
 
     # =================================================================
-    # Test: Remove from a non-existent changelist
+    # Test: Remove a file that is in no changelist
     # =================================================================
 
-    repo.section("Remove from a non-existent changelist")
+    repo.section("Remove a file that is in no changelist")
 
-    output = repo.run("git cl remove no-such-list file1.txt")
-    repo.assert_in("no-such-list", output,
-                    "error message mentions the changelist name")
+    output = repo.run("git cl remove file1.txt")
+    repo.assert_exit_code(1, "removing an unassigned file fails")
+    repo.assert_in("'file1.txt' was not found in any changelist",
+                    repo.last_stderr, "error names the file on stderr")
 
     # =================================================================
     # Test: Delete a non-existent changelist
@@ -194,8 +195,9 @@ def run_tests(repo: TestRepo):
     repo.section("Delete a non-existent changelist")
 
     output = repo.run("git cl delete no-such-list")
-    repo.assert_in("no-such-list", output,
-                    "error message mentions the changelist name")
+    repo.assert_exit_code(1, "deleting a non-existent changelist fails")
+    repo.assert_in("no-such-list", repo.last_stderr,
+                    "error message on stderr mentions the changelist name")
 
 
 # =================================================================

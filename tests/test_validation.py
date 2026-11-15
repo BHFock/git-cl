@@ -14,7 +14,8 @@ What you'll learn:
     - Names that are only dots (., .., ...) are rejected
     - HEAD is a reserved word and rejected
     - Names longer than ~100 characters are rejected
-    - Path traversal (../) and absolute paths are silently skipped
+    - Path traversal (../) and absolute paths are skipped with an error
+      (exit code 1)
     - Non-existent files get a warning but are still added to the changelist
 
 Run:
@@ -57,6 +58,7 @@ def run_tests(repo: TestRepo):
         output = repo.run(["git", "cl", "add", name, "file.txt"])
         repo.assert_in("Invalid changelist name", output,
                         f"'{name}' rejected")
+        repo.assert_exit_code(1, f"'{name}' gives exit code 1")
 
     # =================================================================
     # Test: Accepted names with hyphens, underscores, dots
@@ -84,6 +86,7 @@ def run_tests(repo: TestRepo):
         output = repo.run(["git", "cl", "add", name, "file.txt"])
         repo.assert_in("Invalid changelist name", output,
                         f"'{name}' rejected")
+        repo.assert_exit_code(1, f"'{name}' gives exit code 1")
 
     # =================================================================
     # Test: .hidden is allowed
@@ -149,6 +152,7 @@ def run_tests(repo: TestRepo):
     output = repo.run(["git", "cl", "add", "safe", "../../../etc/passwd"])
     repo.assert_in("invalid or unsafe path", output,
                     "directory traversal blocked")
+    repo.assert_exit_code(1, "blocked path gives exit code 1")
 
     # =================================================================
     # Test: Absolute paths are blocked
@@ -159,6 +163,7 @@ def run_tests(repo: TestRepo):
     output = repo.run(["git", "cl", "add", "safe", "/etc/passwd"])
     repo.assert_in("invalid or unsafe path", output,
                     "absolute path blocked")
+    repo.assert_exit_code(1, "blocked path gives exit code 1")
 
     # =================================================================
     # Test: Non-existent files get a warning but are added
@@ -169,6 +174,7 @@ def run_tests(repo: TestRepo):
     output = repo.run(["git", "cl", "add", "maybe", "nonexistent.txt"])
     repo.assert_in("does not exist", output,
                     "warning about non-existent file")
+    repo.assert_exit_code(0, "a warning alone keeps exit code 0")
 
     cl = repo.load_cl_json()
     repo.assert_in("nonexistent.txt", cl.get("maybe", []),

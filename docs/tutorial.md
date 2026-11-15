@@ -711,7 +711,14 @@ Yes. If the changelist was deleted after a stage or commit, you can create a new
 
 ### Can git-cl split changes within a single file across multiple changelists?
 
-No. A file can only belong to one changelist at a time. For patch-level splitting within a file, use `git add -p` alongside `git-cl` — the two tools complement each other.
+No. A file can only belong to one changelist at a time. For patch-level splitting within a file, select hunks with `git add -p` and finish with a plain `git commit`:
+
+```
+git add -p src/core.py
+git commit -m "Fix typo"
+```
+
+The file stays in its changelist with its remaining changes. Note that `git cl stage`, `git cl commit`, `git cl unstage` and `git cl stash` always act on whole files and override a hunk selection, so commit the selection first.
 
 ### How do I add currently staged files to a changelist?
 

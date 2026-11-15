@@ -59,6 +59,14 @@ git cl --version
 git cl help
 ```
 
+### Optional: prune automatically after every commit
+Files committed with plain `git commit` stay in their changelist. With Git 2.54 or later, this hook removes them after every commit, in all your repositories:
+```
+git config --global hook.git-cl-prune.event post-commit
+git config --global hook.git-cl-prune.command "git cl prune --quiet"
+```
+For older Git versions and how to turn the hook off, see the [tutorial](https://github.com/BHFock/git-cl/blob/main/docs/tutorial.md#optional-prune-automatically-after-every-commit).
+
 ### Use changelists inside a Git repository
 ```bash
 git cl add fixup file1.py

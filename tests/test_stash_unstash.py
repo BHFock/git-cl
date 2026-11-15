@@ -15,6 +15,8 @@ What you'll learn:
     - Unstashing restores both the file changes and the changelist metadata
     - --all operates on every active (stash) or stashed (unstash) changelist
     - Other changelists are not affected when stashing a single one
+    - A name ending in '_stashed' is an ordinary changelist name; unstash
+      always uses the name exactly as given
 
 Run:
     ./test_stash_unstash.py
@@ -234,6 +236,59 @@ def run_tests(repo: TestRepo):
     output = repo.run("git cl unstash no-such-list")
     repo.assert_in("no-such-list", output,
                     "error message mentions the changelist name")
+
+    # =================================================================
+    # Test: A name ending in '_stashed' is an ordinary changelist name
+    # =================================================================
+
+    repo.section("A name ending in '_stashed' is an ordinary changelist name")
+
+    repo.write_file("epsilon.txt", "epsilon")
+    repo.run("git add epsilon.txt")
+    repo.run(["git", "commit", "--quiet", "-m", "Add epsilon"])
+
+    repo.write_file("epsilon.txt", "epsilon modified")
+    repo.run("git cl add notes_stashed epsilon.txt")
+
+    output = repo.run("git cl st --no-color")
+    repo.assert_in("notes_stashed:", output,
+                    "changelist ending in '_stashed' is shown in status")
+    repo.assert_not_in("No Changelist", output,
+                        "its file is not listed under 'No Changelist'")
+
+    repo.run("git cl stash notes_stashed")
+    repo.assert_exit_code(0, "stash notes_stashed succeeds")
+
+    repo.run("git cl unstash notes_stashed")
+    repo.assert_exit_code(0, "unstash by its own name succeeds")
+
+    cl = repo.load_cl_json()
+    repo.assert_true("notes_stashed" in cl,
+                      "notes_stashed is active again")
+    repo.assert_equal("epsilon modified", repo.read_file("epsilon.txt"),
+                       "changes restored")
+
+    # =================================================================
+    # Test: The '_stashed' suffix is not an alias for unstash
+    # =================================================================
+
+    repo.section("The '_stashed' suffix is not an alias for unstash")
+
+    repo.write_file("zeta.txt", "zeta")
+    repo.run("git add zeta.txt")
+    repo.run(["git", "commit", "--quiet", "-m", "Add zeta"])
+
+    repo.write_file("zeta.txt", "zeta modified")
+    repo.run("git cl add plain zeta.txt")
+    repo.run("git cl stash plain")
+
+    repo.run("git cl unstash plain_stashed")
+    repo.assert_exit_code(1, "unstash plain_stashed fails when only "
+                             "'plain' is stashed")
+
+    stashes = repo.load_stash_json()
+    repo.assert_true("plain" in stashes,
+                      "plain is still stashed")
 
 
 # =================================================================

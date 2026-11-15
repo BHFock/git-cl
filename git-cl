@@ -1768,26 +1768,6 @@ def clutil_unstash_all_changelists(
     return success_count, len(stash_items)
 
 
-def clutil_resolve_unstash_name(name: str) -> tuple[str, str]:
-    """
-    Resolve changelist name handling both "name" and "name_stashed" formats.
-
-    Args:
-        name: The changelist name (with or without _stashed suffix)
-
-    Returns:
-        Tuple of (base_name, stash_key)
-    """
-    if name.endswith("_stashed"):
-        base_name = name[:-8]  # Remove "_stashed" suffix
-        stash_key = base_name
-    else:
-        base_name = name
-        stash_key = name
-
-    return base_name, stash_key
-
-
 def clutil_validate_unstash_preconditions(
     base_name: str,
     stash_key: str,
@@ -2210,9 +2190,6 @@ def clutil_show_active_changelists(
     shown_any = False
 
     for cl_name, files in changelists.items():
-        if cl_name.endswith('_stashed'):
-            continue
-
         for f in files:
             try:
                 abs_path = (git_root / f).resolve()
@@ -3293,7 +3270,8 @@ def cl_unstash(args: argparse.Namespace, quiet: bool = False) -> bool:
 
     # Handle single changelist unstash
     name = args.name
-    base_name, stash_key = clutil_resolve_unstash_name(name)
+    # Stashes are keyed by the changelist name itself
+    base_name = stash_key = name
 
     # Validate environment and get stash data
     error_msg, stash_data = clutil_validate_unstash_environment(
@@ -3786,8 +3764,7 @@ def main() -> None:
                                                "current branch."))
     unstash_group = unstash_parser.add_mutually_exclusive_group(required=True)
     unstash_group.add_argument('name', nargs='?', metavar='CHANGELIST',
-                               help=('Name of the changelist to unstash '
-                                     '(with or without _stashed suffix)'))
+                               help='Name of the changelist to unstash')
     unstash_group.add_argument('--all', action='store_true',
                                help='Unstash all stashed changelists')
     unstash_parser.add_argument('--force', action='store_true',

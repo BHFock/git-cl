@@ -86,7 +86,7 @@ git cl st
 
 | Script | Commands |
 |---|---|
-| `test_stash_unstash.py` | `stash` / `sh`, `unstash` / `us`, `--all` |
+| `test_stash_unstash.py` | `stash` / `sh`, `unstash` / `us`, `--all`, names ending in `_stashed` |
 | `test_branch.py` | `branch` / `br`, custom name, `--from` base, untracked files outside changelists |
 
 ### States, Paths, and Validation

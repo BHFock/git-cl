@@ -100,6 +100,38 @@ git cl help
 
 Git will recognise `git-cl` as a [subcommand](https://git.github.io/htmldocs/howto/new-command.html): you can now run `git cl` just like `git commit` or `git status`.
 
+### Optional: Prune automatically after every commit
+
+When you commit with plain `git commit` — or an IDE or AI assistant commits for you — the committed files stay in their changelist with nothing left to change. A post-commit hook that runs [git cl prune](#33-prune-stale-entries) removes them automatically, however the commit was made.
+
+With Git 2.54 or later, set up the hook once for all your repositories:
+
+```
+git config --global hook.git-cl-prune.event post-commit
+git config --global hook.git-cl-prune.command "git cl prune --quiet"
+```
+
+To use it in a single repository only, run the same commands inside that repository without `--global`. To turn the hook off again — globally, or for a single repository — run:
+
+```
+git config [--global] hook.git-cl-prune.enabled false
+```
+
+With older Git versions, create the file `.git/hooks/post-commit` in each repository where you want the hook:
+
+```
+#!/bin/sh
+git cl prune --quiet
+```
+
+Then make it executable with `chmod +x .git/hooks/post-commit`.
+
+Good to know:
+
+- In repositories without changelists, the hook does nothing.
+- The hook only acts on commits made outside git-cl. During [git cl commit](#25-commit-a-changelist), `git cl prune` does nothing, so a changelist committed with `--keep` is kept as usual.
+- Files you add to a changelist before editing them are removed by the next commit, because they have no changes yet. Leave the hook off if you plan changelists ahead like this.
+
 
 [↑ Back to top](#git-cl-a-git-subcommand-for-changelist-management)
 
@@ -452,7 +484,7 @@ git cl prune
 
 `app.py` is removed from `feature`, and `util.py`, which still has changes, stays.
 
-Note: `git cl prune` only runs when you call it. git-cl never prunes on its own, because you may add a file to a changelist before you start editing it. To prune automatically after every commit, see [How do I keep changelists up to date automatically?](#how-do-i-keep-changelists-up-to-date-automatically)
+Note: `git cl prune` only runs when you call it. git-cl never prunes on its own, because you may add a file to a changelist before you start editing it. To prune automatically after every commit, see [Optional: Prune automatically after every commit](#optional-prune-automatically-after-every-commit).
 
 Two cases to be aware of:
 
@@ -620,31 +652,7 @@ This way, you can choose whether the changelist sticks around after staging or r
 
 ### How do I keep changelists up to date automatically?
 
-Run [git cl prune](#33-prune-stale-entries) from a [post-commit hook](https://git-scm.com/docs/githooks#_post_commit). Stale entries are then removed after every commit, however it was made.
-
-With Git 2.54 or later, you can define the hook in your Git configuration:
-
-```
-git config hook.git-cl-prune.event post-commit
-git config hook.git-cl-prune.command "git cl prune --quiet"
-```
-
-Add `--global` to both commands to enable it for all your repositories. To turn it off again — for example, for a single repository — run:
-
-```
-git config hook.git-cl-prune.enabled false
-```
-
-With older Git versions, create the file `.git/hooks/post-commit` in your repository:
-
-```
-#!/bin/sh
-git cl prune --quiet
-```
-
-Then make it executable with `chmod +x .git/hooks/post-commit`.
-
-The hook only acts on commits made outside git-cl. During [git cl commit](#25-commit-a-changelist), `git cl prune` does nothing, so a changelist committed with `--keep` is kept as usual.
+Set up a post-commit hook that runs [git cl prune](#33-prune-stale-entries) after every commit. See [Optional: Prune automatically after every commit](#optional-prune-automatically-after-every-commit) in the installation section.
 
 ### Why aren’t untracked files included when I stage or commit a changelist?
 

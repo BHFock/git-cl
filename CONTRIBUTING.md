@@ -54,7 +54,9 @@ Please note in the package that it is community maintained, and point bug report
 
 ### Pull Requests
 
-Please **open an issue before writing code**. For a feature complete project, an unsolicited pull request is likely to be declined — not because the work is bad, but because it may not fit the intended scope. Typo and documentation fixes are the exception: send those directly. Contributions are accepted under the BSD 3-Clause License.
+Please **open an issue before writing code**. For a feature complete project, an unsolicited pull request is likely to be declined — not because the work is bad, but because it may not fit the intended scope. Typo and documentation fixes are the exception: send those directly.
+
+By contributing, you agree that your contributions will be licensed under the project's BSD 3-Clause License.
 
 ## What I'm Not Looking For
 

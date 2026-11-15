@@ -14,6 +14,9 @@ What you'll learn:
     - Other changelists remain stashed and can be restored later
     - The branch name defaults to the changelist name but can be overridden
     - The --from flag lets you base the branch on a different branch
+    - Untracked files outside any changelist are not stashed; they stay
+      in the working directory and follow the switch, as with
+      'git checkout -b'
     - This is a one-step workflow for isolating work on a dedicated branch
 
 Run:
@@ -164,6 +167,48 @@ def run_tests(repo: TestRepo):
     output = repo.run("git cl branch no-such-list")
     repo.assert_in("no-such-list", output,
                     "error message mentions the changelist name")
+
+    # =================================================================
+    # Test: Untracked files outside changelists follow the new branch
+    # =================================================================
+
+    repo.section("Untracked files outside changelists follow the new branch")
+
+    # Start from a clean state on the default branch
+    repo.run("git cl checkout quick-fix --force --delete")
+
+    repo.write_file("delta.txt", "delta")
+    repo.run("git add delta.txt")
+    repo.run(["git", "commit", "--quiet", "-m", "Add delta"])
+
+    repo.write_file("delta.txt", "delta modified")
+    repo.run("git cl add with-notes delta.txt")
+
+    # An untracked file that belongs to no changelist, e.g. scratch notes
+    repo.write_file("notes.txt", "scratch notes")
+
+    output = repo.run("git cl br with-notes")
+    repo.assert_exit_code(0, "git cl br succeeds with an untracked file "
+                             "outside any changelist")
+    repo.assert_not_in("not clean", output,
+                       "no 'not clean' error from the restore step")
+
+    branch = repo.get_current_branch()
+    repo.assert_equal("with-notes", branch,
+                       "now on branch 'with-notes'")
+
+    cl = repo.load_cl_json()
+    repo.assert_true("with-notes" in cl,
+                      "with-notes changelist restored on new branch")
+    repo.assert_equal("delta modified", repo.read_file("delta.txt"),
+                       "changelist changes restored")
+
+    stashes = repo.load_stash_json()
+    repo.assert_true("with-notes" not in stashes,
+                      "with-notes is no longer stashed")
+
+    repo.assert_equal("scratch notes", repo.read_file("notes.txt"),
+                       "untracked file stays in the working directory")
 
 
 # =================================================================

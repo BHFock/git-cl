@@ -448,7 +448,9 @@ What happens under the hood:
 2. Creates and checks out the new branch.
 3. Restores only the chosen changelist on that branch — the other changelists remain stashed and can be restored with `git cl unstash` later.
 
-Before it starts, `git cl branch` checks that every modified tracked file belongs to a changelist. If any changes are not assigned to a changelist, it stops without changing anything, because those changes would otherwise be stashed with no changelist to restore them from. Add them to a changelist (or commit or discard them), then run the command again.
+Before it starts, `git cl branch` checks that every modified tracked file belongs to a changelist. Only files in changelists are stashed, so unassigned changes would stay in your working directory and be carried onto the new branch, mixing unrelated work into it. If any changes are not assigned to a changelist, it stops without changing anything. Add them to a changelist (or commit or discard them), then run the command again.
+
+Untracked files (`[??]`) that are not in any changelist do not stop `git cl branch`. They are not stashed, so they stay in your working directory and follow you to the new branch, just as they would with `git checkout -b`.
 
 See [Section 4.3](#43-late-binding-branching-with-git-cl-branch) for a worked example.
 
@@ -690,7 +692,7 @@ Use `git cl stash <name>`, then switch branches and [git cl unstash](#31-stash-a
 
 ### Why does git cl branch refuse to run?
 
-[git cl branch](#32-create-a-branch-from-a-changelist) stops if you have modified tracked files that are not in any changelist. It stashes every changelist before switching branch, and unassigned changes would be swept up with no changelist to bring them back. Run [git cl status](#22-view-status-by-changelist) to see what is listed under 'No Changelist', then add those files to a changelist, commit them, or discard them, and try again.
+[git cl branch](#32-create-a-branch-from-a-changelist) stops if you have modified tracked files that are not in any changelist. It only stashes the files in changelists, so unassigned changes would be carried onto the new branch along with the changelist you chose. Untracked files outside any changelist do not stop it; they simply stay in your working directory. Run [git cl status](#22-view-status-by-changelist) to see what is listed under 'No Changelist', then add those files to a changelist, commit them, or discard them, and try again.
 
 ### Why does git cl stash refuse my changelist?
 

@@ -237,7 +237,7 @@ def run_tests(repo: TestRepo):
 
     repo.section("Remove a file from a subdirectory (src/)")
 
-    output = repo.run_in("src", "git cl remove feature app.py")
+    output = repo.run_in("src", "git cl remove app.py")
     repo.assert_exit_code(0, "remove from subdirectory should succeed")
 
     cl = repo.load_cl_json()

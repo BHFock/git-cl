@@ -97,14 +97,15 @@ git cl st
 | `test_subdirectory.py` | Path normalisation from subdirectories, cross-directory add, relative display |
 | `test_validation.py` | Invalid names, reserved words, path traversal, missing arguments |
 | `test_edge_cases.py` | Empty states, reassignment, duplicate files, deleted files |
+| `test_exit_codes.py` | Exit codes `0`, `1` and `2`, errors and warnings on stderr, partial failure |
 
 
 ## How the Tests Work
 
 The test framework lives in `test_helpers.py` and provides a single class: `TestRepo`. It is used as a context manager that creates a fresh temporary Git repository on entry and cleans it up on exit.
 
-`TestRepo` offers helpers for common operations — `write_file`, `run`, `run_in` (execute from a subdirectory), `load_cl_json`, `get_staged_files`, and a set of assertion methods (`assert_in`, `assert_equal`, `assert_exit_code`, etc.) that print pass/fail results during the test run.
+`TestRepo` offers helpers for common operations — `write_file`, `run`, `run_in` (execute from a subdirectory), `load_cl_json`, `get_staged_files`, and a set of assertion methods (`assert_in`, `assert_equal`, `assert_exit_code`, etc.) that print pass/fail results during the test run. After each `run`, the exit code and the two output streams are available as `last_exit_code`, `last_stdout` and `last_stderr`.
 
-Every operation is recorded internally. When a test script is run with `--export`, the recorded operations are replayed as a shell script instead of executing assertions. This is how the same test code serves both as an automated check and as a readable walkthrough.
+Every operation is recorded internally. When a test script is run with `--export`, the recorded operations are replayed as a shell script instead of executing assertions. This is how the same test code serves both as an automated check and as a readable walkthrough. Commands that failed during the test run are exported with `|| true`, so that a deliberately triggered error does not stop the walkthrough at `set -euo pipefail`.
 
 Each `test_*.py` script follows the same pattern: import `TestRepo`, define a `run_tests(repo)` function with sections and assertions, and handle both normal execution and `--export` mode in `__main__`. Test scripts are self-contained and can be run independently. `run_tests.py` discovers and runs all of them, collecting results into a summary.

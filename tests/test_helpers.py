@@ -41,12 +41,16 @@ class TestRepo:
     Attributes:
         repo_dir:       Path to the temporary repository root.
         last_exit_code: Exit code of the most recent run() call.
+        last_stdout:    Stripped stdout of the most recent run() call.
+        last_stderr:    Stripped stderr of the most recent run() call.
         log:            Recorded operations for shell export.
     """
 
     def __init__(self, quiet: bool = False):
         self.repo_dir: Path | None = None
         self.last_exit_code: int = 0
+        self.last_stdout: str = ""
+        self.last_stderr: str = ""
         self.log: list[dict] = []
         self.quiet: bool = quiet  # suppress output (used during --export)
 
@@ -195,7 +199,13 @@ class TestRepo:
                       False because many tests deliberately trigger errors.
 
         Returns:
-            Combined stdout and stderr as a stripped string.
+            Combined stdout and stderr as a stripped string. The two
+            streams are also kept separately in last_stdout and
+            last_stderr, so tests can check where a message was printed.
+
+        In shell export, a command that failed here gets '|| true'
+        appended, so that the walkthrough's 'set -e' does not stop at a
+        deliberately triggered error.
         """
         if isinstance(command, str):
             args = shlex.split(command)
@@ -213,11 +223,11 @@ class TestRepo:
             env={**os.environ, "NO_COLOR": "1"},
         )
 
-        self.last_exit_code = result.returncode
+        self._store_result(result)
         output = (result.stdout + result.stderr).strip()
 
         self._record("run", command=shell_line,
-                      shell_lines=[shell_line])
+                      shell_lines=[self._export_line(shell_line, result)])
 
         if check and result.returncode != 0:
             raise subprocess.CalledProcessError(
@@ -250,11 +260,12 @@ class TestRepo:
             env={**os.environ, "NO_COLOR": "1"},
         )
 
-        self.last_exit_code = result.returncode
+        self._store_result(result)
         output = (result.stdout + result.stderr).strip()
 
         self._record("run_in", subdir=subdir, command=shell_line,
-                      shell_lines=[f"(cd {subdir} && {shell_line})"])
+                      shell_lines=[self._export_line(
+                          f"(cd {subdir} && {shell_line})", result)])
 
         if check and result.returncode != 0:
             raise subprocess.CalledProcessError(
@@ -262,6 +273,20 @@ class TestRepo:
             )
 
         return output
+
+    def _store_result(self, result: subprocess.CompletedProcess):
+        """Remember exit code and output streams of the last command."""
+        self.last_exit_code = result.returncode
+        self.last_stdout = result.stdout.strip()
+        self.last_stderr = result.stderr.strip()
+
+    @staticmethod
+    def _export_line(shell_line: str,
+                     result: subprocess.CompletedProcess) -> str:
+        """Shell line for export; failing commands must not stop 'set -e'."""
+        if result.returncode != 0:
+            return f"{shell_line} || true"
+        return shell_line
 
     # ---- git-cl helpers ----
 

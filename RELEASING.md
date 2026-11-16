@@ -135,8 +135,19 @@ environment, not your `base` environment.
 ## 8. Create the GitHub release
 
 In the web UI: **[Releases](https://github.com/BHFock/git-cl/releases) → Draft a new release →** choose the existing `1.2.0`
-tag → **Generate release notes** → publish. No file uploads needed; PyPI is the
-download source.
+tag → **Generate release notes**, then rewrite them before publishing. No file
+uploads needed; PyPI is the download source.
+
+Structure (see [1.4.0](https://github.com/BHFock/git-cl/releases/tag/1.4.0)):
+
+- One sentence on what the release is about
+- `### New: …` or `### Fixed`: what changed for users, not the commit title
+- `### ⚠️ Behaviour change`: only if users or scripts must react
+- `### Other changes`: docs, CI, small output tweaks
+- `### Pull requests`: the generated list, with `#NN` instead of full URLs
+- `**Full Changelog**` line as generated
+
+Put `<name>` placeholders in backticks, or GitHub hides them as HTML.
 
 Unlike the PyPI upload, a GitHub release is not final — you can edit or delete
 it at any time.

@@ -8,6 +8,7 @@ Covers:
     git cl prune -n          — short form of --dry-run
     git cl prune --quiet     — prune without output
     git cl prune -q          — short form of --quiet
+    git cl prune --exit-code — exit with 1 if stale entries were found
 
 What you'll learn:
     - Committing with plain 'git commit' leaves clean files behind in
@@ -403,6 +404,50 @@ def run_tests(repo: TestRepo):
     cl = repo.load_cl_json()
     repo.assert_equal({}, cl,
                       "hook pruned all clean entries after a plain commit")
+
+    # =================================================================
+    # Test: --exit-code reports stale entries through the exit code
+    # =================================================================
+
+    repo.section("--exit-code reports stale entries through the exit code")
+
+    repo.run("git cl prune -n --exit-code")
+    repo.assert_exit_code(0, "exit code 0 when there is nothing to prune")
+
+    repo.write_file("app.py", "print('app v6')")
+    repo.run("git cl add check app.py util.py")
+
+    repo.run("git cl prune -n")
+    repo.assert_exit_code(0, "without --exit-code, a dry run with stale "
+                             "entries still exits with 0")
+
+    output = repo.run("git cl prune -n -q --exit-code")
+    repo.assert_exit_code(1, "exit code 1 when stale entries are found")
+    repo.assert_equal("", output.strip(),
+                      "--quiet --exit-code prints nothing")
+
+    cl = repo.load_cl_json()
+    repo.assert_equal(["app.py", "util.py"], cl.get("check"),
+                      "dry run with --exit-code changes nothing")
+
+    repo.run("git cl prune -q --exit-code")
+    repo.assert_exit_code(1, "exit code 1 when stale entries are removed")
+
+    cl = repo.load_cl_json()
+    repo.assert_equal(["app.py"], cl.get("check"),
+                      "stale entry removed")
+
+    repo.run("git cl prune -n --exit-code")
+    repo.assert_exit_code(0, "exit code 0 once nothing is left to prune")
+
+    # Errors must be distinguishable from 'stale entries found'. Running
+    # outside a Git repository is an error; the parent of the temporary
+    # test repository is not a repository.
+    outside = str(repo.repo_dir.parent)
+    repo.run(["git", "-C", outside, "cl", "prune", "-n", "--exit-code"])
+    repo.assert_exit_code(2, "exit code 2 on error with --exit-code")
+    repo.run(["git", "-C", outside, "cl", "prune", "-n"])
+    repo.assert_exit_code(1, "exit code 1 on error without --exit-code")
 
 
 # =================================================================

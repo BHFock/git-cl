@@ -463,7 +463,7 @@ See [Section 4.3](#43-late-binding-branching-with-git-cl-branch) for a worked ex
 ### 3.3 Prune stale entries
 
 ```
-git cl prune [--dry-run] [--quiet]
+git cl prune [--dry-run] [--quiet] [--exit-code]
 ```
 
 When you commit with plain `git commit` — or an IDE or AI assistant commits for you — the committed files stay in their changelist with nothing left to change. Files you delete and commit stay listed as `[XX]`. `git cl prune` tidies this up across all changelists in one go.
@@ -475,6 +475,14 @@ When you commit with plain `git commit` — or an IDE or AI assistant commits fo
 - Leaves stashed changelists and file contents untouched.
 
 Use `--dry-run` (or `-n`) to see what would be removed without changing anything, and `--quiet` (or `-q`) to suppress the output.
+
+For scripts and editor integrations, `--exit-code` reports through the exit code whether there are stale entries, as `git diff --exit-code` does for changes: `0` if there are none, `1` if there are (removed, or only listed with `--dry-run`), and `2` on error. A quick check that prints nothing:
+
+```
+if ! git cl prune --dry-run --quiet --exit-code; then
+    echo "Changelists have stale entries"
+fi
+```
 
 #### Example
 
@@ -780,7 +788,7 @@ This prints the installed version, for example `git-cl 1.2.0`. It is useful when
 | Revert changelist to HEAD       | `git cl checkout <name>`                                  | `git cl co`   |
 | Remove files from changelists   | `git cl remove <file1> <file2> ...`                       | `git cl rm`   |
 | Delete changelists              | `git cl delete <name1> <name2> ...`                       | `git cl del`  | 
-| Prune stale entries             | `git cl prune [--dry-run] [--quiet]`                      |               |
+| Prune stale entries             | `git cl prune [--dry-run] [--quiet] [--exit-code]`        |               |
 | Stash a changelist              | `git cl stash <name>`                                     |               |
 | Unstash a changelist            | `git cl unstash <name> [--force]`                         |               |
 | Create branch from changelist   | `git cl branch <name> [<branch>] [--from <base>]`         | `git cl br`   |

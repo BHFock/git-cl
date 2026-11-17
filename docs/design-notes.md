@@ -146,6 +146,7 @@ This section also includes the definition of the command line help. Defining the
 
 * **Exit codes** — `0` on success, `1` when a command fails, and `2` for invalid usage such as an unknown command or a missing argument (reported by `argparse` before any command runs). Every `cl_*` command function returns `True` or `False`, and `main()` turns this into the exit code.
 * **Nothing to do is success** — a command that finds nothing to act on, such as `git cl stage` on a changelist without tracked files or `git cl prune` without stale entries, exits with `0`.
+* **Opt-in result codes** — `git cl prune --exit-code` follows `git diff --exit-code`: `0` if there are no stale entries, `1` if there are, and `2` on error. Errors that would normally exit with `1` are mapped to `2` in `cl_prune()`, so that a script can tell "stale entries found" apart from a failure.
 * **Partial failure is failure** — commands that take several names or paths (`add`, `remove`, `delete`, `diff`, `checkout`) still handle the valid ones, but exit with `1` if any of them was rejected, as `rm` does for a missing file. Commands that change Git state across several changelists (`stage`, `unstage`, `commit`) change nothing at all if one name is missing.
 * **Streams** — regular output goes to `stdout`. Errors, warnings and the hints that belong to them go to `stderr` via `clutil_print_error()`. Warnings alone do not change the exit code.
 

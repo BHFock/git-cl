@@ -669,6 +669,20 @@ git add my-file.txt
 git cl stage my-changelist
 ```
 
+### How do I commit a deleted or renamed file?
+
+A deleted tracked file (`[ D]` or `[D ]`) is a change like any other. Add it to a changelist, and `git cl stage` and `git cl commit` include the deletion.
+
+A rename has two sides: the old path is deleted and the new path is added. Git only records a rename when both are committed together, so add **both paths** to the changelist:
+
+```
+git mv old-name.txt new-name.txt
+git cl add my-changelist old-name.txt new-name.txt
+git cl commit my-changelist -m "Rename old-name.txt"
+```
+
+`git cl status` shows the old path as `[D ]` and the new path as `[R ]`. If only one of them is in a changelist, `git cl status` and `git cl commit` print a note with the `git cl add` command for the other side. Committing only one side commits just the deletion or just the new file, and leaves the other side staged.
+
 ### Are changelists shared between team members?
 
 No. Changelists are stored locally in `.git/cl.json` and are not version-controlled or shared via Git. They’re like personal sticky notes on your working directory and visible only to you.
@@ -786,7 +800,7 @@ This prints the installed version, for example `git-cl 1.2.0`. It is useful when
 | `[MM]` | Mixed                  | Staged change with additional unstaged modification|
 | `[A ]` | Added                  | New file added and staged                          |
 | `[AM]` | Added + Modified       | File added and then further modified               |
-| `[D ]` | Deletion (staged)      | File deletion staged                               |
+| `[D ]` | Deletion (staged)      | File deletion staged, or old path of a rename      |
 | `[ D]` | Deletion (unstaged)    | File deleted but not yet staged                    |
 | `[R ]` | Renamed                | File renamed and staged                            |
 | `[RM]` | Renamed + Modified     | Renamed and then modified before staging           |

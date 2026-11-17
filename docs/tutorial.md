@@ -835,7 +835,6 @@ Both `[  ]` and `[XX]` entries can be removed with [git cl prune](#33-prune-stal
 | Colour   | Meaning                       |
 |---------|-------------------------------|
 | Green   | Staged changes (`[M ]`, `[A ]`)|
-| Red     | Unstaged changes (`[ M]`, `[ D]`)|
 | Red     | Needs attention: unstaged changes (`[ M]`, `[ D]`) or merge conflicts (`[UU]`, `[AA]`, …) |
 | Magenta | Both staged and unstaged (`[MM]`, `[AM]`)|
 | Blue    | Untracked (`[??]`)            |

@@ -444,6 +444,82 @@ def clutil_sanitize_path(file_path: str, git_root: Path) -> Optional[str]:
         return None
 
 
+def clutil_status_path_to_rel(raw_path: str, git_root: Path) -> str:
+    """
+    Convert a path from 'git status --porcelain' output to a path relative
+    to the git root, in POSIX form.
+    """
+    abs_path = (git_root / raw_path.strip()).resolve()
+    try:
+        return abs_path.relative_to(git_root).as_posix()
+    except ValueError:
+        return raw_path.strip()
+
+
+def clutil_get_renames() -> dict[str, str]:
+    """
+    Get the renames staged in the index.
+
+    Returns:
+        dict[str, str]: Mapping of new path to old path, both relative to
+                        the git root.
+    """
+    git_root = clutil_get_git_root()
+    renames = {}
+    for line in clutil_get_git_status(include_untracked=False):
+        raw_path = line[3:].strip()
+        if line[:1] == 'R' and ' -> ' in raw_path:
+            old_path, new_path = raw_path.split(' -> ', 1)
+            renames[clutil_status_path_to_rel(new_path, git_root)] = \
+                clutil_status_path_to_rel(old_path, git_root)
+    return renames
+
+
+def clutil_note_split_renames(
+        names: list[str], changelists: dict[str, list[str]],
+        renames: dict[str, str], git_root: Path) -> list[str]:
+    """
+    Build a note for each rename where only one of the two paths is in
+    the given changelists.
+
+    A rename is only committed as a rename when both the old and the new
+    path are committed together. With only one of them in a changelist,
+    git cl commit would commit just the addition or just the deletion.
+
+    Args:
+        names: Changelist names to check, as one group
+        changelists: Loaded changelist data
+        renames: Mapping of new path to old path from clutil_get_renames()
+        git_root: Repository root
+
+    Returns:
+        The note lines, empty if no rename is split.
+    """
+    files = {path for name in names for path in changelists.get(name, [])}
+    cwd = Path.cwd().resolve()
+    target = names[0] if len(names) == 1 else None
+
+    def show(path: str) -> str:
+        return _relpath((git_root / path).resolve(), cwd)
+
+    lines = []
+    for new_path, old_path in sorted(renames.items()):
+        if (new_path in files) == (old_path in files):
+            continue
+        if new_path in files:
+            present, missing, verb = new_path, old_path, "renamed from"
+        else:
+            present, missing, verb = old_path, new_path, "renamed to"
+        where = (f"changelist '{target}'" if target
+                 else "the changelists being committed")
+        lines.append(f"Note: '{show(present)}' was {verb} "
+                     f"'{show(missing)}', which is not in {where}.")
+        if target:
+            lines.append(f"      Add it with 'git cl add {target} "
+                         f"{show(missing)}' to commit the rename.")
+    return lines
+
+
 def clutil_get_file_status_map(
         show_all: bool = False,
         include_untracked: bool = True) -> dict[str, str]:
@@ -485,15 +561,15 @@ def clutil_get_file_status_map(
         code = line[:2]
         raw_path = line[3:].strip()
 
-        # Handle renamed files
-        if code.startswith('R') and '->' in raw_path:
-            raw_path = raw_path.split('->')[-1].strip()
+        # Handle renamed files: 'R  old -> new'. In the index the old path
+        # is a staged deletion, so record it as 'D ' as well. Otherwise it
+        # has no status and looks like a file missing from the branch.
+        if code.startswith('R') and ' -> ' in raw_path:
+            old_path, raw_path = raw_path.split(' -> ', 1)
+            old_rel = clutil_status_path_to_rel(old_path, git_root)
+            status_map.setdefault(old_rel, 'D ')
 
-        abs_path = (git_root / raw_path).resolve()
-        try:
-            rel_path = abs_path.relative_to(git_root).as_posix()
-        except ValueError:
-            rel_path = raw_path
+        rel_path = clutil_status_path_to_rel(raw_path, git_root)
 
         if show_all or code in INTERESTING_CODES:
             status_map[rel_path] = code
@@ -733,20 +809,24 @@ def clutil_resolve_changelist_names(
 
 def clutil_collect_changelist_files(
         names: list[str], changelists: dict[str, list[str]],
-        git_root: Path,
+        git_root: Path, status_map: dict[str, str],
         include: Callable[[str], bool]) -> tuple[list[str],
                                                    dict[str, list[str]]]:
     """
     Collect existing files from one or more changelists, as paths relative
     to the current working directory, filtered by a predicate.
 
-    Missing files produce a warning and are skipped. A file listed in more
-    than one changelist is only returned once.
+    Files that no longer exist are only included if Git reports a status
+    for them, i.e. a deletion still to be committed. Files that are gone
+    with no Git status (e.g. already committed as deleted) produce a
+    warning and are skipped. A file listed in more than one changelist is
+    only returned once.
 
     Args:
         names: Changelist names to collect from
         changelists: Loaded changelist data
         git_root: Repository root
+        status_map: Precomputed status map from clutil_get_file_status_map
         include: Called with the stored path (relative to git root);
                  return True to include the file
 
@@ -762,7 +842,7 @@ def clutil_collect_changelist_files(
         for stored_path in changelists[name]:
             abs_path = (git_root / stored_path).resolve()
 
-            if not abs_path.exists():
+            if not abs_path.exists() and stored_path not in status_map:
                 clutil_print_error(f"Warning: '{stored_path}' does not exist.")
                 continue
 
@@ -2489,14 +2569,17 @@ def cl_add(args: argparse.Namespace) -> bool:
     stashes = clutil_load_stashes()
     git_root = clutil_get_git_root()
 
+    status_map = clutil_get_file_status_map(show_all=True)
+
     files = []
     skipped = False
     for file in args.files:
         sanitized = clutil_sanitize_path(file, git_root)
         if sanitized:
-            # Check if file exists and warn if not
+            # Warn if the file is neither on disk nor known to Git. A deleted
+            # tracked file has a Git status and is a valid change to add.
             abs_path = (git_root / sanitized).resolve()
-            if not abs_path.exists():
+            if not abs_path.exists() and sanitized not in status_map:
                 clutil_print_error(f"Warning: File '{file}' does not exist.")
             files.append(sanitized)
         else:
@@ -2558,7 +2641,7 @@ def cl_stage(args: argparse.Namespace) -> bool:
         return False
 
     to_stage, files_by_name = clutil_collect_changelist_files(
-        names, changelists, git_root,
+        names, changelists, git_root, status_map,
         lambda path: not clutil_is_file_untracked_cached(path, status_map))
 
     label = clutil_changelist_label(names)
@@ -2566,8 +2649,18 @@ def cl_stage(args: argparse.Namespace) -> bool:
         print(f"No tracked files to stage in {label}.")
         return True
 
+    # A staged deletion ('D ') is already fully staged and no longer exists
+    # in the index or on disk, so 'git add' would reject the path
+    cwd = Path.cwd().resolve()
+    to_add = [
+        file for file in to_stage
+        if status_map.get(
+            (cwd / file).resolve().relative_to(git_root).as_posix()) != "D "
+    ]
+
     try:
-        subprocess.run(["git", "add", "--"] + to_stage, check=True)
+        if to_add:
+            subprocess.run(["git", "add", "--"] + to_add, check=True)
     except subprocess.CalledProcessError as error:
         clutil_print_error(f"Error staging files: {error}")
         return False
@@ -2610,7 +2703,7 @@ def cl_unstage(args: argparse.Namespace) -> bool:
 
     # A file has staged changes if the first status character is not a space
     to_unstage, files_by_name = clutil_collect_changelist_files(
-        names, changelists, git_root,
+        names, changelists, git_root, status_map,
         lambda path: status_map.get(path, "  ")[0] != " ")
 
     label = clutil_changelist_label(names)
@@ -2677,6 +2770,18 @@ def cl_status(args: argparse.Namespace) -> bool:
             print("No Changelist:")
             for file in sorted(no_cl_files):
                 print(clutil_format_file_status(file, status_map, git_root, use_color))
+
+    # Advise user if a rename is split across changelists
+    renames = clutil_get_renames()
+    if renames:
+        notes = []
+        for name in changelists:
+            if selected_names is None or name in selected_names:
+                notes += clutil_note_split_renames([name], changelists,
+                                                   renames, git_root)
+        if notes:
+            print()
+            print("\n".join(notes))
 
     # Advise user if conflicts are present
     conflicts = clutil_detect_merge_conflicts(status_map)
@@ -3086,7 +3191,7 @@ def cl_commit(args: argparse.Namespace) -> bool:
         return False
 
     to_commit, files_by_name = clutil_collect_changelist_files(
-        names, changelists, git_root,
+        names, changelists, git_root, status_map,
         lambda path: not clutil_is_file_untracked_cached(path, status_map))
 
     label = clutil_changelist_label(names)
@@ -3097,6 +3202,11 @@ def cl_commit(args: argparse.Namespace) -> bool:
     commit_message = clutil_resolve_commit_message(args)
     if not commit_message:
         return False
+
+    # Point out renames of which only one side is being committed
+    for line in clutil_note_split_renames(names, changelists,
+                                          clutil_get_renames(), git_root):
+        print(line)
 
     try:
         # Keep a post-commit hook running 'git cl prune' from acting on

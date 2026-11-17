@@ -3083,6 +3083,35 @@ def cl_prune(args: argparse.Namespace) -> bool:
     """
     Removes stale entries from all active changelists.
 
+    See clutil_prune() for what counts as stale.
+
+    With --exit-code, the exit code tells whether stale entries were
+    found, following 'git diff --exit-code': 0 if there were none, 1 if
+    there were (removed, or only listed with --dry-run), and 2 on error.
+    Errors in git-cl normally exit with 1, so they are mapped to 2 here to
+    keep them apart from 'stale entries found'.
+
+    Args:
+        args: argparse.Namespace with 'dry_run', 'quiet' and 'exit_code'
+              attributes.
+    """
+    if not getattr(args, 'exit_code', False):
+        clutil_prune(args)
+        return True
+
+    try:
+        total = clutil_prune(args)
+    except SystemExit as error:
+        if error.code not in (0, None):
+            sys.exit(2)
+        raise
+    sys.exit(1 if total else 0)
+
+
+def clutil_prune(args: argparse.Namespace) -> int:
+    """
+    Removes stale entries from all active changelists.
+
     An entry is stale when Git reports nothing for it: the file has no
     staged or unstaged changes, or it no longer exists and is unknown to
     Git (shown as [XX] in 'git cl status'). Such entries typically remain
@@ -3098,9 +3127,13 @@ def cl_prune(args: argparse.Namespace) -> bool:
 
     Args:
         args: argparse.Namespace with 'dry_run' and 'quiet' attributes.
+
+    Returns:
+        The number of stale entries found (removed, or only listed in a
+        dry run).
     """
     if os.environ.get(NO_PRUNE_ENV):
-        return True
+        return 0
 
     changelists = clutil_load()
     git_root = clutil_get_git_root()
@@ -3127,7 +3160,7 @@ def cl_prune(args: argparse.Namespace) -> bool:
     if not pruned:
         if not args.quiet:
             print("Nothing to prune.")
-        return True
+        return 0
 
     # Changelists whose every entry is stale will end up empty
     emptied = sorted(name for name, stale in pruned.items()
@@ -3152,7 +3185,7 @@ def cl_prune(args: argparse.Namespace) -> bool:
                       "and be deleted.")
             print(f"Dry run: {total} stale entr"
                   f"{'y' if total == 1 else 'ies'} found, nothing changed.")
-        return True
+        return total
 
     # clutil_save omits empty changelists, so emptied ones disappear here
     clutil_save(changelists)
@@ -3161,7 +3194,7 @@ def cl_prune(args: argparse.Namespace) -> bool:
         for name in emptied:
             print(f"Deleted empty changelist '{name}'")
         print(f"Pruned {total} stale entr{'y' if total == 1 else 'ies'}.")
-    return True
+    return total
 
 
 def cl_commit(args: argparse.Namespace) -> bool:
@@ -3697,6 +3730,10 @@ def main() -> None:
     prune_parser.add_argument('-q', '--quiet', action='store_true',
                               help=("Suppress output (useful in a "
                                     "post-commit hook)"))
+    prune_parser.add_argument('--exit-code', action='store_true',
+                              help=("Exit with 1 if stale entries were "
+                                    "found and 0 if not; errors exit "
+                                    "with 2"))
     prune_parser.set_defaults(func=cl_prune)
 
     # STATUS

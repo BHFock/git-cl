@@ -122,7 +122,7 @@ short propagation delay, install it into a throwaway Conda environment:
 ```bash
 conda create -n gitcl-test python=3.12 -y
 conda activate gitcl-test
-pip install git-changelists
+pip install --no-cache-dir git-changelists==<version>
 git cl --version          # should print the version you just released
 conda deactivate
 conda env remove -n gitcl-test -y

@@ -374,31 +374,61 @@ def clutil_get_git_root() -> Path:
         sys.exit(1)
 
 
-def clutil_get_git_status(include_untracked: bool = False) -> list[str]:
+def clutil_get_git_status(
+        include_untracked: bool = False
+) -> list[tuple[str, str, Optional[str]]]:
     """
-    Returns the output of 'git status --porcelain' as a list of lines.
+    Returns the entries of 'git status --porcelain -z'.
+
+    The -z form gives every path exactly as it is, separated by NUL bytes.
+    Without it, Git puts paths with spaces in double quotes and, by
+    default, writes non-ASCII characters such as umlauts as octal escapes
+    ("\\303\\234bersicht.md"), so they would not match the paths stored
+    in changelists.
 
     Args:
         include_untracked (bool): If True, includes untracked files using
                                   '--untracked-files=all'.
 
     Returns:
-        list[str]: Each line represents a file's status.
+        list of (code, path, orig_path): The two-letter status code, the
+        path, and for a rename or copy the original path (else None).
+        Paths are relative to the git root.
 
     Raises:
         SystemExit: If the git command fails.
     """
-    cmd = ["git", "status", "--porcelain"]
+    cmd = ["git", "status", "--porcelain", "-z"]
     if include_untracked:
         cmd.append("--untracked-files=all")
     else:
         cmd.append("--untracked-files=no")
 
     try:
-        return subprocess.check_output(cmd, text=True).splitlines()
+        output = subprocess.check_output(cmd)
     except subprocess.CalledProcessError as error:
         clutil_print_error(f"Error getting git status: {error}")
         sys.exit(1)
+
+    # Decode as Git writes paths: UTF-8, keeping undecodable bytes intact
+    fields = output.decode("utf-8", errors="surrogateescape").split("\0")
+
+    entries = []
+    index = 0
+    while index < len(fields):
+        field = fields[index]
+        index += 1
+        if len(field) < 4:
+            continue  # trailing empty field or malformed entry
+        code, path = field[:2], field[3:]
+        orig_path = None
+        # A rename or copy is followed by a second field: the original path
+        if "R" in code or "C" in code:
+            if index < len(fields):
+                orig_path = fields[index]
+                index += 1
+        entries.append((code, path, orig_path))
+    return entries
 
 
 def clutil_sanitize_path(file_path: str, git_root: Path) -> Optional[str]:
@@ -450,11 +480,11 @@ def clutil_status_path_to_rel(raw_path: str, git_root: Path) -> str:
     Convert a path from 'git status --porcelain' output to a path relative
     to the git root, in POSIX form.
     """
-    abs_path = (git_root / raw_path.strip()).resolve()
+    abs_path = (git_root / raw_path).resolve()
     try:
         return abs_path.relative_to(git_root).as_posix()
     except ValueError:
-        return raw_path.strip()
+        return raw_path
 
 
 def clutil_get_renames() -> dict[str, str]:
@@ -467,10 +497,9 @@ def clutil_get_renames() -> dict[str, str]:
     """
     git_root = clutil_get_git_root()
     renames = {}
-    for line in clutil_get_git_status(include_untracked=False):
-        raw_path = line[3:].strip()
-        if line[:1] == 'R' and ' -> ' in raw_path:
-            old_path, new_path = raw_path.split(' -> ', 1)
+    for code, new_path, old_path in clutil_get_git_status(
+            include_untracked=False):
+        if code[:1] == 'R' and old_path is not None:
             renames[clutil_status_path_to_rel(new_path, git_root)] = \
                 clutil_status_path_to_rel(old_path, git_root)
     return renames
@@ -556,17 +585,11 @@ def clutil_get_file_status_map(
     status_map = {}
     skipped = {}
 
-    for line in output:
-        if len(line) < 4:
-            continue  # malformed line, ignore
-        code = line[:2]
-        raw_path = line[3:].strip()
-
-        # Handle renamed files: 'R  old -> new'. In the index the old path
-        # is a staged deletion, so record it as 'D ' as well. Otherwise it
-        # has no status and looks like a file missing from the branch.
-        if code.startswith('R') and ' -> ' in raw_path:
-            old_path, raw_path = raw_path.split(' -> ', 1)
+    for code, raw_path, old_path in output:
+        # Handle renamed files. In the index the old path is a staged
+        # deletion, so record it as 'D ' as well. Otherwise it has no
+        # status and looks like a file missing from the branch.
+        if code.startswith('R') and old_path is not None:
             old_rel = clutil_status_path_to_rel(old_path, git_root)
             status_map.setdefault(old_rel, 'D ')
 

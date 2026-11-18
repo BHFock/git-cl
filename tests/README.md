@@ -81,6 +81,7 @@ git cl st
 | `test_remove_delete.py` | `remove` / `rm`, `delete` / `del`, `--all` |
 | `test_prune.py` | `prune`, `--dry-run` / `-n`, `--quiet` / `-q`, `--exit-code`, post-commit hook |
 | `test_deleted_renamed.py` | `add`, `status`, `stage`, `commit` and `prune` with deleted and renamed files |
+| `test_directories.py` | `add` rejects directories with a file list; `status` points out old directory entries |
 | `test_checkout.py` | `checkout` / `co`, `--delete`, `--force` |
 
 ### Advanced Commands

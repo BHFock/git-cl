@@ -154,6 +154,24 @@ git cl add <changelist-name> <file1> <file2> ...
 git cl add docs README.md docs/index.md
 ```
 
+#### Files, not directories
+
+Changelists contain files only. If you pass a directory, `git cl add` lists the changed files under it, with their status, and the command to add them by name:
+
+```
+$ git cl add docs docs
+Error: 'docs' is a directory. Changelists contain files only.
+Changed files under 'docs':
+  [ M] docs/index.md
+  [??] docs/new-page.md
+To add them, run:
+  git cl add docs docs/index.md docs/new-page.md
+```
+
+Copy the command, leaving out any file you do not want. With more than 10 changed files, only their number is shown; use [git cl status](#22-view-status-by-changelist) to see them. Other files in the same command are still added, but the command exits with 1.
+
+Changelists created with versions before 1.6.0 may contain a directory. `git cl status` points such entries out with the same list of files.
+
 ### 2.2 View status by changelist
 
 ```

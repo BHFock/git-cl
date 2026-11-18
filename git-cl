@@ -63,6 +63,7 @@ import argparse
 import datetime
 import json
 import os
+import shlex
 import subprocess
 import sys
 import tempfile
@@ -2554,10 +2555,65 @@ def clutil_handle_branch_creation_failure() -> None:
 # if any of them was rejected. Errors, warnings and their hints are
 # printed on stderr via clutil_print_error(), regular output on stdout.
 
+# Up to this many changed files under a directory are listed in a hint;
+# beyond that only their number is shown, to keep the output short.
+MAX_DIRECTORY_HINT_FILES = 10
+
+
+def clutil_directory_hint(
+        dir_path: str, name: str, status_map: dict[str, str],
+        git_root: Path) -> list[str]:
+    """
+    Build the lines that list the changed files under a directory and the
+    'git cl add' command to add them to a changelist.
+
+    Changelists contain files only. When a directory is given, this hint
+    shows which files it would mean, so the user can add them by name.
+    Every file with a Git status is listed the same way, including
+    untracked files, with its status code in front.
+
+    Args:
+        dir_path: Directory path relative to the git root
+        name: Changelist name for the suggested command
+        status_map: Status map including untracked files
+        git_root: Repository root
+
+    Returns:
+        The hint lines, without the error line itself.
+    """
+    prefix = dir_path.rstrip("/") + "/"
+    if dir_path in ("", "."):
+        prefix = ""
+    changed = sorted(path for path in status_map if path.startswith(prefix))
+    display = _relpath((git_root / dir_path).resolve(), Path.cwd().resolve())
+
+    if not changed:
+        return [f"No changed files under '{display}'."]
+
+    if len(changed) > MAX_DIRECTORY_HINT_FILES:
+        return [f"{len(changed)} changed files under '{display}'. Run "
+                "'git cl status' to see them, then add the files you want "
+                "by name."]
+
+    cwd = Path.cwd().resolve()
+    lines = [f"Changed files under '{display}':"]
+    lines += [clutil_format_file_status(path, status_map, git_root, False)
+              for path in changed]
+    paths = " ".join(shlex.quote(_relpath((git_root / path).resolve(), cwd))
+                     for path in changed)
+    lines.append("To add them, run:")
+    lines.append(f"  git cl add {name} {paths}")
+    return lines
+
+
 def cl_add(args: argparse.Namespace) -> bool:
     """
     Adds one or more files to the specified changelist, creating it if needed.
     Prevents adding files that are in stashed changelists.
+
+    Changelists contain files only. A directory is rejected with a hint
+    that lists the changed files under it; the other paths are still
+    added, and the command exits with 1.
     """
     if not clutil_validate_name(args.name):
         clutil_print_error(
@@ -2569,16 +2625,25 @@ def cl_add(args: argparse.Namespace) -> bool:
     stashes = clutil_load_stashes()
     git_root = clutil_get_git_root()
 
-    status_map = clutil_get_file_status_map(show_all=True)
+    status_map = clutil_get_file_status_map(show_all=True,
+                                            include_untracked=True)
 
     files = []
     skipped = False
     for file in args.files:
         sanitized = clutil_sanitize_path(file, git_root)
         if sanitized:
+            abs_path = (git_root / sanitized).resolve()
+            if abs_path.is_dir():
+                clutil_print_error(f"Error: '{file}' is a directory. "
+                                   "Changelists contain files only.")
+                for line in clutil_directory_hint(sanitized, args.name,
+                                                  status_map, git_root):
+                    clutil_print_error(line)
+                skipped = True
+                continue
             # Warn if the file is neither on disk nor known to Git. A deleted
             # tracked file has a Git status and is a valid change to add.
-            abs_path = (git_root / sanitized).resolve()
             if not abs_path.exists() and sanitized not in status_map:
                 clutil_print_error(f"Warning: File '{file}' does not exist.")
             files.append(sanitized)
@@ -2612,7 +2677,8 @@ def cl_add(args: argparse.Namespace) -> bool:
             changelists[args.name].append(file)
 
     clutil_save(changelists)
-    print(f"Added to '{args.name}': {files}")
+    if files:
+        print(f"Added to '{args.name}': {files}")
     return not skipped
 
 
@@ -2770,6 +2836,32 @@ def cl_status(args: argparse.Namespace) -> bool:
             print("No Changelist:")
             for file in sorted(no_cl_files):
                 print(clutil_format_file_status(file, status_map, git_root, use_color))
+
+    # Advise user about directory entries, which older versions accepted.
+    # Changelists contain files only; the entry is left in place.
+    dir_notes = []
+    full_status_map = None
+    cwd = Path.cwd().resolve()
+    for name, files in changelists.items():
+        if selected_names is not None and name not in selected_names:
+            continue
+        for entry in files:
+            if not (git_root / entry).is_dir():
+                continue
+            if full_status_map is None:
+                full_status_map = clutil_get_file_status_map(
+                    show_all=True, include_untracked=True)
+            display = _relpath((git_root / entry).resolve(), cwd)
+            dir_notes.append(f"Note: '{display}' in changelist '{name}' is "
+                             "a directory. Changelists contain files only.")
+            dir_notes.append("      Remove it with 'git cl rm "
+                             f"{shlex.quote(display)}', then add the files "
+                             "you want by name.")
+            dir_notes += ["      " + line for line in clutil_directory_hint(
+                entry, name, full_status_map, git_root)]
+    if dir_notes:
+        print()
+        print("\n".join(dir_notes))
 
     # Advise user if a rename is split across changelists
     renames = clutil_get_renames()

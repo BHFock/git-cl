@@ -31,6 +31,7 @@ Export as shell walkthrough:
     ./test_prune.py --export > walkthrough_prune.sh
 """
 
+import json
 import sys
 from pathlib import Path
 
@@ -263,10 +264,11 @@ def run_tests(repo: TestRepo):
                      "entry pruned when run from a subdirectory")
 
     # =================================================================
-    # Test: Directory entries are kept while they contain changes
+    # Test: Directory entries from older versions are kept while they
+    # contain changes
     # =================================================================
 
-    repo.section("Directory entries")
+    repo.section("Directory entries from older versions")
 
     repo.mkdir("lib")
     repo.write_file("lib/a.py", "print('a')")
@@ -274,7 +276,12 @@ def run_tests(repo: TestRepo):
     repo.run("git add lib", check=True)
     repo.run(["git", "commit", "--quiet", "-m", "Add lib"], check=True)
     repo.write_file("lib/a.py", "print('a v2')")
-    repo.run("git cl add libs lib")
+
+    # git cl add rejects directories, but changelists created with older
+    # versions may still contain one, so write the entry directly
+    cl = repo.load_cl_json()
+    cl["libs"] = ["lib"]
+    repo.write_file(".git/cl.json", json.dumps(cl))
 
     output = repo.run("git cl prune")
     repo.assert_in("Nothing to prune", output,

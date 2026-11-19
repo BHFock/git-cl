@@ -17,6 +17,9 @@ What you'll learn:
     - Other changelists are not affected when stashing a single one
     - A name ending in '_stashed' is an ordinary changelist name; unstash
       always uses the name exactly as given
+    - Unstashing also restores which changes were staged: a file with
+      staged and unstaged changes comes back as [MM], an untracked file
+      as [??]
 
 Run:
     ./test_stash_unstash.py
@@ -289,6 +292,41 @@ def run_tests(repo: TestRepo):
     stashes = repo.load_stash_json()
     repo.assert_true("plain" in stashes,
                       "plain is still stashed")
+
+    # =================================================================
+    # Test: Unstash restores which changes were staged
+    # =================================================================
+
+    repo.section("Unstash restores which changes were staged")
+
+    repo.write_file("eta.txt", "eta")
+    repo.run("git add eta.txt")
+    repo.run(["git", "commit", "--quiet", "-m", "Add eta"])
+
+    repo.write_file("eta.txt", "eta staged")
+    repo.run("git add eta.txt")
+    repo.write_file("eta.txt", "eta staged and unstaged")
+    repo.write_file("iota.txt", "iota staged")
+    repo.run("git add iota.txt")
+    repo.write_file("iota.txt", "iota staged and unstaged")
+    repo.write_file("kappa.txt", "kappa untracked")
+    repo.write_file("lambda.txt", "lambda staged in another changelist")
+    repo.run("git add lambda.txt")
+    repo.run("git cl add other-staged lambda.txt")
+
+    repo.run("git cl add staging eta.txt iota.txt kappa.txt")
+    status_before = repo.run("git status --porcelain")
+    staged_before = repo.run("git diff --cached")
+
+    repo.run("git cl stash staging")
+    repo.assert_exit_code(0, "stash staging succeeds")
+    repo.run("git cl unstash staging")
+    repo.assert_exit_code(0, "unstash staging succeeds")
+
+    repo.assert_equal(status_before, repo.run("git status --porcelain"),
+                      "[MM], [AM] and [??] files come back as before")
+    repo.assert_equal(staged_before, repo.run("git diff --cached"),
+                      "staged content is the same as before")
 
 
 # =================================================================

@@ -102,6 +102,7 @@ git cl st
 | `test_validation.py` | Invalid names, reserved words, path traversal, missing arguments |
 | `test_edge_cases.py` | Empty states, reassignment, duplicate files, deleted files |
 | `test_exit_codes.py` | Exit codes `0`, `1` and `2`, errors and warnings on stderr, partial failure |
+| `test_save_failures.py` | Failed writes of `cl.json` and `cl-stashes.json`: exit code `1`, stashed changes restored |
 
 
 ## How the Tests Work

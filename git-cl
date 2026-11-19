@@ -431,6 +431,44 @@ def clutil_get_git_status(
     return entries
 
 
+def clutil_resolve_file(path: Path) -> Path:
+    """
+    Make a file path absolute without following a symlink in its last
+    component.
+
+    Git treats a symbolic link as a file of its own and never follows it.
+    Path.resolve() does follow it, which would turn 'link.txt' into the
+    file it points to. So only the directories before the last component
+    are resolved; '..' and '.' are normalised first.
+
+    Args:
+        path: An absolute path, or one relative to the current directory
+
+    Returns:
+        The absolute path, with the last component kept as it is.
+    """
+    path = Path(os.path.abspath(path))
+    if path.name in ("", ".", ".."):
+        return path.resolve()
+    return path.parent.resolve() / path.name
+
+
+def clutil_path_exists(path: Path) -> bool:
+    """
+    Whether a path exists, counting a symlink as existing even if it
+    points to a missing file.
+    """
+    return os.path.lexists(path)
+
+
+def clutil_is_real_dir(path: Path) -> bool:
+    """
+    Whether a path is a directory and not a symlink to one. Git tracks a
+    symlink to a directory as a single file.
+    """
+    return path.is_dir() and not path.is_symlink()
+
+
 def clutil_sanitize_path(file_path: str, git_root: Path) -> Optional[str]:
     """
     Sanitizes and validates a file path for safe use with Git commands.
@@ -450,8 +488,9 @@ def clutil_sanitize_path(file_path: str, git_root: Path) -> Optional[str]:
         if not path.is_absolute():
             path = Path.cwd().resolve() / path
 
-        # Resolve any .. or . components and get absolute path
-        path = path.resolve()
+        # Resolve any .. or . components and get absolute path. A symlink
+        # in the last component is kept: it is a file of its own for Git.
+        path = clutil_resolve_file(path)
 
         # Ensure the path is within the Git repository
         try:
@@ -480,7 +519,7 @@ def clutil_status_path_to_rel(raw_path: str, git_root: Path) -> str:
     Convert a path from 'git status --porcelain' output to a path relative
     to the git root, in POSIX form.
     """
-    abs_path = (git_root / raw_path).resolve()
+    abs_path = clutil_resolve_file(git_root / raw_path)
     try:
         return abs_path.relative_to(git_root).as_posix()
     except ValueError:
@@ -530,7 +569,7 @@ def clutil_note_split_renames(
     target = names[0] if len(names) == 1 else None
 
     def show(path: str) -> str:
-        return _relpath((git_root / path).resolve(), cwd)
+        return _relpath(clutil_resolve_file(git_root / path), cwd)
 
     lines = []
     for new_path, old_path in sorted(renames.items()):
@@ -615,7 +654,7 @@ def clutil_format_file_status(
     Format a file's Git status line with optional color-coded output.
     Paths are shown relative to the current working directory.
     """
-    abs_file = (git_root / file).resolve()
+    abs_file = clutil_resolve_file(git_root / file)
     rel_to_cwd = _relpath(abs_file, Path.cwd().resolve())
 
     rel_to_git_root = abs_file.relative_to(git_root).as_posix()
@@ -623,7 +662,7 @@ def clutil_format_file_status(
 
     # Add detection of files which are deleted (committed) but still
     # included in a changelists
-    if not abs_file.exists() and status == "  ":
+    if not clutil_path_exists(abs_file) and status == "  ":
         status = "XX"  # Custom code for missing file
         clutil_print_error(f"Warning: The file '{rel_to_cwd}' does not exist "
                            f"on the current branch.\n"
@@ -864,9 +903,9 @@ def clutil_collect_changelist_files(
     for name in names:
         files_by_name[name] = []
         for stored_path in changelists[name]:
-            abs_path = (git_root / stored_path).resolve()
+            abs_path = clutil_resolve_file(git_root / stored_path)
 
-            if not abs_path.exists() and stored_path not in status_map:
+            if not clutil_path_exists(abs_path) and stored_path not in status_map:
                 clutil_print_error(f"Warning: '{stored_path}' does not exist.")
                 continue
 
@@ -1068,9 +1107,9 @@ def clutil_check_unstash_conflicts_optimized(
     file_status_info = {}
 
     for file_path in files:
-        abs_path = (git_root / file_path).resolve()
+        abs_path = clutil_resolve_file(git_root / file_path)
 
-        if not abs_path.exists():
+        if not clutil_path_exists(abs_path):
             # File doesn't exist - this is actually GOOD for unstashing
             # The stash will restore it without conflict
             file_status_info[file_path] = "missing (will be restored)"
@@ -1188,7 +1227,7 @@ def clutil_safe_stash_context(
         """Convert file paths to be relative to git root."""
         result = []
         for file_path in file_paths:
-            abs_path = (original_cwd / file_path).resolve()
+            abs_path = clutil_resolve_file(original_cwd / file_path)
             try:
                 git_root_relative = abs_path.relative_to(git_root)
                 result.append(git_root_relative.as_posix())
@@ -1571,8 +1610,8 @@ def clutil_prepare_files_for_git_stash(
     """
     files_for_git = []
     for stored_path in stashable_files:
-        abs_path = (git_root / stored_path).resolve()
-        if abs_path.exists():
+        abs_path = clutil_resolve_file(git_root / stored_path)
+        if clutil_path_exists(abs_path):
             rel_to_cwd = _relpath(abs_path, Path.cwd().resolve())
             files_for_git.append(rel_to_cwd)
         else:
@@ -1587,7 +1626,7 @@ def clutil_prepare_files_for_git_stash(
         if not quiet:
             print("Adding untracked files to git temporarily for stashing...")
         for stored_path in file_categories['untracked']:
-            abs_path = (git_root / stored_path).resolve()
+            abs_path = clutil_resolve_file(git_root / stored_path)
             rel_to_cwd = _relpath(abs_path, Path.cwd().resolve())
             untracked_files_for_git.append(rel_to_cwd)
 
@@ -2224,8 +2263,8 @@ def clutil_prepare_stash_files(
     existing_files = []
 
     for stored_path in files:
-        abs_path = (git_root / stored_path).resolve()
-        if not abs_path.exists():
+        abs_path = clutil_resolve_file(git_root / stored_path)
+        if not clutil_path_exists(abs_path):
             missing_files.append(stored_path)
         else:
             existing_files.append((stored_path, abs_path))
@@ -2296,7 +2335,7 @@ def clutil_show_active_changelists(
     for cl_name, files in changelists.items():
         for f in files:
             try:
-                abs_path = (git_root / f).resolve()
+                abs_path = clutil_resolve_file(git_root / f)
                 assigned_files.add(abs_path.relative_to(git_root).as_posix())
             except (ValueError, OSError) as error:
                 clutil_print_error(f"Error resolving path: {error}")
@@ -2434,7 +2473,7 @@ def clutil_check_unassigned_changes(changelists: dict,
     for files in changelists.values():
         for file_path in files:
             try:
-                abs_path = (git_root / file_path).resolve()
+                abs_path = clutil_resolve_file(git_root / file_path)
                 rel_path = abs_path.relative_to(git_root).as_posix()
                 assigned_files.add(rel_path)
             except (ValueError, OSError):
@@ -2608,7 +2647,8 @@ def clutil_directory_hint(
     if dir_path in ("", "."):
         prefix = ""
     changed = sorted(path for path in status_map if path.startswith(prefix))
-    display = _relpath((git_root / dir_path).resolve(), Path.cwd().resolve())
+    display = _relpath(clutil_resolve_file(git_root / dir_path),
+                       Path.cwd().resolve())
 
     if not changed:
         return [f"No changed files under '{display}'."]
@@ -2622,7 +2662,7 @@ def clutil_directory_hint(
     lines = [f"Changed files under '{display}':"]
     lines += [clutil_format_file_status(path, status_map, git_root, False)
               for path in changed]
-    paths = " ".join(shlex.quote(_relpath((git_root / path).resolve(), cwd))
+    paths = " ".join(shlex.quote(_relpath(clutil_resolve_file(git_root / path), cwd))
                      for path in changed)
     lines.append("To add them, run:")
     lines.append(f"  git cl add {name} {paths}")
@@ -2656,8 +2696,8 @@ def cl_add(args: argparse.Namespace) -> bool:
     for file in args.files:
         sanitized = clutil_sanitize_path(file, git_root)
         if sanitized:
-            abs_path = (git_root / sanitized).resolve()
-            if abs_path.is_dir():
+            abs_path = clutil_resolve_file(git_root / sanitized)
+            if clutil_is_real_dir(abs_path):
                 clutil_print_error(f"Error: '{file}' is a directory. "
                                    "Changelists contain files only.")
                 for line in clutil_directory_hint(sanitized, args.name,
@@ -2665,9 +2705,32 @@ def cl_add(args: argparse.Namespace) -> bool:
                     clutil_print_error(line)
                 skipped = True
                 continue
+            # A trailing slash on a symlink to a directory means its
+            # contents, not the symlink. Git rejects such a path as
+            # 'beyond a symbolic link', so point to both options.
+            if (file.endswith(("/", os.sep)) and abs_path.is_symlink()
+                    and abs_path.is_dir()):
+                link_display = file.rstrip("/" + os.sep)
+                clutil_print_error(f"Error: '{file}' is a symlink to a "
+                                   "directory. Changelists contain files "
+                                   "only.")
+                clutil_print_error("To add the symlink itself, use "
+                                   f"'{link_display}'.")
+                try:
+                    target = abs_path.resolve().relative_to(git_root)
+                except ValueError:
+                    clutil_print_error("Its target is outside the "
+                                       "repository.")
+                else:
+                    for line in clutil_directory_hint(
+                            target.as_posix(), args.name, status_map,
+                            git_root):
+                        clutil_print_error(line)
+                skipped = True
+                continue
             # Warn if the file is neither on disk nor known to Git. A deleted
             # tracked file has a Git status and is a valid change to add.
-            if not abs_path.exists() and sanitized not in status_map:
+            if not clutil_path_exists(abs_path) and sanitized not in status_map:
                 clutil_print_error(f"Warning: File '{file}' does not exist.")
             files.append(sanitized)
         else:
@@ -2744,7 +2807,7 @@ def cl_stage(args: argparse.Namespace) -> bool:
     to_add = [
         file for file in to_stage
         if status_map.get(
-            (cwd / file).resolve().relative_to(git_root).as_posix()) != "D "
+            clutil_resolve_file(cwd / file).relative_to(git_root).as_posix()) != "D "
     ]
 
     try:
@@ -2869,12 +2932,12 @@ def cl_status(args: argparse.Namespace) -> bool:
         if selected_names is not None and name not in selected_names:
             continue
         for entry in files:
-            if not (git_root / entry).is_dir():
+            if not clutil_is_real_dir(git_root / entry):
                 continue
             if full_status_map is None:
                 full_status_map = clutil_get_file_status_map(
                     show_all=True, include_untracked=True)
-            display = _relpath((git_root / entry).resolve(), cwd)
+            display = _relpath(clutil_resolve_file(git_root / entry), cwd)
             dir_notes.append(f"Note: '{display}' in changelist '{name}' is "
                              "a directory. Changelists contain files only.")
             dir_notes.append("      Remove it with 'git cl rm "
@@ -2929,8 +2992,8 @@ def cl_diff(args: argparse.Namespace) -> bool:
             missing_changelist = True
             continue
         for path in changelists[name]:
-            abs_path = (git_root / path).resolve()
-            if abs_path.exists():
+            abs_path = clutil_resolve_file(git_root / path)
+            if clutil_path_exists(abs_path):
                 rel_to_cwd = _relpath(abs_path, Path.cwd().resolve())
                 diff_files.add(rel_to_cwd)
             else:
@@ -3022,9 +3085,9 @@ def cl_checkout(args: argparse.Namespace) -> bool:
     untracked_files = []
 
     for stored_path in all_files:
-        abs_path = (git_root / stored_path).resolve()
+        abs_path = clutil_resolve_file(git_root / stored_path)
 
-        if not abs_path.exists():
+        if not clutil_path_exists(abs_path):
             missing_files.append(stored_path)
             continue
 
@@ -3091,7 +3154,7 @@ def cl_checkout(args: argparse.Namespace) -> bool:
                     1 for f in changelists[name]
                     if f in all_files
                     and f not in untracked_set
-                    and (git_root / f).resolve().exists())
+                    and clutil_path_exists(clutil_resolve_file(git_root / f)))
                 if reverted_count > 0:
                     print(f"  {name}: {reverted_count} files")
 
@@ -3261,7 +3324,7 @@ def clutil_prune(args: argparse.Namespace) -> int:
     def is_stale(stored_path: str) -> bool:
         if stored_path in status_map:
             return False
-        if (git_root / stored_path).is_dir():
+        if clutil_is_real_dir(git_root / stored_path):
             prefix = stored_path.rstrip("/") + "/"
             return not any(path.startswith(prefix) for path in status_map)
         return True

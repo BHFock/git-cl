@@ -175,6 +175,7 @@ All user-provided file paths undergo strict validation through `clutil_sanitize_
 - **Repository boundary enforcement** - Ensures paths remain within the Git repository using `Path.relative_to(git_root)`
 - **Dangerous character filtering** - Blocks `;`, `|`, `&`, backticks, `$`, newlines, and null bytes
 - **Path normalisation** - Converts to absolute paths, then repo-relative for consistent storage
+- **Symbolic links are not followed** - Like Git, git-cl treats a symlink as a file of its own. `clutil_resolve_file()` resolves only the directories before the last path component, so `link.txt` stays `link.txt` instead of becoming its target. A symlink to a directory, to a file outside the repository or to a missing file is therefore a valid file path. Symlinked directories earlier in the path are resolved, because Git does not accept paths beyond a symlink
 
 #### Input Validation
 

@@ -437,7 +437,8 @@ git cl stash <changelist-name>
 git cl unstash <changelist-name>
 ```
 
-- Restores the previously stashed changes.
+- Restores the previously stashed changes, including which of them were staged: a file with staged and unstaged changes comes back as `[MM]`, an untracked file as `[??]`.
+- If a file has changed on the current branch since it was stashed, its staged changes are restored as unstaged changes, and git-cl lists the file.
 - Warns if files conflict with current working directory.
 
 #### Stash all changelists

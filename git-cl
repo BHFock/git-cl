@@ -112,6 +112,18 @@ def _relpath(path, start):
 # when 'git cl commit' saves the changelists it loaded before committing.
 NO_PRUNE_ENV = "GIT_CL_NO_PRUNE"
 
+
+class ClutilSaveError(OSError):
+    """
+    Raised when changelist or stash metadata cannot be written.
+
+    The save functions print the reason before raising, so callers only
+    need to stop and report failure. main() turns an unhandled one into
+    exit code 1, which keeps commands from reporting success when their
+    changes were not saved.
+    """
+
+
 # Note: Some utility functions call CLI command functions like cl_stash and
 #       cl_unstash. These are defined later in the module but are called by
 #       utility functions.
@@ -285,6 +297,10 @@ def clutil_save(data: dict[str, list[str]]) -> None:
 
     Args:
         data (dict): Mapping of changelist names to lists of files.
+
+    Raises:
+        ClutilSaveError: If the file cannot be written. The error has
+            already been printed.
     """
     changelist_file = clutil_get_file()
     lock_file = changelist_file.with_suffix('.lock')
@@ -303,6 +319,7 @@ def clutil_save(data: dict[str, list[str]]) -> None:
             tmp_path = None  # successfully renamed, nothing to clean up
         except OSError as error:
             clutil_print_error(f"Error saving changelists: {error}")
+            raise ClutilSaveError(str(error)) from error
         finally:
             if tmp_path is not None:
                 try:
@@ -1002,6 +1019,10 @@ def clutil_save_stashes(data: dict[str, dict]) -> None:
 
     Args:
         data (dict): Mapping of stashed changelist names to metadata.
+
+    Raises:
+        ClutilSaveError: If the file cannot be written. The error has
+            already been printed.
     """
     stash_file = clutil_get_stash_file()
     lock_file = stash_file.with_suffix('.lock')
@@ -1019,6 +1040,7 @@ def clutil_save_stashes(data: dict[str, dict]) -> None:
             tmp_path = None
         except OSError as error:
             clutil_print_error(f"Error saving stash metadata: {error}")
+            raise ClutilSaveError(str(error)) from error
         finally:
             if tmp_path is not None:
                 try:
@@ -1313,31 +1335,6 @@ def clutil_find_stash_by_message_substring(
     except subprocess.CalledProcessError:
         pass
     return None
-
-
-def clutil_rollback_stash(stash_ref: str, changelist_name: str) -> bool:
-    """
-    Attempt to rollback a stash creation by dropping the stash.
-
-    Args:
-        stash_ref: The stash reference to drop (e.g. "stash@{0}")
-        changelist_name: Name of changelist for error reporting
-
-    Returns:
-        True if rollback succeeded, False otherwise
-    """
-    try:
-        # Attempt to drop the stash
-        subprocess.run(["git", "stash", "drop", stash_ref],
-                       check=True, capture_output=True, text=True)
-        clutil_print_error(f"Rolled back stash {stash_ref} due to metadata save "
-                           "failure.")
-        return True
-    except subprocess.CalledProcessError as error:
-        clutil_print_error(f"Warning: Could not rollback stash {stash_ref}: {error}")
-        clutil_print_error(f"You may need to manually clean up stash for changelist "
-                           f"'{changelist_name}'")
-        return False
 
 
 def clutil_stash_all_changelists(changelists: dict[str, list[str]],
@@ -1760,6 +1757,10 @@ def clutil_save_stash_metadata_atomic(
     """
     Atomically save stash metadata and update changelists.
 
+    The stash metadata is written first, then the changelist is removed
+    from 'cl.json'. If the second write fails, the stash entry is removed
+    again, so that on failure both files are left as they were.
+
     Args:
         name: Changelist name
         stash_message: Pre-generated unique stash message (shared with the
@@ -1771,7 +1772,7 @@ def clutil_save_stash_metadata_atomic(
         stashes: Stashed changelists (will be modified)
 
     Raises:
-        Exception: If save operations fail (triggers rollback)
+        ClutilSaveError: If either file cannot be written.
     """
     current_branch = clutil_get_current_branch()
 
@@ -1780,77 +1781,124 @@ def clutil_save_stash_metadata_atomic(
         stash_message, stash_ref, files, file_categories, current_branch
     )
 
-    # Save stash metadata
+    # Save stash metadata. If this fails, nothing has been written yet.
     stashes[name] = stash_metadata
-    clutil_save_stashes(stashes)
+    try:
+        clutil_save_stashes(stashes)
+    except ClutilSaveError:
+        del stashes[name]
+        raise
 
     # Remove changelist from active changelists
-    del changelists[name]
-    clutil_save(changelists)
+    files_in_changelist = changelists.pop(name)
+    try:
+        clutil_save(changelists)
+    except ClutilSaveError:
+        changelists[name] = files_in_changelist
+        del stashes[name]
+        try:
+            clutil_save_stashes(stashes)
+        except ClutilSaveError:
+            clutil_print_error(f"Warning: Could not remove the stash entry for "
+                               f"'{name}' from the stash metadata.")
+        raise
+
+
+def clutil_restore_failed_stash(
+    stash_ref: str,
+    stashed_files: list[str],
+    untracked_files: list[str],
+    git_root: Path
+) -> bool:
+    """
+    Restore the changes of a stash whose metadata could not be saved.
+
+    'git stash pop --index' cannot be used here: a stash limited to some
+    paths still records the whole index, so popping it with --index fails
+    as soon as files outside the changelist are staged as new files.
+    Instead, the stash is applied without --index, and the index entries
+    of the stashed files are then set from the stash's index commit
+    (<stash>^2). Files that were untracked before stashing had to be
+    added to the index temporarily; they are unstaged again. The stash
+    is dropped only once its changes are back.
+
+    Args:
+        stash_ref: Git stash reference created moments before
+        stashed_files: Files passed to git stash, relative to the Git root
+        untracked_files: Temporarily added files, relative to the Git root
+        git_root: Path to the Git repository root
+
+    Returns:
+        True if the changes were restored, False if they remain in the stash.
+    """
+    git = ["git", "-C", str(git_root)]
+    try:
+        subprocess.run(git + ["stash", "apply", "--quiet", stash_ref],
+                       check=True, capture_output=True, text=True)
+    except subprocess.CalledProcessError:
+        return False
+
+    try:
+        subprocess.run(git + ["reset", "--quiet", f"{stash_ref}^2", "--"]
+                       + stashed_files,
+                       check=True, capture_output=True, text=True)
+        if untracked_files:
+            subprocess.run(git + ["reset", "--quiet", "--"] + untracked_files,
+                           check=True, capture_output=True, text=True)
+    except subprocess.CalledProcessError:
+        clutil_print_error("Warning: Your changes are back, but which of them "
+                           "are staged may differ from before.")
+
+    try:
+        subprocess.run(git + ["stash", "drop", "--quiet", stash_ref],
+                       check=True, capture_output=True, text=True)
+    except subprocess.CalledProcessError:
+        clutil_print_error(f"Warning: Could not drop {stash_ref}; its changes "
+                           "are already restored.")
+    return True
 
 
 def clutil_handle_stash_failure(
-    error: Exception,
     name: str,
     stash_ref: str,
-    original_changelists: dict[str, list[str]],
-    stashes: dict[str, dict]
+    stash_message: str,
+    stashed_files: list[str],
+    untracked_files: list[str],
+    git_root: Path
 ) -> None:
     """
-    Handle failure during stash metadata save with rollback.
+    Handle a failed stash metadata save by restoring the stashed changes.
+
+    By the time the metadata is saved, git stash has already removed the
+    changes from the working directory, so the stash must be applied, not
+    just dropped. The metadata itself needs no rollback here, because
+    clutil_save_stash_metadata_atomic leaves both files unchanged when it
+    fails.
 
     Args:
-        error: The exception that occurred
         name: Changelist name
         stash_ref: Git stash reference
-        original_changelists: Original changelists for rollback
-        stashes: Stashed changelists dictionary
+        stash_message: Message of the stash, to help the user find it
+        stashed_files: Files passed to git stash, relative to the Git root
+        untracked_files: Temporarily added files, relative to the Git root
+        git_root: Path to the Git repository root
     """
-    clutil_print_error(f"Error during atomic operation: {error}")
-    clutil_print_error("Attempting to rollback changes...")
+    clutil_print_error(f"Error: Could not save the stash of changelist '{name}'.")
 
-    rollback_success = True
-
-    # Try to restore stashes metadata (remove the failed entry)
-    try:
-        if name in stashes:
-            del stashes[name]
-            clutil_save_stashes(stashes)
-            clutil_print_error("Rolled back stash metadata.")
-        else:
-            clutil_print_error("Stash metadata was not saved, no rollback needed.")
-
-    except (OSError, subprocess.CalledProcessError,
-            json.JSONDecodeError) as stash_rollback_error:
-        clutil_print_error("Warning: Could not rollback stash metadata: "
-                           f"{stash_rollback_error}")
-        rollback_success = False
-
-    # Try to restore original changelists
-    try:
-        clutil_save(original_changelists)
-        clutil_print_error("Rolled back changelist modifications.")
-
-    except (OSError, subprocess.CalledProcessError,
-            json.JSONDecodeError) as changelist_rollback_error:
-        clutil_print_error(f"Warning: Could not rollback changelist changes: "
-                           f"{changelist_rollback_error}")
-        rollback_success = False
-
-    # Try to drop the orphaned stash
-    if not clutil_rollback_stash(stash_ref, name):
-        rollback_success = False
-
-    if rollback_success:
-        clutil_print_error(f"Rollback completed successfully. "
-                           f"Changelist '{name}' remains active.")
+    if clutil_restore_failed_stash(stash_ref, stashed_files, untracked_files,
+                                   git_root):
+        clutil_print_error(f"Your changes have been restored. Changelist '{name}' "
+                           "remains active.")
     else:
-        clutil_print_error("Partial rollback failure. Manual cleanup may be required:")
-        clutil_print_error("  - Check 'git stash list' for orphaned stash: "
-                           f"{stash_ref}")
-        clutil_print_error(f"  - Verify changelist '{name}' state with 'git cl status'")
-        clutil_print_error(f"  - Consider 'git stash drop {stash_ref}' if stash is "
-                           "orphaned")
+        clutil_print_error("Your changes could not be restored automatically. "
+                           "They are kept in")
+        clutil_print_error(f"  {stash_ref} ({stash_message})")
+        clutil_print_error(f"Restore them with: git stash pop {stash_ref}")
+        if untracked_files:
+            clutil_print_error("Previously untracked files will then be staged. "
+                               "Unstage them with:")
+            clutil_print_error("  git restore --staged -- "
+                               + " ".join(untracked_files))
 
 
 def clutil_unstash_all_changelists(
@@ -2214,9 +2262,13 @@ def clutil_update_unstash_metadata(
     changelists: dict[str, list[str]],
     stashes: dict[str, dict],
     quiet: bool = False
-) -> None:
+) -> bool:
     """
     Update metadata after successful unstash.
+
+    The stash entry is removed first. If restoring the changelist fails
+    afterwards, the files are back in the working directory and only the
+    changelist has to be recreated, which the warning explains.
 
     Args:
         base_name: Changelist name
@@ -2225,17 +2277,16 @@ def clutil_update_unstash_metadata(
         changelists: Active changelists dictionary (will be modified)
         stashes: Stashed changelists dictionary (will be modified)
         quiet: If True, suppress verbose output
+
+    Returns:
+        True if the metadata was updated, False otherwise.
     """
     try:
-        changelists[base_name] = files.copy()
-        clutil_save(changelists)
-
         del stashes[stash_key]
         clutil_save_stashes(stashes)
 
-        if not quiet:
-            current_branch = clutil_get_current_branch()
-            clutil_process_unstash_result(base_name, files, current_branch)
+        changelists[base_name] = files.copy()
+        clutil_save(changelists)
 
     except (OSError, subprocess.CalledProcessError,
             json.JSONDecodeError) as metadata_error:
@@ -2243,6 +2294,12 @@ def clutil_update_unstash_metadata(
                            f"{metadata_error}")
         clutil_print_error(f"Manually recreate the changelist: git cl add "
                            f"{base_name} <files>")
+        return False
+
+    if not quiet:
+        current_branch = clutil_get_current_branch()
+        clutil_process_unstash_result(base_name, files, current_branch)
+    return True
 
 
 def clutil_prepare_stash_files(
@@ -3540,24 +3597,22 @@ def cl_stash(args: argparse.Namespace, quiet: bool = False) -> bool:
         return False
 
     # Save metadata atomically
-    original_changelists = changelists.copy()
-
     try:
         clutil_save_stash_metadata_atomic(
             name, stash_message, stash_ref, files,
             file_categories, changelists, stashes
         )
-        # Success! Print appropriate message based on context
-        if not quiet:
-            clutil_print_stash_success(name, stashable_files,
-                                       file_categories, current_branch)
-        return True
-
-    except (OSError, subprocess.CalledProcessError,
-            json.JSONDecodeError) as error:
-        clutil_handle_stash_failure(error, name, stash_ref,
-                                    original_changelists, stashes)
+    except ClutilSaveError:
+        clutil_handle_stash_failure(name, stash_ref, stash_message,
+                                    safe_files, safe_untracked_files,
+                                    git_root)
         return False
+
+    # Success! Print appropriate message based on context
+    if not quiet:
+        clutil_print_stash_success(name, stashable_files,
+                                   file_categories, current_branch)
+    return True
 
 
 def cl_unstash(args: argparse.Namespace, quiet: bool = False) -> bool:
@@ -3624,9 +3679,8 @@ def cl_unstash(args: argparse.Namespace, quiet: bool = False) -> bool:
         return False
 
     # Success - update metadata (suppress verbose output in quiet mode)
-    clutil_update_unstash_metadata(base_name, stash_key,
-                                   files, changelists, stashes, quiet=quiet)
-    return True
+    return clutil_update_unstash_metadata(base_name, stash_key, files,
+                                          changelists, stashes, quiet=quiet)
 
 
 def cl_branch(args: argparse.Namespace) -> bool:
@@ -4146,7 +4200,12 @@ def main() -> None:
     # Every command returns True on success and False on failure, so that
     # scripts can rely on the exit code (0 or 1). argparse itself exits
     # with 2 on invalid usage before a command runs.
-    sys.exit(0 if args.func(args) else 1)
+    try:
+        succeeded = args.func(args)
+    except ClutilSaveError:
+        # The reason has already been printed by the save function.
+        sys.exit(1)
+    sys.exit(0 if succeeded else 1)
 
 
 if __name__ == '__main__':

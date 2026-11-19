@@ -2705,6 +2705,29 @@ def cl_add(args: argparse.Namespace) -> bool:
                     clutil_print_error(line)
                 skipped = True
                 continue
+            # A trailing slash on a symlink to a directory means its
+            # contents, not the symlink. Git rejects such a path as
+            # 'beyond a symbolic link', so point to both options.
+            if (file.endswith(("/", os.sep)) and abs_path.is_symlink()
+                    and abs_path.is_dir()):
+                link_display = file.rstrip("/" + os.sep)
+                clutil_print_error(f"Error: '{file}' is a symlink to a "
+                                   "directory. Changelists contain files "
+                                   "only.")
+                clutil_print_error("To add the symlink itself, use "
+                                   f"'{link_display}'.")
+                try:
+                    target = abs_path.resolve().relative_to(git_root)
+                except ValueError:
+                    clutil_print_error("Its target is outside the "
+                                       "repository.")
+                else:
+                    for line in clutil_directory_hint(
+                            target.as_posix(), args.name, status_map,
+                            git_root):
+                        clutil_print_error(line)
+                skipped = True
+                continue
             # Warn if the file is neither on disk nor known to Git. A deleted
             # tracked file has a Git status and is a valid change to add.
             if not clutil_path_exists(abs_path) and sanitized not in status_map:

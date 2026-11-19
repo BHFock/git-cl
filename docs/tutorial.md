@@ -170,6 +170,8 @@ To add them, run:
 
 Copy the command, leaving out any file you do not want. With more than 10 changed files, only their number is shown; use [git cl status](#22-view-status-by-changelist) to see them. Other files in the same command are still added, but the command exits with 1.
 
+A symbolic link to a directory is a single file for Git, so `git cl add docs linkdir` adds the link itself, for example after you change where it points. To add the contents instead, give the files under the real directory. With a trailing slash (`linkdir/`), `git cl add` lists them for you, as Git also rejects such a path.
+
 Changelists created with versions before 1.6.0 may contain a directory. `git cl status` points such entries out with the same list of files.
 
 ### 2.2 View status by changelist

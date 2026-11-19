@@ -168,6 +168,36 @@ def run_tests(repo: TestRepo):
     (repo.repo_dir / "dangling").unlink()
 
     # =================================================================
+    # Test: A trailing slash on a symlink to a directory is rejected
+    # =================================================================
+
+    repo.section("A trailing slash on a symlink to a directory is rejected")
+
+    repo.write_file("dir/inner.txt", "inner for slash test")
+
+    # Like Git ('beyond a symbolic link'): 'linkdir/' means the contents
+    output = repo.run("git cl add slash linkdir/")
+    repo.assert_exit_code(1, "adding 'linkdir/' fails")
+    repo.assert_in("'linkdir/' is a symlink to a directory", output,
+                   "error explains what 'linkdir/' is")
+    repo.assert_in("use 'linkdir'", output,
+                   "error shows how to add the symlink itself")
+    repo.assert_in("git cl add slash dir/inner.txt", output,
+                   "error suggests the changed files under the real "
+                   "directory")
+
+    cl = repo.load_cl_json()
+    repo.assert_true("slash" not in cl, "nothing was added")
+
+    output = repo.run("git cl add slash outside/")
+    repo.assert_exit_code(1, "adding 'outside/' fails")
+    repo.assert_in("target is outside the repository", output,
+                   "error says the target is outside the repository")
+
+    repo.run(["git", "checkout", "--quiet", "--", "dir/inner.txt"],
+             check=True)
+
+    # =================================================================
     # Test: An untracked symlink is shown under its own name
     # =================================================================
 

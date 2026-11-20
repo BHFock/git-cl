@@ -17,7 +17,11 @@ What you'll learn:
     - Files with any Git status (modified, staged, deleted, untracked)
       are kept
     - Changelists left empty are deleted
-    - Stashed changelists are not touched
+    - Stashed changelists are kept, unless their Git stash was popped
+      or dropped with plain git; prune then removes the useless record,
+      which frees its files for other changelists
+    - A stash is found by its full message, so an older stash of an
+      earlier changelist with the same name is never mistaken for it
     - Pruning unblocks 'git cl stash', which refuses clean files
     - Running 'git cl prune -q' from a post-commit hook keeps
       changelists up to date automatically
@@ -314,6 +318,56 @@ def run_tests(repo: TestRepo):
 
     repo.run("git cl unstash parked --force")
     repo.run("git cl checkout parked --force --delete")
+
+    # =================================================================
+    # Test: Records of stashes dropped with plain git are removed
+    # =================================================================
+
+    repo.section("Records of stashes dropped with plain git are removed")
+
+    # An older stash of an earlier changelist with the same name must not
+    # be mistaken for the current one
+    repo.write_file("leftover.txt", "from an earlier changelist 'lost'")
+    repo.run(["git", "stash", "push", "--quiet", "--include-untracked", "-m",
+              "git-cl-stash:lost:20000101_000000", "--", "leftover.txt"],
+             check=True)
+
+    repo.write_file("app.py", "print('app v3 lost')")
+    repo.run("git cl add lost app.py")
+    repo.run("git cl stash lost")
+    repo.run("git stash drop --quiet", check=True)
+
+    repo.run("git cl unstash lost")
+    repo.assert_exit_code(1, "unstash fails")
+    repo.assert_in("git cl prune", repo.last_stderr,
+                   "unstash points to git cl prune")
+
+    repo.write_file("app.py", "print('app v3 again')")
+    repo.run("git cl add other app.py")
+    repo.assert_exit_code(1, "add of a file in the orphaned record fails")
+    repo.assert_in("git cl prune", repo.last_stderr,
+                   "add points to git cl prune")
+
+    output = repo.run("git cl prune -n --exit-code")
+    repo.assert_exit_code(1, "dry run counts the orphaned record")
+    repo.assert_true("lost" in repo.load_stash_json(),
+                     "dry run keeps the record")
+
+    output = repo.run("git cl prune")
+    repo.assert_in("Removed stashed changelist 'lost'", output,
+                   "prune reports the removed record")
+    repo.assert_in("git cl add lost app.py", output,
+                   "prune shows how to group the files again")
+    repo.assert_true("lost" not in repo.load_stash_json(),
+                     "record removed")
+
+    repo.run("git cl add other app.py")
+    repo.assert_exit_code(0, "the file can be added again")
+    repo.run("git cl checkout other --force --delete")
+    repo.assert_in("git-cl-stash:lost:20000101_000000",
+                   repo.run("git stash list"),
+                   "the older stash is left alone")
+    repo.run("git stash drop --quiet", check=True)
 
     # =================================================================
     # Test: Pruning unblocks git cl stash

@@ -162,7 +162,7 @@ A few helpers terminate execution immediately on fatal errors, such as running o
 * **Read-only** (`status`, `diff`) — inspect Git state but do not modify it.
 * **State-mutating** (`stage`, `unstage`, `commit`, `stash`, `unstash`, `checkout`, `branch`) — call Git commands that change repository state.
 
-This distinction matters during unresolved merges. State-mutating commands detect merge-conflict status codes (`UU`, `AA`, `DD`, `AU`, `UA`, `DU`, `UD`) and refuse cleanly with a message pointing at `git merge --abort` or manual resolution. Without this guard, the underlying Git calls would either fail with cryptic errors or, worse, proceed with partial operations that leave the repository in an unclear state.
+This distinction matters during unresolved merges. State-mutating commands detect merge-conflict status codes (`UU`, `AA`, `DD`, `AU`, `UA`, `DU`, `UD`) and refuse cleanly with a message pointing at manual resolution, and at `git commit` or `git merge --abort` when a merge is in progress. Conflicts can also come from `git cl unstash` or `git stash apply`, where there is no operation to complete or abort. Without this guard, the underlying Git calls would either fail with cryptic errors or, worse, proceed with partial operations that leave the repository in an unclear state.
 Metadata-only commands are deliberately exempt: a user mid-merge may legitimately want to reorganise changelists — for example, to pull a conflicted file out of a changelist so they can resolve it separately. Read-only commands surface conflicts in their output rather than refusing.
 
 ### Security and Safety

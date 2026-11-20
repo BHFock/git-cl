@@ -124,6 +124,16 @@ class ClutilSaveError(OSError):
     """
 
 
+class ClutilLoadError(Exception):
+    """
+    Raised when 'cl.json' or 'cl-stashes.json' cannot be read or is invalid.
+
+    The load functions print the reason and how to recover before raising.
+    main() turns it into exit code 1, so that no command carries on with
+    empty data and overwrites the file on its next save.
+    """
+
+
 # Note: Some utility functions call CLI command functions like cl_stash and
 #       cl_unstash. These are defined later in the module but are called by
 #       utility functions.
@@ -267,23 +277,138 @@ def clutil_get_file() -> Path:
         sys.exit(1)
 
 
+def clutil_is_string_list(value) -> bool:
+    """Return True if value is a list of strings."""
+    return isinstance(value, list) and all(isinstance(v, str) for v in value)
+
+
+def clutil_check_changelist_data(data) -> Optional[str]:
+    """
+    Check that loaded changelist data has the expected structure.
+
+    Args:
+        data: Parsed content of 'cl.json'
+
+    Returns:
+        A description of the first problem found, or None if the data is
+        a mapping of changelist names to lists of file paths.
+    """
+    if not isinstance(data, dict):
+        return "expected an object mapping changelist names to file lists"
+    for name, files in data.items():
+        if not clutil_is_string_list(files):
+            return f"changelist '{name}' is not a list of file paths"
+    return None
+
+
+def clutil_check_stash_data(data) -> Optional[str]:
+    """
+    Check that loaded stash metadata has the fields git-cl relies on.
+
+    Args:
+        data: Parsed content of 'cl-stashes.json'
+
+    Returns:
+        A description of the first problem found, or None if every entry
+        has a 'stash_ref' string and a 'files' list, and 'file_categories',
+        if present, maps category names to lists of file paths.
+    """
+    if not isinstance(data, dict):
+        return "expected an object mapping changelist names to stash records"
+    for name, record in data.items():
+        if not isinstance(record, dict):
+            return f"the record for '{name}' is not an object"
+        if not isinstance(record.get("stash_ref"), str):
+            return f"the record for '{name}' has no valid 'stash_ref'"
+        if not clutil_is_string_list(record.get("files")):
+            return f"the record for '{name}' has no valid 'files' list"
+        categories = record.get("file_categories", {})
+        if not (isinstance(categories, dict) and
+                all(clutil_is_string_list(v) for v in categories.values())):
+            return f"the record for '{name}' has invalid 'file_categories'"
+    return None
+
+
+def clutil_read_json_file(
+    path: Path,
+    check: Callable[[object], Optional[str]]
+) -> dict:
+    """
+    Read and check a git-cl metadata file.
+
+    An empty file counts as no data. Any other problem stops git-cl:
+    carrying on with empty data would overwrite the file on the next save
+    and lose everything in it.
+
+    Args:
+        path: File to read
+        check: Function returning a problem description or None
+
+    Returns:
+        dict: The parsed data.
+
+    Raises:
+        ClutilLoadError: If the file cannot be read, is not valid JSON or
+            fails the check. The reason has already been printed.
+    """
+    try:
+        with open(path, "r", encoding="utf-8") as file_handle:
+            content = file_handle.read()
+        if not content.strip():
+            return {}
+        data = json.loads(content)
+        problem = check(data)
+    except OSError as error:
+        problem = error.strerror or str(error)
+    except (json.JSONDecodeError, UnicodeDecodeError) as error:
+        problem = f"not valid JSON ({error})"
+    if problem is None:
+        return data
+
+    clutil_print_error(f"Error: Cannot use {path}: {problem}.")
+    clutil_print_error("git-cl has stopped, so that the file is not "
+                       "overwritten.")
+    clutil_print_load_recovery_hint(path)
+    raise ClutilLoadError(str(path))
+
+
+def clutil_print_load_recovery_hint(path: Path) -> None:
+    """
+    Print how to recover from an unusable metadata file.
+
+    Args:
+        path: The unusable 'cl.json' or 'cl-stashes.json'
+    """
+    clutil_print_error("Repair the file, or move it aside to continue "
+                       "without it:")
+    clutil_print_error(f"  mv {shlex.quote(str(path))} "
+                       f"{shlex.quote(str(path) + '.broken')}")
+    if path.name == "cl-stashes.json":
+        clutil_print_error("git-cl then no longer knows its stashed "
+                           "changelists. Their changes stay in "
+                           "'git stash list'.")
+    else:
+        clutil_print_error("git-cl then starts without changelists. Your "
+                           "files are not affected.")
+
+
 def clutil_load() -> dict[str, list[str]]:
     """
     Loads changelist data from the 'cl.json' file.
 
     Returns:
         dict: A mapping of changelist names to lists of file paths.
+
+    Raises:
+        ClutilLoadError: If the file exists but cannot be used. The reason
+            has already been printed.
     """
     changelist_file = clutil_get_file()
     lock_file = changelist_file.with_suffix('.lock')
     if changelist_file.exists():
         with clutil_file_lock(lock_file):
-            try:
-                with open(changelist_file, "r", encoding="utf-8") as file_handle:
-                    return json.load(file_handle)
-            except (json.JSONDecodeError, OSError) as error:
-                clutil_print_error(f"Error reading changelists: {error}")
-                return {}
+            return clutil_read_json_file(changelist_file,
+                                         clutil_check_changelist_data)
     return {}
 
 
@@ -995,17 +1120,16 @@ def clutil_load_stashes() -> dict[str, dict]:
 
     Returns:
         dict: A mapping of stashed changelist names to their metadata.
+
+    Raises:
+        ClutilLoadError: If the file exists but cannot be used. The reason
+            has already been printed.
     """
     stash_file = clutil_get_stash_file()
     lock_file = stash_file.with_suffix('.lock')
     if stash_file.exists():
         with clutil_file_lock(lock_file):
-            try:
-                with open(stash_file, "r", encoding="utf-8") as file_handle:
-                    return json.load(file_handle)
-            except (json.JSONDecodeError, OSError) as error:
-                clutil_print_error(f"Error reading stash metadata: {error}")
-                return {}
+            return clutil_read_json_file(stash_file, clutil_check_stash_data)
     return {}
 
 
@@ -1854,7 +1978,7 @@ def clutil_restore_index_from_stash(
     def blob(revision: str, path: str) -> Optional[str]:
         result = subprocess.run(git + ["rev-parse", "--verify", "--quiet",
                                        f"{revision}:{path}"],
-                                capture_output=True, text=True)
+                                capture_output=True, text=True, check=False)
         return result.stdout.strip() if result.returncode == 0 else None
 
     to_restore = []
@@ -4300,8 +4424,8 @@ def main() -> None:
     # with 2 on invalid usage before a command runs.
     try:
         succeeded = args.func(args)
-    except ClutilSaveError:
-        # The reason has already been printed by the save function.
+    except (ClutilSaveError, ClutilLoadError):
+        # The reason has already been printed by the save or load function.
         sys.exit(1)
     sys.exit(0 if succeeded else 1)
 

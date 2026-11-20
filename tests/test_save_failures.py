@@ -16,8 +16,8 @@ What you'll learn:
       unstaged changes, deletions and untracked files are put back as
       they were, and files in other changelists are left alone
 
-The tests make a write fail by creating a directory where git-cl wants
-to write its file.
+The tests run git-cl through fail_write.py, which makes writing one of
+these files fail while reading it still works.
 
 Run:
     ./test_save_failures.py
@@ -31,6 +31,13 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 from test_helpers import TestRepo
+
+FAIL_WRITE = str(Path(__file__).parent / "fail_write.py")
+
+
+def git_cl_failing_write(repo: TestRepo, filename: str, *args: str) -> str:
+    """Run git-cl with writes to the given metadata file failing."""
+    return repo.run([sys.executable, FAIL_WRITE, filename, *args])
 
 
 def run_tests(repo: TestRepo):
@@ -68,9 +75,7 @@ def run_tests(repo: TestRepo):
 
     repo.section("Stash: record cannot be saved")
 
-    repo.mkdir(".git/cl-stashes.json")
-
-    repo.run("git cl stash feature")
+    git_cl_failing_write(repo, "cl-stashes.json", "stash", "feature")
     repo.assert_exit_code(1, "stash fails")
     repo.assert_in("Could not save the stash", repo.last_stderr,
                    "failure reported on stderr")
@@ -93,10 +98,7 @@ def run_tests(repo: TestRepo):
 
     repo.section("Add: changelists cannot be saved")
 
-    repo.delete_file(".git/cl.json")
-    repo.mkdir(".git/cl.json")
-
-    repo.run("git cl add other beta.txt")
+    git_cl_failing_write(repo, "cl.json", "add", "other", "beta.txt")
     repo.assert_exit_code(1, "add fails")
     repo.assert_in("Error saving changelists", repo.last_stderr,
                    "failure reported on stderr")

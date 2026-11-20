@@ -440,6 +440,7 @@ git cl unstash <changelist-name>
 - Restores the previously stashed changes, including which of them were staged: a file with staged and unstaged changes comes back as `[MM]`, an untracked file as `[??]`.
 - If a file has changed on the current branch since it was stashed, its staged changes are restored as unstaged changes, and git-cl lists the file.
 - Warns if files conflict with current working directory.
+- If applying the stash stops with conflicts, the changelist is restored and its changes are in the working directory with conflict markers, as with `git stash pop`. Resolve the files and mark them as resolved with `git add`. The stash is kept until you drop it with `git stash drop`.
 
 #### Stash all changelists
 

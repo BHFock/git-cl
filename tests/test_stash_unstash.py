@@ -20,6 +20,10 @@ What you'll learn:
     - Unstashing also restores which changes were staged: a file with
       staged and unstaged changes comes back as [MM], an untracked file
       as [??]
+    - A stashed changelist cannot be stashed again, and its name cannot
+      be used for a new changelist until it is unstashed
+    - If unstashing stops with conflicts, the changelist is restored and
+      the stash is kept, as with 'git stash pop'
 
 Run:
     ./test_stash_unstash.py
@@ -327,6 +331,64 @@ def run_tests(repo: TestRepo):
                       "[MM], [AM] and [??] files come back as before")
     repo.assert_equal(staged_before, repo.run("git diff --cached"),
                       "staged content is the same as before")
+
+    # =================================================================
+    # Test: A stashed changelist cannot be stashed again or reused
+    # =================================================================
+
+    repo.section("A stashed changelist cannot be stashed again or reused")
+
+    repo.write_file("mu.txt", "mu")
+    repo.run("git add mu.txt", check=True)
+    repo.run(["git", "commit", "--quiet", "-m", "Add mu", "--", "mu.txt"],
+             check=True)
+    repo.write_file("mu.txt", "mu changed in the changelist")
+    repo.run("git cl add parked2 mu.txt")
+    repo.run("git cl stash parked2")
+    repo.assert_exit_code(0, "stash parked2 succeeds")
+
+    repo.run("git cl stash parked2")
+    repo.assert_exit_code(1, "stashing it again fails")
+    repo.assert_in("already stashed", repo.last_stderr,
+                   "says the changelist is already stashed")
+
+    repo.write_file("nu.txt", "nu untracked")
+    repo.run("git cl add parked2 nu.txt")
+    repo.assert_exit_code(1, "adding to the stashed name fails")
+    repo.assert_in("is stashed", repo.last_stderr,
+                   "says the changelist is stashed")
+    repo.assert_true("parked2" not in repo.load_cl_json(),
+                     "no active changelist with the stashed name")
+
+    # =================================================================
+    # Test: Unstash with conflicts restores the changelist
+    # =================================================================
+
+    repo.section("Unstash with conflicts restores the changelist")
+
+    repo.write_file("mu.txt", "mu changed in a commit")
+    repo.run(["git", "commit", "--quiet", "-m", "Change mu", "--", "mu.txt"],
+             check=True)
+
+    repo.run("git cl unstash parked2")
+    repo.assert_exit_code(1, "unstash reports the conflict")
+    repo.assert_in("stopped with conflicts", repo.last_stderr,
+                   "conflict is reported")
+    repo.assert_true("parked2" in repo.load_cl_json(),
+                     "changelist is restored")
+    repo.assert_true("parked2" not in repo.load_stash_json(),
+                     "stash record is removed, so it cannot be applied twice")
+    repo.assert_in("git-cl-stash:parked2:", repo.run("git stash list"),
+                   "the stash itself is kept")
+
+    repo.run("git cl stage parked2")
+    repo.assert_exit_code(1, "stage refuses while the conflict is unresolved")
+    repo.assert_not_in("git merge --abort", repo.last_stderr,
+                       "no merge hint, as no merge is in progress")
+
+    repo.write_file("mu.txt", "mu resolved")
+    repo.run("git add mu.txt")
+    repo.run("git stash drop --quiet", check=True)
 
 
 # =================================================================

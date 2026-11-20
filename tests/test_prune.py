@@ -155,6 +155,8 @@ def run_tests(repo: TestRepo):
     output = repo.run("git cl st")
     repo.assert_in("[XX] old.py", output,
                    "deleted file is shown as [XX] in status")
+    repo.assert_in("unknown to Git", repo.last_stderr,
+                   "warning explains the [XX] entry")
 
     output = repo.run("git cl prune")
     repo.assert_in("Removed 'old.py' from changelist 'cleanup'", output,

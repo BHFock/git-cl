@@ -4281,9 +4281,10 @@ def main() -> None:
             "    git cl add my-feature file1.py file2.py\n"
             "    git cl status\n"
             "    git cl commit my-feature -m 'Implement feature'\n\n"
-            "See also: \n"
-            "    GitHub: https://github.com/BHFock/git-cl \n"
-            "    DOI:    https://doi.org/10.5281/zenodo.18722077"),
+            "About: \n"
+            f"    Version: {__version__}\n"
+            "    GitHub:  https://github.com/BHFock/git-cl \n"
+            "    DOI:     https://doi.org/10.5281/zenodo.18722077"),
         formatter_class=argparse.RawTextHelpFormatter,
         add_help=False)
 

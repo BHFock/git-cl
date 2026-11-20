@@ -92,7 +92,9 @@ Using `git cl stash list2` in the above example removes `list2` from `.git/cl.js
 
 Note that `.git/cl-stashes.json` only contains changelist metadata - the actual file contents are stored in Git's native stash mechanism (accessible via [git stash list](https://git-scm.com/docs/git-stash#Documentation/git-stash.txt-listlog-options)). The `stash_ref` field connects git-cl's metadata to the underlying Git stash entry, enabling coordinated restoration of both file changes and changelist structure.
 
-Both `cl.json` and `cl-stashes.json` are written atomically: the new contents are written to a temporary file in `.git/` and then renamed over the target via `os.replace()`. This ensures that if the process is interrupted mid-write, the original file is left intact rather than truncated, which would otherwise be silently interpreted as an empty metadata store on the next read.
+Both `cl.json` and `cl-stashes.json` are written atomically: the new contents are written to a temporary file in `.git/` and then renamed over the target via `os.replace()`. This ensures that if the process is interrupted mid-write, the original file is left intact rather than truncated.
+
+When reading, both files are checked for valid JSON and for the structure git-cl relies on: `cl.json` must map names to lists of file paths, and each record in `cl-stashes.json` needs a `stash_ref` and a `files` list. If a file is damaged, git-cl stops with exit code 1 instead of continuing with empty data, because the next save would otherwise overwrite the file and lose its content. An empty file counts as no data.
 
 #### Code Structure
 

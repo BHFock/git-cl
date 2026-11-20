@@ -779,6 +779,16 @@ This is useful when you've already staged a meaningful set of changes and want t
 
 Yes. Each worktree has its own independent set of changelists — changes made in one worktree are not visible in another. This means you can use git-cl freely in each worktree without them interfering with each other.
 
+### What if git-cl reports that cl.json cannot be used?
+
+git-cl stops when `.git/cl.json` or `.git/cl-stashes.json` is damaged, for example after editing it by hand, so that it does not overwrite the file and lose your changelists. Repair the file, or move it aside as the error message suggests, for example:
+
+```
+mv .git/cl.json .git/cl.json.broken
+```
+
+git-cl then starts without changelists; your files are not affected. If you move `cl-stashes.json` aside, git-cl forgets its stashed changelists, but their changes stay in `git stash list`.
+
 ### How do I check which version of git-cl is installed?
 
 Run:

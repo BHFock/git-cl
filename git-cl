@@ -1436,13 +1436,42 @@ def clutil_create_unique_stash_message(changelist_name: str) -> str:
     return f"git-cl-stash:{changelist_name}:{timestamp}"
 
 
-def clutil_find_stash_by_message_substring(
-        message_substring: str) -> Optional[str]:
+def clutil_stash_line_matches(line: str, record: dict, name: str) -> bool:
     """
-    Find a stash reference by searching for a substring in stash messages.
+    Tell whether a 'git stash list' line is the stash of a record.
+
+    The record's full stash message 'git-cl-stash:<name>:<timestamp>' is
+    matched exactly, at the end of the line. Matching only the prefix
+    'git-cl-stash:<name>:' would also find an older stash of an earlier
+    changelist with the same name, which may still be in the stash list,
+    and unstash the wrong changes. Records without a stash message, from
+    early versions of git-cl, fall back to the prefix.
 
     Args:
-        message_substring: Part of the stash message to search for
+        line: One line of 'git stash list', e.g.
+            "stash@{0}: On main: git-cl-stash:one:20260101_120000"
+        record: The stash record from cl-stashes.json
+        name: The changelist name the record is stored under
+
+    Returns:
+        True if the line belongs to the record's stash.
+    """
+    message = record.get("stash_message")
+    if isinstance(message, str) and message:
+        return line.endswith(": " + message)
+    return f"git-cl-stash:{name}:" in line
+
+
+def clutil_find_stash_ref(record: dict, name: str) -> Optional[str]:
+    """
+    Find the current reference of a record's stash in 'git stash list'.
+
+    The reference shifts (stash@{0} becomes stash@{1}) whenever another
+    stash is pushed, so it is looked up by message each time.
+
+    Args:
+        record: The stash record from cl-stashes.json
+        name: The changelist name the record is stored under
 
     Returns:
         The stash reference (e.g. "stash@{2}") or None if not found
@@ -1450,15 +1479,52 @@ def clutil_find_stash_by_message_substring(
     try:
         stash_list = subprocess.check_output(["git", "stash", "list"],
                                              text=True)
-        for line in stash_list.strip().split('\n'):
-            if line and message_substring in line:
-                # Extract stash reference from format:
-                # "stash@{0}: WIP on main: abc1234 message"
-                stash_ref = line.split(':')[0].strip()
-                return stash_ref
     except subprocess.CalledProcessError:
-        pass
+        return None
+    for line in stash_list.splitlines():
+        if line and clutil_stash_line_matches(line, record, name):
+            # Extract stash reference from format:
+            # "stash@{0}: On main: git-cl-stash:<name>:<timestamp>"
+            return line.split(':')[0].strip()
     return None
+
+
+def clutil_find_orphaned_stashes(stashes: dict[str, dict]) -> list[str]:
+    """
+    Find stashed changelists whose Git stash no longer exists.
+
+    A record is orphaned when no entry in 'git stash list' carries its
+    stash message (see clutil_stash_line_matches()), which is how
+    'git cl unstash' finds the stash. This happens when the stash was popped or dropped
+    with plain git. Such a record can never be unstashed, and its files
+    cannot be added to another changelist.
+
+    Args:
+        stashes: Stashed changelists as loaded by clutil_load_stashes()
+
+    Returns:
+        Sorted names of orphaned records. Empty if 'git stash list' fails,
+        so that a Git error never makes records look orphaned.
+    """
+    if not stashes:
+        return []
+    try:
+        stash_list = subprocess.run(["git", "stash", "list"], check=True,
+                                    capture_output=True, text=True).stdout
+    except (subprocess.CalledProcessError, OSError):
+        return []
+    lines = stash_list.splitlines()
+    return sorted(name for name, record in stashes.items()
+                  if not any(clutil_stash_line_matches(line, record, name)
+                             for line in lines))
+
+
+def clutil_print_orphaned_stash_hint(name: str) -> None:
+    """Explain that a stash record is orphaned and how to remove it."""
+    clutil_print_error(f"The stash of changelist '{name}' no longer exists. "
+                       "It was probably popped or")
+    clutil_print_error("dropped with plain git. Run 'git cl prune' to remove "
+                       "its record.")
 
 
 def clutil_stash_all_changelists(changelists: dict[str, list[str]],
@@ -1822,7 +1888,7 @@ def clutil_execute_git_stash(
         raise
 
     # Find the created stash
-    stash_ref = clutil_find_stash_by_message_substring(f"git-cl-stash:{name}:")
+    stash_ref = clutil_find_stash_ref({"stash_message": stash_message}, name)
     if not stash_ref:
         clutil_print_error("Error: Could not locate the created stash.")
         clutil_print_error("Look for a stash with message containing "
@@ -2315,7 +2381,8 @@ def clutil_check_and_report_conflicts(
 
 def clutil_verify_and_update_stash_ref(
     base_name: str,
-    old_stash_ref: str
+    old_stash_ref: str,
+    stash_data: dict
 ) -> Optional[str]:
     """
     Verify stash still exists and update reference if needed.
@@ -2328,12 +2395,12 @@ def clutil_verify_and_update_stash_ref(
     Args:
         base_name: Changelist name
         old_stash_ref: Previously stored stash reference
+        stash_data: The stash record, used to find the stash by message
 
     Returns:
         Updated stash reference or None if stash doesn't exist
     """
-    current_stash_ref = clutil_find_stash_by_message_substring(f"git-cl-stash:"
-                                                               f"{base_name}:")
+    current_stash_ref = clutil_find_stash_ref(stash_data, base_name)
 
     if not current_stash_ref:
         clutil_print_error(f"Error: Stash for changelist '{base_name}' no longer "
@@ -2350,6 +2417,7 @@ def clutil_verify_and_update_stash_ref(
                 clutil_print_error("  (no stashes found)")
         except subprocess.CalledProcessError:
             clutil_print_error("  (could not list stashes)")
+        clutil_print_error("Run 'git cl prune' to remove its record.")
         return None
 
     # Update stash reference if needed
@@ -3027,7 +3095,14 @@ def cl_add(args: argparse.Namespace) -> bool:
         clutil_print_error("Error: Cannot add files that are in stashed changelists:")
         for file_path, stash_name in blocked_files:
             clutil_print_error(f"  {file_path} (in stashed changelist '{stash_name}')")
-        clutil_print_error("Unstash the changelist first if you want to modify it.")
+        blocking = {name: stashes[name] for _, name in blocked_files}
+        orphaned = clutil_find_orphaned_stashes(blocking)
+        if orphaned:
+            for name in orphaned:
+                clutil_print_orphaned_stash_hint(name)
+        else:
+            clutil_print_error("Unstash the changelist first if you want to "
+                               "modify it.")
         return False
 
     if args.name not in changelists:
@@ -3576,8 +3651,13 @@ def clutil_prune(args: argparse.Namespace) -> int:
 
     Entries with any Git status (modified, staged, deleted, untracked,
     conflicted) are kept. A directory entry is kept as long as any file
-    inside it has a Git status. Stashed changelists are not touched, and
-    only changelist metadata is changed, never file contents.
+    inside it has a Git status. Only changelist metadata is changed, never
+    file contents.
+
+    Stashed changelists are kept, except for orphaned records whose Git
+    stash no longer exists (see clutil_find_orphaned_stashes()). Removing
+    such a record frees its files for other changelists. Each orphaned
+    record counts as one stale entry.
 
     Does nothing when the GIT_CL_NO_PRUNE environment variable is set,
     which 'git cl commit' does for its own commit (see NO_PRUNE_ENV).
@@ -3614,7 +3694,10 @@ def clutil_prune(args: argparse.Namespace) -> int:
         if stale:
             pruned[name] = stale
 
-    if not pruned:
+    stashes = clutil_load_stashes()
+    orphaned = clutil_find_orphaned_stashes(stashes)
+
+    if not pruned and not orphaned:
         if not args.quiet:
             print("Nothing to prune.")
         return 0
@@ -3625,7 +3708,17 @@ def clutil_prune(args: argparse.Namespace) -> int:
 
     verb = "Would remove" if args.dry_run else "Removed"
     cwd = Path.cwd().resolve()
-    total = sum(len(stale) for stale in pruned.values())
+    total = sum(len(stale) for stale in pruned.values()) + len(orphaned)
+
+    if not args.quiet:
+        for name in orphaned:
+            print(f"{verb} stashed changelist '{name}': its Git stash no "
+                  "longer exists")
+            files = [shlex.quote(_relpath(git_root / f, cwd))
+                     for f in stashes[name]["files"]]
+            if files and not args.dry_run:
+                print(f"  To group its files again: git cl add {name} "
+                      + " ".join(files))
     for name, stale in sorted(pruned.items()):
         if not args.quiet:
             for stored_path in stale:
@@ -3644,8 +3737,14 @@ def clutil_prune(args: argparse.Namespace) -> int:
                   f"{'y' if total == 1 else 'ies'} found, nothing changed.")
         return total
 
+    if orphaned:
+        for name in orphaned:
+            del stashes[name]
+        clutil_save_stashes(stashes)
+
     # clutil_save omits empty changelists, so emptied ones disappear here
-    clutil_save(changelists)
+    if pruned:
+        clutil_save(changelists)
 
     if not args.quiet:
         for name in emptied:
@@ -3871,6 +3970,14 @@ def cl_unstash(args: argparse.Namespace, quiet: bool = False) -> bool:
     # Stashes are keyed by the changelist name itself
     base_name = stash_key = name
 
+    # A record whose stash is gone can never be unstashed. Say so before
+    # any other check, which would only point to the working directory.
+    if stash_key in stashes and clutil_find_orphaned_stashes(
+            {stash_key: stashes[stash_key]}):
+        clutil_print_error(f"Error: Cannot unstash changelist '{base_name}'.")
+        clutil_print_orphaned_stash_hint(base_name)
+        return False
+
     # Validate environment and get stash data
     error_msg, stash_data = clutil_validate_unstash_environment(
         base_name, stash_key, stashes, changelists,
@@ -3892,7 +3999,8 @@ def cl_unstash(args: argparse.Namespace, quiet: bool = False) -> bool:
         return False
 
     # Verify stash still exists and update reference
-    stash_ref = clutil_verify_and_update_stash_ref(base_name, stash_ref)
+    stash_ref = clutil_verify_and_update_stash_ref(base_name, stash_ref,
+                                                   stash_data)
     if not stash_ref:
         return False
 
@@ -4170,8 +4278,9 @@ def main() -> None:
                                              "empty are deleted. Only "
                                              "changelist metadata is "
                                              "changed, never file contents. "
-                                             "Stashed changelists are not "
-                                             "affected. Files excluded by "
+                                             "Stashed changelists are kept, "
+                                             "unless their Git stash no "
+                                             "longer exists. Files excluded by "
                                              ".gitignore have no Git status "
                                              "and are removed as well. Does "
                                              "nothing during 'git cl "

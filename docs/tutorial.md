@@ -493,7 +493,7 @@ When you commit with plain `git commit` — or an IDE or AI assistant commits fo
 - Keeps every file that has a Git status — modified, staged, deleted, untracked or conflicted.
 - Keeps a directory entry as long as any file inside it has changes.
 - Deletes changelists that end up empty.
-- Leaves stashed changelists and file contents untouched.
+- Leaves file contents untouched, and stashed changelists too — unless their stash was popped or dropped with plain `git stash`. Such a record can never be unstashed and blocks its files from other changelists, so `git cl prune` removes it and shows how to group the files again.
 
 Use `--dry-run` (or `-n`) to see what would be removed without changing anything, and `--quiet` (or `-q`) to suppress the output.
 

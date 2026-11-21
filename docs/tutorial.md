@@ -385,7 +385,8 @@ git cl co <changelist-name>
 - Useful for discarding local changes by intent, not just by filename.
 - Accepts one or more changelist names.
 - Prompts for confirmation before proceeding; use `--force` (or `-f`) to skip the prompt.
-- Untracked files (`[??]`) are skipped with a warning, because they have no committed state to revert to. They stay in your working directory.
+- Deleted files (`[ D]`, `[D ]`) are restored.
+- Untracked files (`[??]`) and new files (`[A ]`, `[AM]`) are skipped with a warning, because they have no committed state to revert to. They stay as they are: `git cl checkout` never deletes a file.
 - Shows a summary of reverted files.
 - The changelist is kept unless you pass `--delete`.
 
@@ -779,6 +780,12 @@ This is useful when you've already staged a meaningful set of changes and want t
 ### Do changelists work with Git worktrees?
 
 Yes. Each worktree has its own independent set of changelists — changes made in one worktree are not visible in another. This means you can use git-cl freely in each worktree without them interfering with each other.
+
+### Can I add a submodule to a changelist?
+
+No. A submodule is a separate repository, and changelists contain files only, just as they never contain directories. To group files inside a submodule, run git-cl in the submodule itself; it keeps its own changelists there. To record a new commit of the submodule in this repository, use plain Git: `git add <submodule>` and `git commit`.
+
+`git cl branch` ignores uncommitted changes inside a submodule, because they belong to the submodule's own repository. A new commit in the submodule does stop it, as it would otherwise move to the new branch unnoticed.
 
 ### What if git-cl reports that cl.json cannot be used?
 

@@ -2367,8 +2367,11 @@ def clutil_check_branch_workflow(
               f"'{current_branch}'")
         print("This is allowed but consider using a new branch for feature work.")
     else:
-        # Check if working directory is clean (recommended for branch workflow)
-        status_cmd = ["git", "status", "--porcelain"]
+        # Check if working directory is clean (recommended for branch
+        # workflow). Uncommitted changes inside a submodule belong to the
+        # submodule's own repository and are ignored.
+        status_cmd = ["git", "status", "--porcelain",
+                      "--ignore-submodules=dirty"]
         if ignore_untracked:
             status_cmd.append("--untracked-files=no")
         try:
@@ -2913,9 +2916,95 @@ def clutil_check_branch_exists(branch_name: str) -> bool:
         return False
 
 
+def clutil_get_submodule_paths(git_root: Path) -> list[str]:
+    """
+    Return the paths of all submodules, relative to the Git root.
+
+    A submodule is recorded in the index as a 'gitlink' (mode 160000): a
+    pointer to a commit of another repository, not a file. Changelists
+    contain files only, so submodules are kept out of them, just like
+    directories.
+
+    Args:
+        git_root: Path to the Git repository root
+
+    Returns:
+        Submodule paths, e.g. ["libs/sub"]. Empty if there are none or
+        Git fails.
+    """
+    try:
+        output = subprocess.run(
+            ["git", "-C", str(git_root), "ls-files", "--stage", "-z"],
+            check=True, capture_output=True, text=True).stdout
+    except subprocess.CalledProcessError:
+        return []
+    paths = []
+    for entry in output.split("\0"):
+        info, _, path = entry.partition("\t")
+        if path and info.startswith("160000 "):
+            paths.append(path)
+    return paths
+
+
+def clutil_find_submodule(path: str, submodules: list[str]) -> Optional[str]:
+    """
+    Return the submodule that is or contains a path, if any.
+
+    Args:
+        path: Path relative to the Git root
+        submodules: Paths from clutil_get_submodule_paths()
+
+    Returns:
+        The submodule path, or None if the path is not in a submodule.
+    """
+    for submodule in submodules:
+        if path == submodule or path.startswith(submodule + "/"):
+            return submodule
+    return None
+
+
+def clutil_get_changed_submodule_pointers(
+    git_root: Path,
+    submodules: list[str]
+) -> set[str]:
+    """
+    Return the submodules whose recorded commit differs from HEAD.
+
+    Changes inside a submodule that are not committed there belong to the
+    submodule's own repository and are ignored ('--ignore-submodules=
+    dirty'). A new commit in the submodule changes the pointer in this
+    repository, which is a change here.
+
+    Args:
+        git_root: Path to the Git repository root
+        submodules: Paths from clutil_get_submodule_paths()
+
+    Returns:
+        Submodule paths whose pointer changed in the index or working
+        directory. If Git fails, all submodules are returned, so that no
+        change is overlooked.
+    """
+    if not submodules:
+        return set()
+    try:
+        output = subprocess.run(
+            ["git", "-C", str(git_root), "diff", "HEAD", "--name-only", "-z",
+             "--ignore-submodules=dirty", "--"] + submodules,
+            check=True, capture_output=True, text=True).stdout
+    except subprocess.CalledProcessError:
+        return set(submodules)
+    return {path for path in output.split("\0") if path}
+
+
 def clutil_check_unassigned_changes(changelists: dict,
                                     git_root: Path) -> list[str]:
-    """Check for uncommitted changes not in any changelist."""
+    """
+    Check for uncommitted changes not in any changelist.
+
+    Untracked files are ignored, and so are submodules with uncommitted
+    changes of their own. A submodule whose recorded commit changed is
+    reported, because the change would move to a new branch unnoticed.
+    """
     status_map = clutil_get_file_status_map(show_all=True)
 
     # Get all files assigned to changelists
@@ -2929,9 +3018,16 @@ def clutil_check_unassigned_changes(changelists: dict,
             except (ValueError, OSError):
                 continue
 
+    # Submodules whose own files changed, but whose recorded commit did
+    # not, have no change in this repository
+    submodules = clutil_get_submodule_paths(git_root)
+    changed_pointers = clutil_get_changed_submodule_pointers(git_root,
+                                                             submodules)
+
     # Check for unassigned changes (ignore untracked files)
     return [file_path for file_path, status in status_map.items()
-            if file_path not in assigned_files and status != "??"]
+            if file_path not in assigned_files and status != "??"
+            and (file_path not in submodules or file_path in changed_pointers)]
 
 
 def clutil_validate_changelists_stashable(
@@ -3072,6 +3168,49 @@ def clutil_handle_branch_creation_failure() -> None:
 MAX_DIRECTORY_HINT_FILES = 10
 
 
+# pylint: disable-next=too-many-arguments
+def clutil_report_submodule_path(
+    file: str,
+    sanitized: str,
+    submodule: str,
+    name: str,
+    git_root: Path,
+    cwd: Path
+) -> None:
+    """
+    Explain why a submodule, or a path inside one, cannot be added.
+
+    A submodule is a separate repository. Its files are grouped with
+    git cl inside the submodule; its recorded commit is committed with
+    plain git, like a directory is never part of a changelist.
+
+    Args:
+        file: The path as the user gave it
+        sanitized: The path relative to the Git root
+        submodule: The submodule path relative to the Git root
+        name: The changelist name the user asked for
+        git_root: Path to the Git repository root
+        cwd: The current working directory
+    """
+    submodule_display = shlex.quote(_relpath(git_root / submodule, cwd))
+    if sanitized == submodule:
+        clutil_print_error(f"Error: '{file}' is a submodule. Changelists "
+                           "contain files only.")
+        clutil_print_error("To group files inside it, run git cl in the "
+                           "submodule:")
+        clutil_print_error(f"  cd {submodule_display} && git cl add {name} "
+                           "<files>")
+        clutil_print_error("To record its new commit: git add "
+                           f"{submodule_display}")
+    else:
+        inside = shlex.quote(sanitized[len(submodule) + 1:])
+        clutil_print_error(f"Error: '{file}' is inside the submodule "
+                           f"'{submodule}', which is a separate repository.")
+        clutil_print_error("Run git cl there:")
+        clutil_print_error(f"  cd {submodule_display} && git cl add {name} "
+                           f"{inside}")
+
+
 def clutil_directory_hint(
         dir_path: str, name: str, status_map: dict[str, str],
         git_root: Path) -> list[str]:
@@ -3152,12 +3291,21 @@ def cl_add(args: argparse.Namespace) -> bool:
     status_map = clutil_get_file_status_map(show_all=True,
                                             include_untracked=True)
 
+    submodules = clutil_get_submodule_paths(git_root)
+    cwd = Path.cwd().resolve()
+
     files = []
     skipped = False
     for file in args.files:
         sanitized = clutil_sanitize_path(file, git_root)
         if sanitized:
             abs_path = clutil_resolve_file(git_root / sanitized)
+            submodule = clutil_find_submodule(sanitized, submodules)
+            if submodule:
+                clutil_report_submodule_path(file, sanitized, submodule,
+                                             args.name, git_root, cwd)
+                skipped = True
+                continue
             if clutil_is_real_dir(abs_path):
                 clutil_print_error(f"Error: '{file}' is a directory. "
                                    "Changelists contain files only.")
@@ -3498,6 +3646,30 @@ def cl_diff(args: argparse.Namespace) -> bool:
     return not missing_changelist
 
 
+def clutil_get_paths_in_head(git_root: Path, paths: list[str]) -> set[str]:
+    """
+    Return which of the given paths exist as files in HEAD.
+
+    Args:
+        git_root: Path to the Git repository root
+        paths: File paths relative to the Git root
+
+    Returns:
+        The subset of paths that are in HEAD. Empty if there is no commit
+        yet or Git fails.
+    """
+    if not paths:
+        return set()
+    try:
+        output = subprocess.run(
+            ["git", "-C", str(git_root), "ls-tree", "-r", "-z", "--name-only",
+             "HEAD", "--"] + paths,
+            check=True, capture_output=True, text=True).stdout
+    except subprocess.CalledProcessError:
+        return set()
+    return {path for path in output.split("\0") if path}
+
+
 def cl_checkout(args: argparse.Namespace) -> bool:
     """
     Checkout (revert) files from one or more changelists to their HEAD state.
@@ -3547,27 +3719,30 @@ def cl_checkout(args: argparse.Namespace) -> bool:
         print("No files to checkout.")
         return True
 
+    # Only files in HEAD can be reverted to it. This includes deleted
+    # files, which are restored. git checkout would reject the whole
+    # pathspec for a single file that is not in HEAD, so such files are
+    # filtered out and reported separately.
+    in_head = clutil_get_paths_in_head(git_root, all_files)
+
     # Convert to paths relative to current working directory for git command
     checkout_files = []
     missing_files = []
     untracked_files = []
+    new_files = []
 
     for stored_path in all_files:
         abs_path = clutil_resolve_file(git_root / stored_path)
 
-        if not clutil_path_exists(abs_path):
-            missing_files.append(stored_path)
-            continue
-
-        # Untracked files have no HEAD state to revert to. git checkout
-        # would reject the whole pathspec, so filter them out (matching the
-        # way stage/commit ignore untracked files) and report separately.
-        if clutil_is_file_untracked_cached(stored_path, status_map):
+        if stored_path in in_head:
+            checkout_files.append(_relpath(abs_path, Path.cwd().resolve()))
+        elif clutil_is_file_untracked_cached(stored_path, status_map):
             untracked_files.append(stored_path)
-            continue
-
-        rel_to_cwd = _relpath(abs_path, Path.cwd().resolve())
-        checkout_files.append(rel_to_cwd)
+        elif clutil_path_exists(abs_path):
+            # Staged as a new file (or as the new name of a rename)
+            new_files.append(stored_path)
+        else:
+            missing_files.append(stored_path)
 
     # Report missing files
     if missing_files:
@@ -3583,8 +3758,17 @@ def cl_checkout(args: argparse.Namespace) -> bool:
         for file_path in untracked_files:
             clutil_print_error(f"  {file_path}")
 
+    # Report new files (not in HEAD, so there is nothing to revert to)
+    if new_files:
+        clutil_print_error("Warning: The following new files are not in HEAD "
+                           "and will be skipped:")
+        for file_path in new_files:
+            clutil_print_error(f"  {file_path}")
+        clutil_print_error("To unstage them and keep the files: git restore "
+                           "--staged -- <files>")
+
     if not checkout_files:
-        print("No existing files to checkout.")
+        print("No files to revert to HEAD.")
         return not missing_changelists
 
     # Show what will be affected and ask for confirmation unless --force
@@ -3611,18 +3795,13 @@ def cl_checkout(args: argparse.Namespace) -> bool:
         print(f"Successfully reverted {len(checkout_files)} file(s) to HEAD state.")
 
 
-        # Show summary by changelist. Untracked files were skipped above
-        # (no HEAD state to revert to), so exclude them — otherwise the
-        # count overstates what actually changed.
-        untracked_set = set(untracked_files)
+        # Show summary by changelist. Only files in HEAD were reverted;
+        # untracked, new and missing files were skipped above.
         print("\nFiles reverted by changelist:")
         for name in args.names:
             if name in changelists and changelists[name]:
-                reverted_count = sum(
-                    1 for f in changelists[name]
-                    if f in all_files
-                    and f not in untracked_set
-                    and clutil_path_exists(clutil_resolve_file(git_root / f)))
+                reverted_count = sum(1 for f in changelists[name]
+                                     if f in in_head)
                 if reverted_count > 0:
                     print(f"  {name}: {reverted_count} files")
 
@@ -4173,16 +4352,28 @@ def cl_branch(args: argparse.Namespace) -> bool:
     unassigned_changes = clutil_check_unassigned_changes(changelists, git_root)
 
     if unassigned_changes:
+        submodules = clutil_get_submodule_paths(git_root)
+        changed_submodules = [f for f in unassigned_changes if f in submodules]
+        unassigned_files = [f for f in unassigned_changes
+                            if f not in submodules]
+        status_map = clutil_get_file_status_map(show_all=True)
         clutil_print_error("Error: There are uncommitted changes not in any "
                            "changelist:")
         for file_path in unassigned_changes[:10]:  # Show first 10
-            status_map = clutil_get_file_status_map(show_all=True)
             clutil_print_error(f"  [{status_map[file_path]}] {file_path}")
         if len(unassigned_changes) > 10:
             clutil_print_error(f"  ... and {len(unassigned_changes) - 10} more files")
-        clutil_print_error("\nPlease assign these files to changelists first:")
-        clutil_print_error("  git cl add <changelist-name> "
-                           f"{' '.join(unassigned_changes[:3])}")
+        if unassigned_files:
+            clutil_print_error("\nPlease assign these files to changelists first:")
+            clutil_print_error("  git cl add <changelist-name> "
+                               f"{' '.join(unassigned_files[:3])}")
+        if changed_submodules:
+            names = " ".join(shlex.quote(p) for p in changed_submodules)
+            clutil_print_error("\nSubmodules point to a new commit. Changelists "
+                               "cannot contain submodules;")
+            clutil_print_error("record the new commit, or reset the submodule:")
+            clutil_print_error(f"  git add {names} && git commit")
+            clutil_print_error(f"  git submodule update -- {names}")
         return False
 
     # Get current branch for messaging
@@ -4473,11 +4664,14 @@ def main() -> None:
                                                 "changelists to their HEAD "
                                                 "state, discarding both "
                                                 "staged and unstaged changes "
-                                                "in those files. This "
-                                                "completely restores files "
-                                                "to their last committed "
-                                                "state. By default, asks for "
-                                                " confirmation before "
+                                                "in those files. Deleted "
+                                                "files are restored. Files "
+                                                "that are not in HEAD, "
+                                                "untracked or newly added, "
+                                                "are left as they are: "
+                                                "checkout never deletes a "
+                                                "file. By default, asks for "
+                                                "confirmation before "
                                                 "proceeding."))
     checkout_parser.add_argument('names', metavar='CHANGELIST', nargs='+',
                                  help='One or more changelists to checkout')

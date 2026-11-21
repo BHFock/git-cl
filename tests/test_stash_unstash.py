@@ -24,6 +24,8 @@ What you'll learn:
       be used for a new changelist until it is unstashed
     - If unstashing stops with conflicts, the changelist is restored and
       the stash is kept, as with 'git stash pop'
+    - A stash is identified by its commit, so another stash with the same
+      message, for example from another worktree, is never applied
 
 Run:
     ./test_stash_unstash.py
@@ -32,6 +34,7 @@ Export as shell walkthrough:
     ./test_stash_unstash.py --export > walkthrough_stash_unstash.sh
 """
 
+import json
 import sys
 from pathlib import Path
 
@@ -389,6 +392,67 @@ def run_tests(repo: TestRepo):
     repo.write_file("mu.txt", "mu resolved")
     repo.run("git add mu.txt")
     repo.run("git stash drop --quiet", check=True)
+
+    # =================================================================
+    # Test: A stash is told apart from another with the same message
+    # =================================================================
+
+    repo.section("A stash is told apart from another with the same message")
+
+    # Worktrees share one stash list. A changelist of the same name
+    # stashed in another worktree within the same second gets the same
+    # message. A plain git stash with that message stands in for it here.
+    repo.write_file("xi.txt", "xi")
+    repo.run("git add xi.txt", check=True)
+    repo.run(["git", "commit", "--quiet", "-m", "Add xi", "--", "xi.txt"],
+             check=True)
+    repo.write_file("xi.txt", "xi changed in the changelist")
+    repo.run("git cl add same xi.txt")
+    repo.run("git cl stash same")
+    repo.assert_exit_code(0, "stash same succeeds")
+
+    message = repo.load_stash_json()["same"]["stash_message"]
+    repo.write_file("omicron.txt", "from the other worktree")
+    repo.run(["git", "stash", "push", "--quiet", "--include-untracked",
+              "-m", message, "--", "omicron.txt"], check=True)
+
+    repo.run("git cl unstash same")
+    repo.assert_exit_code(0, "unstash same succeeds")
+    repo.assert_equal("xi changed in the changelist",
+                      repo.read_file("xi.txt"),
+                      "its own changes are restored")
+    repo.assert_true(not (repo.repo_dir / "omicron.txt").exists(),
+                     "the other stash is not applied")
+    repo.assert_in(message, repo.run("git stash list"),
+                   "the other stash is left alone")
+
+    # If the changelist's own stash is dropped with plain git, the other
+    # stash with the same message must not keep its record alive
+    repo.run("git cl stash same")
+    message = repo.load_stash_json()["same"]["stash_message"]
+    repo.run(["git", "stash", "drop", "--quiet", "stash@{1}"], check=True)
+    repo.write_file("omicron.txt", "from the other worktree")
+    repo.run(["git", "stash", "push", "--quiet", "--include-untracked",
+              "-m", message, "--", "omicron.txt"], check=True)
+    repo.run(["git", "stash", "drop", "--quiet", "stash@{1}"], check=True)
+    output = repo.run("git cl prune -n")
+    repo.assert_in("Would remove stashed changelist 'same'", output,
+                   "prune sees the record as orphaned")
+    repo.run("git cl prune")
+    repo.run("git stash drop --quiet", check=True)
+
+    # Records from git-cl 1.6.4 and earlier have no 'stash_commit';
+    # they are still found by their message
+    repo.write_file("xi.txt", "xi changed again")
+    repo.run("git cl add older xi.txt")
+    repo.run("git cl stash older")
+    stashes = repo.load_stash_json()
+    del stashes["older"]["stash_commit"]
+    repo.write_file(".git/cl-stashes.json", json.dumps(stashes))
+    repo.run("git cl unstash older")
+    repo.assert_exit_code(0, "a record without stash_commit unstashes")
+    repo.assert_equal("xi changed again", repo.read_file("xi.txt"),
+                      "its changes are restored")
 
 
 # =================================================================

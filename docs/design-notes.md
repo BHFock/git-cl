@@ -85,16 +85,35 @@ Using `git cl stash list2` in the above example removes `list2` from `.git/cl.js
       ],
       "untracked": [],
       "deleted_files": []
-    }
+    },
+    "stash_commit": "8c1d0e3f6a2b4c5d7e9f0a1b2c3d4e5f6a7b8c9d"
   }
 }
 ```
 
-Note that `.git/cl-stashes.json` only contains changelist metadata - the actual file contents are stored in Git's native stash mechanism (accessible via [git stash list](https://git-scm.com/docs/git-stash#Documentation/git-stash.txt-listlog-options)). The `stash_ref` field connects git-cl's metadata to the underlying Git stash entry, enabling coordinated restoration of both file changes and changelist structure.
+Note that `.git/cl-stashes.json` only contains changelist metadata - the actual file contents are stored in Git's native stash mechanism (accessible via [git stash list](https://git-scm.com/docs/git-stash#Documentation/git-stash.txt-listlog-options)). The `stash_commit` field connects git-cl's metadata to the underlying Git stash entry, enabling coordinated restoration of both file changes and changelist structure. The commit hash identifies the stash exactly; `stash_ref` is only a hint, because the reference shifts (`stash@{0}` becomes `stash@{1}`) whenever another stash is pushed. The message is not unique either: worktrees of one repository share the stash list, so a changelist of the same name stashed in another worktree within the same second gets the same message. Records written by git-cl 1.6.4 and earlier have no `stash_commit`; for them, git-cl falls back to the full stash message.
 
 Both `cl.json` and `cl-stashes.json` are written atomically: the new contents are written to a temporary file in `.git/` and then renamed over the target via `os.replace()`. This ensures that if the process is interrupted mid-write, the original file is left intact rather than truncated.
 
 When reading, both files are checked for valid JSON and for the structure git-cl relies on: `cl.json` must map names to lists of file paths, and each record in `cl-stashes.json` needs a `stash_ref` and a `files` list. If a file is damaged, git-cl stops with exit code 1 instead of continuing with empty data, because the next save would otherwise overwrite the file and lose its content. An empty file counts as no data.
+
+#### Metadata Compatibility
+
+Editors and other tools may read and write the metadata files directly; the [VS Code extension](https://github.com/WayLit/git-cl-vscode) does both. git-cl therefore treats the file format as an interface:
+
+- **Location:** both files are stored in the directory returned by `git rev-parse --git-dir`. In a linked worktree this is `.git/worktrees/<name>/`, not the main `.git/` directory (see [Do changelists work with Git worktrees?](#do-changelists-work-with-git-worktrees)).
+- **`cl.json`:** an object mapping changelist names to lists of file paths, relative to the repository root, with `/` as separator.
+- **`cl-stashes.json`:** an object mapping changelist names to stash records. git-cl requires `stash_ref` (string) and `files` (list of paths). It uses `stash_commit` and `stash_message` to find the stash, `file_categories.untracked` to unstage files that were untracked when stashed, and `source_branch` and `timestamp` for messages. Other fields and categories are ignored.
+- **Additions only:** new releases may add optional fields. Existing fields keep their meaning, and records without a newer field keep working. Removing a field or changing its meaning would require a new major version.
+- **Unknown fields are kept:** git-cl does not remove fields it does not know when it rewrites a record. Tools that write the files should do the same.
+- **Damaged files are not overwritten:** if a file is not valid JSON or lacks a required field, git-cl stops rather than replacing it (see above).
+
+Format history:
+
+| Version | Change |
+|---------|--------|
+| 1.6.4 | Both files are checked when read; damaged files stop git-cl instead of being overwritten. |
+| 1.6.5 | New optional field `stash_commit` in stash records: the commit hash of the Git stash, which identifies it exactly. Records without it, for example from earlier versions or other tools, are still found by `stash_message`. |
 
 #### Code Structure
 

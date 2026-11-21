@@ -79,7 +79,7 @@ if sys.version_info < (3, 9):
     print("Error: git-cl requires Python 3.9+", file=sys.stderr)
     sys.exit(1)
 
-# Try to import colorama for colored output of 'git cl st'
+# Try to import colorama for coloured output of 'git cl st'
 # use dummy objects if colorama is not available to avoid NameError
 try:
     from colorama import Fore, Style
@@ -791,8 +791,8 @@ def clutil_get_file_status_map(
         'UU', 'AA', 'DD', 'AU', 'UA', 'DU', 'UD',  # merge conflicts
     }
 
-    status_map = {}
-    skipped = {}
+    status_map: dict[str, str] = {}
+    skipped: dict[str, list[str]] = {}
 
     for code, raw_path, old_path in output:
         # Handle renamed files. In the index the old path is a staged
@@ -1253,7 +1253,7 @@ UNSTASH_STATUS_ANALYSIS = {
 
 def clutil_analyze_file_status_for_unstash(status: str) -> tuple[bool, str]:
     """
-    Analyze a Git status code to determine unstash conflicts.
+    Analyse a Git status code to determine unstash conflicts.
 
     Args:
         status: 2-character Git status code
@@ -1293,7 +1293,7 @@ def clutil_analyze_file_status_for_unstash(status: str) -> tuple[bool, str]:
 def clutil_check_unstash_conflicts_optimized(
         files: list[str], git_root: Path) -> tuple[list[str], dict[str, str]]:
     """
-    Check for conflicts optimized for the stash-branch-unstash workflow.
+    Check for conflicts optimised for the stash-branch-unstash workflow.
 
     In the intended workflow:
     1. Stash changelists → clean working directory
@@ -1732,7 +1732,7 @@ def clutil_categorize_files_for_stash(
     Returns:
         Tuple of (file_categories, stashable_files, unstashable_files)
     """
-    file_categories = {
+    file_categories: dict[str, list[str]] = {
         'unstaged_changes': [],     # Modified, deleted in working directory
         'staged_additions': [],     # Newly added to index (A_)
         'untracked': [],            # Untracked files (??)
@@ -2815,7 +2815,7 @@ def clutil_show_active_changelists(
         selected_names: Set of names to filter by (None = show all)
         status_map: Git status mapping
         git_root: Git repository root
-        use_color: Whether to use colored output
+        use_color: Whether to use coloured output
 
     Returns:
         Tuple of (shown_any, assigned_files)
@@ -4333,8 +4333,9 @@ def cl_unstash(args: argparse.Namespace, quiet: bool = False) -> bool:
         getattr(args, 'force', False),
         getattr(args, 'ignore_untracked', False)
     )
-    if error_msg:
-        clutil_print_error(error_msg)
+    if error_msg or stash_data is None:
+        clutil_print_error(error_msg or f"Error: No stash record for "
+                           f"'{base_name}'.")
         return False
 
     stash_ref = stash_data["stash_ref"]
@@ -4707,7 +4708,7 @@ def main() -> None:
     status_parser.add_argument('--no-untracked', action='store_true',
                                help='Hide untracked files (??) from output')
     status_parser.add_argument('--no-color', action='store_true',
-                               help='Disable colored output')
+                               help='Disable coloured output')
     status_parser.set_defaults(func=cl_status)
 
     # DIFF

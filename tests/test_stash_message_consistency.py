@@ -62,7 +62,7 @@ def run_tests(repo: TestRepo):
 
     repo.section("Single stash: stored message matches git's stash")
 
-    output = repo.run("git cl stash list-a")
+    repo.run("git cl stash list-a")
     repo.assert_exit_code(0, "git cl stash should succeed")
 
     stash = repo.load_stash_json()
@@ -102,7 +102,7 @@ def run_tests(repo: TestRepo):
     repo.run("git cl add list-a file1.txt")
     repo.run("git cl add list-b file2.txt")
 
-    output = repo.run("git cl stash --all")
+    repo.run("git cl stash --all")
     repo.assert_exit_code(0, "git cl stash --all should succeed")
 
     stash = repo.load_stash_json()

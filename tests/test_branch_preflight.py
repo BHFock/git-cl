@@ -238,6 +238,35 @@ def run_tests(repo: TestRepo):
     repo.assert_in("standalone.txt", staged,
                    "standalone.txt restored as staged on the new branch")
 
+    # =================================================================
+    # Test: An invalid branch name is refused before anything is stashed
+    # =================================================================
+
+    repo.section("An invalid branch name is refused before stashing")
+
+    stashes_before = repo.run("git stash list")
+    repo.run("git cl branch standalone bad..name")
+    repo.assert_exit_code(1, "branch with an invalid name fails")
+    repo.assert_in("not a valid branch name", repo.last_stderr,
+                   "the name is reported as invalid")
+    repo.assert_equal(stashes_before, repo.run("git stash list"),
+                      "nothing was stashed")
+    repo.assert_true("standalone" in repo.load_cl_json(),
+                     "the changelist stays active")
+
+    # =================================================================
+    # Test: A stashed changelist is named as stashed
+    # =================================================================
+
+    repo.section("Branching from a stashed changelist says it is stashed")
+
+    repo.run("git cl stash standalone")
+    repo.run("git cl branch standalone another")
+    repo.assert_exit_code(1, "branch from a stashed changelist fails")
+    repo.assert_in("is stashed", repo.last_stderr,
+                   "says the changelist is stashed")
+    repo.run("git cl unstash standalone --force")
+
 
 # =================================================================
 # Entry point

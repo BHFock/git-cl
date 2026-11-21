@@ -496,6 +496,30 @@ def clutil_validate_name(name: str) -> bool:
     return True
 
 
+def clutil_plural(count: int, singular: str, plural: str = "") -> str:
+    """Return e.g. '1 file' or '3 files'."""
+    return f"{count} {singular if count == 1 else (plural or singular + 's')}"
+
+
+def clutil_has_commits() -> bool:
+    """Return True if HEAD points to a commit, False before the first one."""
+    result = subprocess.run(["git", "rev-parse", "--verify", "--quiet", "HEAD"],
+                            capture_output=True, text=True, check=False)
+    return result.returncode == 0
+
+
+def clutil_is_skip_worktree(path: Path) -> bool:
+    """
+    Return True if a tracked file is outside the sparse checkout.
+
+    Such a file is tracked and unchanged, but Git does not write it to
+    the working directory ('git ls-files -t' marks it with 'S').
+    """
+    result = subprocess.run(["git", "ls-files", "-t", "--", str(path)],
+                            capture_output=True, text=True, check=False)
+    return result.stdout.startswith("S ")
+
+
 def clutil_get_git_root() -> Path:
     """
     Returns the absolute path to the root of the current Git repository.
@@ -506,16 +530,18 @@ def clutil_get_git_root() -> Path:
     Raises:
         SystemExit: If the current directory is not inside a Git repository.
     """
-    try:
-        return Path(
-            subprocess.check_output(
-                ["git", "rev-parse", "--show-toplevel"],
-                text=True
-            ).strip()
-        ).resolve()
-    except subprocess.CalledProcessError as error:
-        clutil_print_error(f"Error: Not inside a Git repository. {error}")
-        sys.exit(1)
+    result = subprocess.run(["git", "rev-parse", "--show-toplevel"],
+                            capture_output=True, text=True, check=False)
+    if result.returncode == 0:
+        return Path(result.stdout.strip()).resolve()
+    bare = subprocess.run(["git", "rev-parse", "--is-bare-repository"],
+                          capture_output=True, text=True, check=False)
+    if bare.stdout.strip() == "true":
+        clutil_print_error("Error: This is a bare repository. git-cl needs a "
+                           "working directory with files.")
+    else:
+        clutil_print_error("Error: Not inside a Git repository.")
+    sys.exit(1)
 
 
 def clutil_get_git_status(
@@ -785,7 +811,8 @@ def clutil_get_file_status_map(
 
     if skipped and not show_all:
         skipped_count = sum(len(v) for v in skipped.values())
-        print(f"Note: {skipped_count} file(s) with uncommon Git status codes "
+        print(f"Note: {clutil_plural(skipped_count, 'file')} with uncommon Git "
+              "status codes "
               "were not shown. Use 'git cl st --all' to include them.")
 
     return status_map
@@ -806,7 +833,8 @@ def clutil_format_file_status(
 
     # Add detection of files which are deleted (committed) but still
     # included in a changelists
-    if not clutil_path_exists(abs_file) and status == "  ":
+    if (not clutil_path_exists(abs_file) and status == "  "
+            and not clutil_is_skip_worktree(abs_file)):
         status = "XX"  # Custom code for missing file
         clutil_print_error(f"Warning: The file '{rel_to_cwd}' does not exist "
                            "and is unknown to Git.\n"
@@ -2357,6 +2385,14 @@ def clutil_check_branch_workflow(
     current_branch = clutil_get_current_branch()
 
     if not current_branch:
+        operation = clutil_git_operation_in_progress()
+        if operation:
+            return (f"Error: Cannot unstash while a {operation} is in "
+                    "progress.\n"
+                    f"Finish or abort the {operation} first (see 'git "
+                    "status'), then unstash.\n"
+                    f"Or use --force to unstash anyway: git cl unstash "
+                    f"{base_name} --force")
         return ("Error: Cannot unstash while in detached HEAD state.\n"
                 "Create a new branch first: git checkout -b feature-branch\n"
                 f"Or use --force to unstash anyway: git cl unstash {base_name} --force")
@@ -2448,15 +2484,17 @@ def clutil_check_and_report_conflicts(
 
             status_summary = []
             if clean_files:
-                status_summary.append(f"{len(clean_files)} clean")
+                status_summary.append(f"{len(clean_files)} unchanged in the "
+                                      "working directory")
             if missing_files:
                 status_summary.append(f"{len(missing_files)} to be restored")
             if staged_files:
                 status_summary.append(f"{len(staged_files)} with staged changes")
 
             if status_summary:
-                print(f"Ready to unstash {len(safe_files)} "
-                      f"files: {', '.join(status_summary)}")
+                print(f"Ready to unstash "
+                      f"{clutil_plural(len(safe_files), 'file')}: "
+                      f"{', '.join(status_summary)}")
 
     return True
 
@@ -2638,7 +2676,7 @@ def clutil_process_unstash_result(
     if current_branch:
         success_msg += f" to branch '{current_branch}'"
     print(success_msg)
-    print(f"  Restored {len(files)} files to working directory")
+    print(f"  Restored {clutil_plural(len(files), 'file')} to working directory")
     print("  Ready to work on your feature!")
 
     # Show the files that were restored
@@ -2744,11 +2782,11 @@ def clutil_print_stash_success(
     if current_branch:
         success_msg += f" from branch '{current_branch}'"
     print(success_msg)
-    print(f"  Stashed {len(stashable_files)} file(s):")
+    print(f"  Stashed {clutil_plural(len(stashable_files), 'file')}:")
 
     # Show breakdown of what was stashed
     categories_to_show = {
-        'unstaged_changes': 'unstaged changes',
+        'unstaged_changes': 'with unstaged changes',
         'staged_additions': 'newly added',
         'untracked': 'untracked',
         'deleted_files': 'deleted'
@@ -2757,7 +2795,7 @@ def clutil_print_stash_success(
     for category_key, category_display in categories_to_show.items():
         files_list = file_categories.get(category_key, [])
         if files_list:
-            print(f"    {len(files_list)} with {category_display}")
+            print(f"    {len(files_list)} {category_display}")
 
     print("  Working directory is now clean for this changelist")
 
@@ -2885,6 +2923,11 @@ def clutil_validate_unstash_environment(
 def clutil_validate_branch_preconditions(
         changelist_name: str, changelists: dict, stashes: dict) -> str:
     """Validate preconditions for branch creation workflow."""
+    if changelist_name in stashes and changelist_name not in changelists:
+        return (f"Error: Changelist '{changelist_name}' is stashed.\n"
+                f"Unstash it first with 'git cl unstash {changelist_name}', "
+                "then run git cl branch again.")
+
     if changelist_name not in changelists:
         error_msg = f"Error: Changelist '{changelist_name}' not found."
         available = [name for name in changelists.keys() if changelists[name]]
@@ -3469,10 +3512,11 @@ def cl_unstage(args: argparse.Namespace) -> bool:
     if clutil_refuse_on_merge_conflict(status_map, "unstage"):
         return False
 
-    # A file has staged changes if the first status character is not a space
+    # A file has staged changes if the first status character is not a
+    # space; untracked files ('??') have nothing staged
     to_unstage, files_by_name = clutil_collect_changelist_files(
         names, changelists, git_root, status_map,
-        lambda path: status_map.get(path, "  ")[0] != " ")
+        lambda path: status_map.get(path, "  ")[0] not in " ?")
 
     label = clutil_changelist_label(names)
     if not to_unstage:
@@ -3481,7 +3525,7 @@ def cl_unstage(args: argparse.Namespace) -> bool:
 
     try:
         # Use git reset HEAD to unstage files
-        subprocess.run(["git", "reset", "HEAD", "--"] + to_unstage,
+        subprocess.run(["git", "reset", "--quiet", "HEAD", "--"] + to_unstage,
                        check=True)
     except subprocess.CalledProcessError as error:
         clutil_print_error(f"Error unstaging files: {error}")
@@ -3581,7 +3625,8 @@ def cl_status(args: argparse.Namespace) -> bool:
     conflicts = clutil_detect_merge_conflicts(status_map)
     if conflicts:
         print()
-        print(f"Note: {len(conflicts)} file(s) with merge conflicts. "
+        print(f"Note: {clutil_plural(len(conflicts), 'file')} with merge "
+              "conflicts. "
               "Resolve before staging, committing, or stashing.")
     return True
 
@@ -3683,6 +3728,8 @@ def cl_checkout(args: argparse.Namespace) -> bool:
               optional 'force' flag for confirmation, and optional 'delete'
               flag to remove changelist(s) after checkout.
     """
+    # A name given twice is handled once, as in stage and commit
+    args.names = list(dict.fromkeys(args.names))
     changelists = clutil_load()
     git_root = clutil_get_git_root()
 
@@ -3772,7 +3819,8 @@ def cl_checkout(args: argparse.Namespace) -> bool:
         return not missing_changelists
 
     # Show what will be affected and ask for confirmation unless --force
-    print(f"This will discard local changes in {len(checkout_files)} file(s):")
+    print("This will discard local changes in "
+          f"{clutil_plural(len(checkout_files), 'file')}:")
     for file_path in checkout_files[:10]:  # Show first 10 files
         print(f"  {file_path}")
     if len(checkout_files) > 10:
@@ -3792,7 +3840,8 @@ def cl_checkout(args: argparse.Namespace) -> bool:
     try:
         subprocess.run(["git", "checkout", "HEAD", "--"] + checkout_files,
                        check=True)
-        print(f"Successfully reverted {len(checkout_files)} file(s) to HEAD state.")
+        print("Successfully reverted "
+              f"{clutil_plural(len(checkout_files), 'file')} to HEAD state.")
 
 
         # Show summary by changelist. Only files in HEAD were reverted;
@@ -3803,7 +3852,7 @@ def cl_checkout(args: argparse.Namespace) -> bool:
                 reverted_count = sum(1 for f in changelists[name]
                                      if f in in_head)
                 if reverted_count > 0:
-                    print(f"  {name}: {reverted_count} files")
+                    print(f"  {name}: {clutil_plural(reverted_count, 'file')}")
 
         # Delete changelists if --delete flag is set
         if args.delete:
@@ -4137,6 +4186,13 @@ def cl_stash(args: argparse.Namespace, quiet: bool = False) -> bool:
     changelists = clutil_load()
     stashes = clutil_load_stashes()
 
+    if not clutil_has_commits():
+        clutil_print_error("Error: Cannot stash before the first commit; Git "
+                           "needs a commit to stash changes against.")
+        clutil_print_error("Commit something first, for example: "
+                           "git cl commit <changelist> -m 'Initial commit'")
+        return False
+
     # Handle --all flag
     if getattr(args, 'all', False):
         success_count, total = clutil_stash_all_changelists(changelists,
@@ -4186,7 +4242,7 @@ def cl_stash(args: argparse.Namespace, quiet: bool = False) -> bool:
             branch_info = f" from branch '{current_branch}'"
         else:
             branch_info = " from detached HEAD"
-        print(f"\nStashing {len(stashable_files)} file(s) "
+        print(f"\nStashing {clutil_plural(len(stashable_files), 'file')} "
               f"from changelist '{name}'{branch_info}...")
 
     files_for_git, untracked_files_for_git = clutil_prepare_files_for_git_stash(
@@ -4340,6 +4396,22 @@ def cl_branch(args: argparse.Namespace) -> bool:
         clutil_print_error(error_msg)
         return False
 
+    if not clutil_has_commits():
+        clutil_print_error("Error: Cannot create a branch before the first "
+                           "commit. Commit something first, for example:")
+        clutil_print_error(f"  git cl commit {changelist_name} -m 'Initial "
+                           "commit'")
+        return False
+
+    # Check the name with Git's rules before anything is stashed
+    if subprocess.run(["git", "check-ref-format", "--branch", branch_name],
+                      capture_output=True, text=True,
+                      check=False).returncode != 0:
+        clutil_print_error(f"Error: '{branch_name}' is not a valid branch "
+                           "name.")
+        clutil_print_error("See 'git help check-ref-format' for the rules.")
+        return False
+
     # Check if branch already exists
     if clutil_check_branch_exists(branch_name):
         clutil_print_error(f"Error: Branch '{branch_name}' already exists.")
@@ -4466,7 +4538,8 @@ def cl_branch(args: argparse.Namespace) -> bool:
 
         # Single success message
         file_count = len(changelists.get(changelist_name, []))
-        print(f"Restored changelist '{changelist_name}' ({file_count} files)")
+        print(f"Restored changelist '{changelist_name}' "
+              f"({clutil_plural(file_count, 'file')})")
         print("Ready to work on your feature!")
         return True
 
@@ -4530,7 +4603,8 @@ def main() -> None:
         version=f'git-cl {__version__}',
         help=argparse.SUPPRESS)
 
-    subparsers = parser.add_subparsers(dest='command', title='Commands')
+    subparsers = parser.add_subparsers(dest='command', title='Commands',
+                                       prog='git cl')
 
     # ADD
     add_parser = subparsers.add_parser('add', aliases=['a'],
@@ -4847,6 +4921,15 @@ def main() -> None:
     # Every command returns True on success and False on failure, so that
     # scripts can rely on the exit code (0 or 1). argparse itself exits
     # with 2 on invalid usage before a command runs.
+    # git-cl changes to the repository root for some Git commands. Make
+    # relative paths in Git's environment absolute first, so that they
+    # keep pointing to the same place.
+    for variable in ("GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE",
+                     "GIT_COMMON_DIR"):
+        value = os.environ.get(variable)
+        if value and not os.path.isabs(value):
+            os.environ[variable] = os.path.abspath(value)
+
     try:
         succeeded = args.func(args)
         sys.stdout.flush()

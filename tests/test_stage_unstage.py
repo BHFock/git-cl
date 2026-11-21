@@ -267,6 +267,21 @@ def run_tests(repo: TestRepo):
     cl = repo.load_cl_json()
     repo.assert_true("real" in cl, "existing changelist is preserved")
 
+    # =================================================================
+    # Test: Unstage leaves untracked files out
+    # =================================================================
+
+    repo.section("Unstage leaves untracked files out")
+
+    repo.write_file("loose.txt", "untracked")
+    repo.run("git cl add mixed-un alpha.txt loose.txt")
+    output = repo.run("git cl unstage mixed-un")
+    repo.assert_exit_code(0, "unstage succeeds")
+    repo.assert_not_in("loose.txt", output,
+                       "the untracked file is not listed as unstaged")
+    repo.assert_not_in("Unstaged changes after reset", output,
+                       "git's own reset output is not shown")
+
 
 # =================================================================
 # Entry point

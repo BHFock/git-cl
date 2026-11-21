@@ -211,6 +211,11 @@ def run_tests(repo: TestRepo):
     repo.assert_in("invalid choice", repo.last_stderr,
                    "usage error on stderr")
 
+    repo.run("git cl branch")
+    repo.assert_exit_code(2, "missing argument gives exit code 2")
+    repo.assert_in("usage: git cl branch", repo.last_stderr,
+                   "the usage line names the subcommand")
+
 
 # =================================================================
 # Entry point

@@ -61,14 +61,14 @@ def main():
 
     # Summary
     print(f"\n{'=' * 45}")
-    print(f"Final Summary")
+    print("Final Summary")
     print(f"{'=' * 45}")
     print(f"Scripts run:  {len(passed) + len(failed)}")
     print(f"  Passed: {len(passed)}")
     print(f"  Failed: {len(failed)}")
 
     if failed:
-        print(f"\nFailed scripts:")
+        print("\nFailed scripts:")
         for name in failed:
             print(f"  - {name}")
 

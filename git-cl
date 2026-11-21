@@ -3647,6 +3647,14 @@ def cl_diff(args: argparse.Namespace) -> bool:
     diff_files = set()
     missing_changelist = False
 
+    # A deleted file is gone from the working directory, but Git still
+    # knows it from the index or HEAD and shows the deletion
+    all_paths = [path for name in args.names
+                 for path in changelists.get(name, [])]
+    known_to_git = (clutil_get_paths_in_index(git_root, all_paths)
+                    | clutil_get_paths_in_head(git_root, all_paths))
+    cwd = Path.cwd().resolve()
+
     for name in args.names:
         if name not in changelists:
             clutil_print_error(f"Error: Changelist '{name}' not found.")
@@ -3654,9 +3662,8 @@ def cl_diff(args: argparse.Namespace) -> bool:
             continue
         for path in changelists[name]:
             abs_path = clutil_resolve_file(git_root / path)
-            if clutil_path_exists(abs_path):
-                rel_to_cwd = _relpath(abs_path, Path.cwd().resolve())
-                diff_files.add(rel_to_cwd)
+            if clutil_path_exists(abs_path) or path in known_to_git:
+                diff_files.add(_relpath(abs_path, cwd))
             else:
                 clutil_print_error(f"Warning: File '{path}' from '{name}' does not "
                                    "exist.")
@@ -3669,26 +3676,58 @@ def cl_diff(args: argparse.Namespace) -> bool:
 
     sorted_files = sorted(diff_files)
 
-    try:
-        if args.both:
-            # Show both unstaged and staged diffs
-            print("=== Unstaged changes (working tree vs index) ===")
-            subprocess.run(["git", "diff", "--"] + sorted_files, check=False)
-            print("\n=== Staged changes (index vs HEAD) ===")
-            subprocess.run(["git", "diff", "--staged", "--"] + sorted_files,
-                           check=False)
-        elif args.staged:
-            # Show only staged changes
-            subprocess.run(["git", "diff", "--staged", "--"] + sorted_files,
-                           check=False)
-        else:
-            # Default: show unstaged changes
-            subprocess.run(["git", "diff", "--"] + sorted_files, check=False)
-    except subprocess.CalledProcessError as error:
-        clutil_print_error(f"Error running git diff: {error}")
-        return False
+    def run_diff(extra: list[str]) -> bool:
+        """Run one git diff; report a failure and return False on it."""
+        sys.stdout.flush()
+        try:
+            result = subprocess.run(["git", "diff"] + extra + ["--"]
+                                    + sorted_files, check=False)
+        except OSError as error:
+            clutil_print_error(f"Error running git diff: {error}")
+            return False
+        if result.returncode != 0:
+            clutil_print_error(f"Error: git diff {' '.join(extra)}".rstrip()
+                               + f" failed with exit code {result.returncode}.")
+            return False
+        return True
 
-    return not missing_changelist
+    if args.both:
+        # Show both unstaged and staged diffs; a failure of one does not
+        # stop the other
+        print("=== Unstaged changes (working tree vs index) ===")
+        unstaged_ok = run_diff([])
+        print("\n=== Staged changes (index vs HEAD) ===")
+        staged_ok = run_diff(["--staged"])
+        succeeded = unstaged_ok and staged_ok
+    elif args.staged:
+        succeeded = run_diff(["--staged"])
+    else:
+        succeeded = run_diff([])
+
+    return succeeded and not missing_changelist
+
+
+def clutil_get_paths_in_index(git_root: Path, paths: list[str]) -> set[str]:
+    """
+    Return which of the given paths are in the index.
+
+    Args:
+        git_root: Path to the Git repository root
+        paths: File paths relative to the Git root
+
+    Returns:
+        The subset of paths that are in the index. Empty if Git fails.
+    """
+    if not paths:
+        return set()
+    try:
+        output = subprocess.run(
+            ["git", "-C", str(git_root), "ls-files", "-z", "--cached", "--"]
+            + paths,
+            check=True, capture_output=True, text=True).stdout
+    except subprocess.CalledProcessError:
+        return set()
+    return {path for path in output.split("\0") if path}
 
 
 def clutil_get_paths_in_head(git_root: Path, paths: list[str]) -> set[str]:

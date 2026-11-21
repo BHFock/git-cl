@@ -97,6 +97,24 @@ Both `cl.json` and `cl-stashes.json` are written atomically: the new contents ar
 
 When reading, both files are checked for valid JSON and for the structure git-cl relies on: `cl.json` must map names to lists of file paths, and each record in `cl-stashes.json` needs a `stash_ref` and a `files` list. If a file is damaged, git-cl stops with exit code 1 instead of continuing with empty data, because the next save would otherwise overwrite the file and lose its content. An empty file counts as no data.
 
+#### Metadata Compatibility
+
+Editors and other tools may read and write the metadata files directly; the [VS Code extension](https://github.com/WayLit/git-cl-vscode) does both. git-cl therefore treats the file format as an interface:
+
+- **Location:** both files are stored in the directory returned by `git rev-parse --git-dir`. In a linked worktree this is `.git/worktrees/<name>/`, not the main `.git/` directory (see [Do changelists work with Git worktrees?](#do-changelists-work-with-git-worktrees)).
+- **`cl.json`:** an object mapping changelist names to lists of file paths, relative to the repository root, with `/` as separator.
+- **`cl-stashes.json`:** an object mapping changelist names to stash records. git-cl requires `stash_ref` (string) and `files` (list of paths). It uses `stash_commit` and `stash_message` to find the stash, `file_categories.untracked` to unstage files that were untracked when stashed, and `source_branch` and `timestamp` for messages. Other fields and categories are ignored.
+- **Additions only:** new releases may add optional fields. Existing fields keep their meaning, and records without a newer field keep working. Removing a field or changing its meaning would require a new major version.
+- **Unknown fields are kept:** git-cl does not remove fields it does not know when it rewrites a record. Tools that write the files should do the same.
+- **Damaged files are not overwritten:** if a file is not valid JSON or lacks a required field, git-cl stops rather than replacing it (see above).
+
+Format history:
+
+| Version | Change |
+|---------|--------|
+| 1.6.4 | Both files are checked when read; damaged files stop git-cl instead of being overwritten. |
+| 1.6.5 | New optional field `stash_commit` in stash records: the commit hash of the Git stash, which identifies it exactly. Records without it, for example from earlier versions or other tools, are still found by `stash_message`. |
+
 #### Code Structure
 
 The code is organised in a single file for simple installation. Code navigation is facilitated by clear section headers that group related functionality.

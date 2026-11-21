@@ -6,6 +6,9 @@ Covers:
     git cl diff <name>               — show diff for one changelist
     git cl diff <name1> <name2>      — show combined diff for multiple changelists
     git cl diff <name> --staged      — show only staged changes in a changelist
+    git cl diff <name> --both        — staged and unstaged changes in two sections
+    Deleted files                    — shown as deletions, staged and unstaged
+    A failing git diff               — reported, exit code 1
 
 What you'll learn:
     - git cl diff shows only the changes for files in the named changelist
@@ -123,6 +126,73 @@ def run_tests(repo: TestRepo):
     output = repo.run("git cl diff no-such-list")
     repo.assert_in("no-such-list", output,
                     "error message mentions the changelist name")
+
+    # =================================================================
+    # Test: Deleted files are shown as deletions
+    # =================================================================
+
+    repo.section("Deleted files are shown as deletions")
+
+    repo.write_file("delta.txt", "delta")
+    repo.write_file("epsilon.txt", "epsilon")
+    repo.write_file("zeta.txt", "zeta")
+    repo.run("git add delta.txt epsilon.txt zeta.txt", check=True)
+    repo.run(["git", "commit", "--quiet", "-m", "Add delta, epsilon, zeta"],
+             check=True)
+    repo.delete_file("delta.txt")                       # unstaged deletion
+    repo.run("git rm --quiet epsilon.txt", check=True)  # staged deletion
+    repo.write_file("zeta.txt", "zeta staged")          # staged and unstaged
+    repo.run("git add zeta.txt", check=True)
+    repo.write_file("zeta.txt", "zeta staged and unstaged")
+    repo.run("git cl add removed delta.txt epsilon.txt zeta.txt")
+
+    output = repo.run("git cl diff removed")
+    repo.assert_exit_code(0, "diff succeeds")
+    repo.assert_in("deleted file", output, "unstaged deletion is shown")
+    repo.assert_in("a/delta.txt", output, "delta.txt is in the diff")
+    repo.assert_not_in("does not exist", repo.last_stderr,
+                       "deleted files are not reported as missing")
+
+    output = repo.run("git cl diff removed --staged")
+    repo.assert_exit_code(0, "diff --staged succeeds")
+    repo.assert_in("a/epsilon.txt", output, "staged deletion is shown")
+
+    output = repo.run("git cl diff removed --both")
+    repo.assert_exit_code(0, "diff --both succeeds")
+    unstaged, _, staged = output.partition("=== Staged changes")
+    repo.assert_in("+zeta staged and unstaged", unstaged,
+                   "the unstaged part of zeta.txt is in the first section")
+    repo.assert_in("+zeta staged", staged,
+                   "the staged part of zeta.txt is in the second section")
+    repo.assert_not_in("zeta staged and unstaged", staged,
+                       "the unstaged part is not in the staged section")
+
+    # =================================================================
+    # Test: A failing git diff is reported
+    # =================================================================
+
+    # A damaged index makes git diff fail. git-cl's own metadata is not
+    # affected, so only the diff itself goes wrong.
+
+    repo.section("A failing git diff is reported")
+
+    index = repo.repo_dir / ".git" / "index"
+    saved_index = index.read_bytes()
+    index.write_bytes(b"not an index")
+
+    repo.run("git cl diff removed")
+    repo.assert_exit_code(1, "diff fails")
+    repo.assert_in("git diff failed", repo.last_stderr,
+                   "the failure is reported")
+
+    repo.run("git cl diff removed --both")
+    repo.assert_exit_code(1, "diff --both fails")
+    repo.assert_in("git diff failed", repo.last_stderr,
+                   "the failing unstaged diff is reported")
+    repo.assert_in("git diff --staged failed", repo.last_stderr,
+                   "the failing staged diff is reported as well")
+
+    index.write_bytes(saved_index)
 
 
 # =================================================================

@@ -322,6 +322,8 @@ def clutil_check_stash_data(data) -> Optional[str]:
             return f"the record for '{name}' has no valid 'stash_ref'"
         if not clutil_is_string_list(record.get("files")):
             return f"the record for '{name}' has no valid 'files' list"
+        if not isinstance(record.get("stash_commit", ""), str):
+            return f"the record for '{name}' has an invalid 'stash_commit'"
         categories = record.get("file_categories", {})
         if not (isinstance(categories, dict) and
                 all(clutil_is_string_list(v) for v in categories.values())):
@@ -1470,30 +1472,64 @@ def clutil_create_unique_stash_message(changelist_name: str) -> str:
     return f"git-cl-stash:{changelist_name}:{timestamp}"
 
 
-def clutil_stash_line_matches(line: str, record: dict, name: str) -> bool:
+def clutil_list_stash_entries() -> Optional[list[tuple[str, str, str]]]:
     """
-    Tell whether a 'git stash list' line is the stash of a record.
+    List the entries of 'git stash list' with their commit hashes.
 
-    The record's full stash message 'git-cl-stash:<name>:<timestamp>' is
-    matched exactly, at the end of the line. Matching only the prefix
-    'git-cl-stash:<name>:' would also find an older stash of an earlier
-    changelist with the same name, which may still be in the stash list,
-    and unstash the wrong changes. Records without a stash message, from
-    early versions of git-cl, fall back to the prefix.
+    Returns:
+        A list of (reference, commit hash, reflog subject) tuples, newest
+        first, e.g. ("stash@{0}", "3f2a…", "On main: git-cl-stash:one:…"),
+        or None if 'git stash list' fails.
+    """
+    try:
+        output = subprocess.run(
+            ["git", "stash", "list", "--format=%gd%x00%H%x00%gs"],
+            check=True, capture_output=True, text=True).stdout
+    except (subprocess.CalledProcessError, OSError):
+        return None
+    entries = []
+    for line in output.splitlines():
+        parts = line.split("\0")
+        if len(parts) == 3:
+            entries.append((parts[0], parts[1], parts[2]))
+    return entries
+
+
+def clutil_stash_entry_matches(
+    entry: tuple[str, str, str],
+    record: dict,
+    name: str
+) -> bool:
+    """
+    Tell whether a 'git stash list' entry is the stash of a record.
+
+    The stash commit hash recorded when the changelist was stashed
+    identifies the stash exactly. Records from earlier versions have no
+    hash; for them the full stash message 'git-cl-stash:<name>:<timestamp>'
+    is matched, or, for the earliest records without a message, the
+    prefix 'git-cl-stash:<name>:'.
+
+    The message alone is not unique: worktrees of one repository share
+    the stash list, so a changelist of the same name stashed in another
+    worktree within the same second has the same message.
 
     Args:
-        line: One line of 'git stash list', e.g.
-            "stash@{0}: On main: git-cl-stash:one:20260101_120000"
+        entry: (reference, commit hash, reflog subject) from
+            clutil_list_stash_entries()
         record: The stash record from cl-stashes.json
         name: The changelist name the record is stored under
 
     Returns:
-        True if the line belongs to the record's stash.
+        True if the entry belongs to the record's stash.
     """
+    _, commit, subject = entry
+    stash_commit = record.get("stash_commit")
+    if isinstance(stash_commit, str) and stash_commit:
+        return commit == stash_commit
     message = record.get("stash_message")
     if isinstance(message, str) and message:
-        return line.endswith(": " + message)
-    return f"git-cl-stash:{name}:" in line
+        return subject.endswith(": " + message)
+    return f"git-cl-stash:{name}:" in subject
 
 
 def clutil_find_stash_ref(record: dict, name: str) -> Optional[str]:
@@ -1501,7 +1537,7 @@ def clutil_find_stash_ref(record: dict, name: str) -> Optional[str]:
     Find the current reference of a record's stash in 'git stash list'.
 
     The reference shifts (stash@{0} becomes stash@{1}) whenever another
-    stash is pushed, so it is looked up by message each time.
+    stash is pushed, so it is looked up each time.
 
     Args:
         record: The stash record from cl-stashes.json
@@ -1510,16 +1546,9 @@ def clutil_find_stash_ref(record: dict, name: str) -> Optional[str]:
     Returns:
         The stash reference (e.g. "stash@{2}") or None if not found
     """
-    try:
-        stash_list = subprocess.check_output(["git", "stash", "list"],
-                                             text=True)
-    except subprocess.CalledProcessError:
-        return None
-    for line in stash_list.splitlines():
-        if line and clutil_stash_line_matches(line, record, name):
-            # Extract stash reference from format:
-            # "stash@{0}: On main: git-cl-stash:<name>:<timestamp>"
-            return line.split(':')[0].strip()
+    for entry in clutil_list_stash_entries() or []:
+        if clutil_stash_entry_matches(entry, record, name):
+            return entry[0]
     return None
 
 
@@ -1527,11 +1556,10 @@ def clutil_find_orphaned_stashes(stashes: dict[str, dict]) -> list[str]:
     """
     Find stashed changelists whose Git stash no longer exists.
 
-    A record is orphaned when no entry in 'git stash list' carries its
-    stash message (see clutil_stash_line_matches()), which is how
-    'git cl unstash' finds the stash. This happens when the stash was popped or dropped
-    with plain git. Such a record can never be unstashed, and its files
-    cannot be added to another changelist.
+    A record is orphaned when no entry in 'git stash list' belongs to it
+    (see clutil_stash_entry_matches()). This happens when the stash was
+    popped or dropped with plain git. Such a record can never be
+    unstashed, and its files cannot be added to another changelist.
 
     Args:
         stashes: Stashed changelists as loaded by clutil_load_stashes()
@@ -1542,15 +1570,12 @@ def clutil_find_orphaned_stashes(stashes: dict[str, dict]) -> list[str]:
     """
     if not stashes:
         return []
-    try:
-        stash_list = subprocess.run(["git", "stash", "list"], check=True,
-                                    capture_output=True, text=True).stdout
-    except (subprocess.CalledProcessError, OSError):
+    entries = clutil_list_stash_entries()
+    if entries is None:
         return []
-    lines = stash_list.splitlines()
     return sorted(name for name, record in stashes.items()
-                  if not any(clutil_stash_line_matches(line, record, name)
-                             for line in lines))
+                  if not any(clutil_stash_entry_matches(entry, record, name)
+                             for entry in entries))
 
 
 def clutil_print_orphaned_stash_hint(name: str) -> None:
@@ -1921,8 +1946,17 @@ def clutil_execute_git_stash(
                                    "untracked files.")
         raise
 
-    # Find the created stash
-    stash_ref = clutil_find_stash_ref({"stash_message": stash_message}, name)
+    # Find the created stash. It is the newest one, so refs/stash points
+    # to it; its commit hash identifies it even if another stash has the
+    # same message.
+    try:
+        stash_commit = subprocess.run(
+            ["git", "rev-parse", "--verify", "--quiet", "refs/stash"],
+            check=True, capture_output=True, text=True).stdout.strip()
+    except subprocess.CalledProcessError:
+        stash_commit = ""
+    stash_ref = clutil_find_stash_ref(
+        {"stash_commit": stash_commit, "stash_message": stash_message}, name)
     if not stash_ref:
         clutil_print_error("Error: Could not locate the created stash.")
         clutil_print_error("Look for a stash with message containing "
@@ -1951,9 +1985,17 @@ def clutil_build_stash_metadata(
         current_branch: Current Git branch
 
     Returns:
-        Dictionary containing stash metadata
+        Dictionary containing stash metadata. 'stash_commit' is the commit
+        hash of the stash, which identifies it exactly; it is left out if
+        it cannot be determined.
     """
-    return {
+    try:
+        stash_commit = subprocess.run(
+            ["git", "rev-parse", "--verify", "--quiet", stash_ref],
+            check=True, capture_output=True, text=True).stdout.strip()
+    except subprocess.CalledProcessError:
+        stash_commit = ""
+    metadata = {
         "stash_ref": stash_ref,
         "stash_message": stash_message,
         "files": files.copy(),
@@ -1966,6 +2008,9 @@ def clutil_build_stash_metadata(
             "deleted_files": file_categories['deleted_files']
         }
     }
+    if stash_commit:
+        metadata["stash_commit"] = stash_commit
+    return metadata
 
 
 # pylint: disable-next=too-many-arguments
@@ -2429,7 +2474,7 @@ def clutil_verify_and_update_stash_ref(
     Args:
         base_name: Changelist name
         old_stash_ref: Previously stored stash reference
-        stash_data: The stash record, used to find the stash by message
+        stash_data: The stash record, used to find the stash
 
     Returns:
         Updated stash reference or None if stash doesn't exist

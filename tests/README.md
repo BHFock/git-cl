@@ -104,6 +104,7 @@ git cl st
 | `test_exit_codes.py` | Exit codes `0`, `1` and `2`, errors and warnings on stderr, partial failure |
 | `test_save_failures.py` | Failed writes of `cl.json` and `cl-stashes.json`: exit code `1`, stashed changes restored |
 | `test_corrupt_metadata.py` | Damaged or wrongly shaped `cl.json` and `cl-stashes.json`: exit code `1`, files not overwritten, recovery |
+| `test_submodules.py` | Submodules refused in changelists; `git cl branch` with changes inside a submodule and with a new submodule commit |
 
 
 ## How the Tests Work

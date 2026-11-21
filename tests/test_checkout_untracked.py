@@ -17,6 +17,7 @@ Covers:
     git cl checkout <all-untracked>    — exits cleanly, nothing reverted
     git cl checkout <mixed> --delete   — changelist removed after a real revert
     git cl checkout <untracked> --delete — changelist kept (nothing happened)
+    git cl checkout <deleted + new>    — deleted files restored, new files skipped
 
 What you'll learn:
     - An untracked file in a changelist no longer blocks checkout of its
@@ -25,6 +26,8 @@ What you'll learn:
       because "revert this changelist" might be expected to clear them too
     - --delete only fires after a successful revert, so an all-untracked
       changelist is preserved (there was nothing to revert)
+    - Deleted files are restored from HEAD; staged new files are skipped,
+      because there is no committed state to revert them to
 
 Run:
     ./test_checkout_untracked.py
@@ -159,6 +162,41 @@ def run_tests(repo: TestRepo):
     repo.assert_true(
         "au-delete" in cl,
         "changelist kept when nothing was reverted (early return precedes --delete)")
+
+    repo.run("git cl delete --all")
+
+    # =================================================================
+    # Test: Deleted files are restored, new files are skipped
+    # =================================================================
+
+    # A staged new file is not in HEAD either, so it would make git
+    # reject the whole batch just like an untracked file. Deleted files
+    # are in HEAD and are restored.
+
+    repo.section("Deleted files are restored, new files are skipped")
+
+    repo.write_file("gone.txt", "committed, then deleted")
+    repo.write_file("removed.txt", "committed, then removed with git rm")
+    repo.run("git add gone.txt removed.txt", check=True)
+    repo.run(["git", "commit", "--quiet", "-m", "Add files to delete"],
+             check=True)
+    repo.delete_file("gone.txt")
+    repo.run("git rm --quiet removed.txt", check=True)
+    repo.write_file("staged_new.txt", "new file, staged")
+    repo.run("git add staged_new.txt", check=True)
+
+    repo.run("git cl add mixed2 gone.txt removed.txt staged_new.txt")
+    output = repo.run("git cl checkout mixed2 --force")
+    repo.assert_exit_code(0, "checkout succeeds")
+    repo.assert_equal("committed, then deleted", repo.read_file("gone.txt"),
+                      "a deleted file is restored")
+    repo.assert_equal("committed, then removed with git rm",
+                      repo.read_file("removed.txt"),
+                      "a file removed with git rm is restored")
+    repo.assert_in("not in HEAD", repo.last_stderr,
+                   "the staged new file is named as skipped")
+    repo.assert_in("A  staged_new.txt", repo.run("git status --porcelain"),
+                   "the staged new file is left as it is")
 
     repo.run("git cl delete --all")
 

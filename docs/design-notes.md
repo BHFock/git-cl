@@ -212,7 +212,8 @@ Beyond path safety, all user inputs are validated:
 Operations use defensive programming patterns:
 
 - **Atomic metadata updates** - `clutil_file_lock()` provides exclusive access with automatic cleanup
-- **Rollback capabilities** - Stash operations recover from partial failures by dropping orphaned Git stashes
+- **Rollback capabilities** - If a stash cannot be recorded, its changes are put back first, and the Git stash is dropped only once they are restored
+- **Non-destructive checkout** - `git cl checkout` reverts only files that exist in HEAD. Untracked and newly added files are never deleted, because their content is stored nowhere else; they are skipped with a warning
 - **Command injection prevention** - Uses `subprocess.run()` with list arguments, never shell strings
 - **Safe argument handling** - All paths passed to Git are pre-validated
 

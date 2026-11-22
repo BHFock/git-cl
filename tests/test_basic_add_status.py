@@ -7,6 +7,7 @@ Covers:
     git cl status / git cl st       — view status grouped by changelist
     git cl st <name>                — filter status by changelist name
     git cl st --include-no-cl       — include unassigned files when filtering
+    Rare status codes               — shown as Git reports them ([MD], [ A])
 
 What you'll learn:
     - How to create changelists and assign files
@@ -244,6 +245,36 @@ def run_tests(repo: TestRepo):
                         "tracked file from filtered-out list2 does not leak")
     repo.assert_not_in("leak-c.txt", output,
                         "untracked file from filtered-out list2 does not leak")
+
+    repo.run("git cl delete --all")
+
+    # =================================================================
+    # Test: Rare status codes are shown as Git reports them
+    # =================================================================
+
+    # Up to 1.6.x, rare codes were hidden by default, and files in a
+    # changelist with such a code were shown as missing or unchanged.
+
+    repo.section("Rare status codes are shown as Git reports them")
+
+    repo.write_file("rare_md.txt", "committed")
+    repo.run("git add rare_md.txt", check=True)
+    repo.run(["git", "commit", "--quiet", "-m", "Add rare_md.txt"], check=True)
+    repo.write_file("rare_md.txt", "staged change")
+    repo.run("git add rare_md.txt", check=True)
+    repo.delete_file("rare_md.txt")                 # MD
+    repo.write_file("rare_ita.txt", "intent to add")
+    repo.run("git add -N rare_ita.txt", check=True)  # ' A'
+
+    repo.run("git cl add rare rare_md.txt rare_ita.txt")
+    output = repo.run("git cl st")
+    repo.assert_in("[MD] rare_md.txt", output, "MD is shown")
+    repo.assert_in("[ A] rare_ita.txt", output, "intent to add is shown")
+    repo.assert_not_in("does not exist", repo.last_stderr,
+                       "the deleted file is not reported as unknown to Git")
+
+    repo.run("git cl st --all")
+    repo.assert_exit_code(0, "--all is still accepted")
 
     repo.run("git cl delete --all")
 

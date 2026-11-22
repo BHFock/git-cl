@@ -103,7 +103,7 @@ Editors and other tools may read and write the metadata files directly; the [VS 
 
 - **Location:** both files are stored in the directory returned by `git rev-parse --git-dir`. In a linked worktree this is `.git/worktrees/<name>/`, not the main `.git/` directory (see [Do changelists work with Git worktrees?](#do-changelists-work-with-git-worktrees)).
 - **`cl.json`:** an object mapping changelist names to lists of file paths, relative to the repository root, with `/` as separator.
-- **`cl-stashes.json`:** an object mapping changelist names to stash records. git-cl requires `stash_ref` (string) and `files` (list of paths). It uses `stash_commit` and `stash_message` to find the stash, `file_categories.untracked` to unstage files that were untracked when stashed, and `source_branch` and `timestamp` for messages. Other fields and categories are ignored.
+- **`cl-stashes.json`:** an object mapping changelist names to stash records. git-cl requires `stash_ref` (string) and `files` (list of paths), and checks the types of the optional `stash_commit` (string) and `file_categories` (lists of paths) when they are present. It uses `stash_commit` and `stash_message` to find the stash, `file_categories.untracked` to unstage files that were untracked when stashed, and `source_branch` and `timestamp` for messages. Other fields and categories are ignored.
 - **Additions only:** new releases may add optional fields. Existing fields keep their meaning, and records without a newer field keep working. Removing a field or changing its meaning would require a new major version.
 - **Unknown fields are kept:** git-cl does not remove fields it does not know when it rewrites a record. Tools that write the files should do the same.
 - **Damaged files are not overwritten:** if a file is not valid JSON or lacks a required field, git-cl stops rather than replacing it (see above).
@@ -157,7 +157,7 @@ This section also includes the definition of the command line help. Defining the
 
 #### Concurrency and Locking
 
-`git-cl` uses platform-specific file locking (fcntl on Unix, msvcrt on Windows) to lock metadata files, preventing race conditions. It is designed for single-user interactive use rather than shared accounts or scripts.
+`git-cl` uses platform-specific file locking (fcntl on Unix, msvcrt on Windows) to lock metadata files, so that a file is never read while another git-cl process is writing it. The lock covers each read and each write, not a whole command, so two git-cl commands running at the same time can still overwrite each other's changes. It is designed for single-user interactive use rather than shared accounts or scripts.
 
 `clutil_file_lock` implements a [context manager](https://book.pythontips.com/en/latest/context_managers.html) that creates temporary `.lock` files (e.g., `cl.json.lock`) with exclusive locks. All metadata read/write operations are wrapped in these locks, with automatic cleanup on exit or exception.
 
@@ -177,7 +177,7 @@ A few helpers terminate execution immediately on fatal errors, such as running o
 
 `git-cl` commands fall into three categories based on what they touch:
 
-* **Metadata-only** (`add`, `remove`, `delete`) — modify `cl.json` without affecting Git state.
+* **Metadata-only** (`add`, `remove`, `delete`, `prune`) — modify `cl.json` (and, for `prune`, `cl-stashes.json`) without affecting Git state.
 * **Read-only** (`status`, `diff`) — inspect Git state but do not modify it.
 * **State-mutating** (`stage`, `unstage`, `commit`, `stash`, `unstash`, `checkout`, `branch`) — call Git commands that change repository state.
 
@@ -256,7 +256,7 @@ This three-stage approach ensures repository portability (paths work regardless 
 
 Git's `status --porcelain` output needs to be transformed into changelist-grouped display. The transformation has four stages: collection, parsing with filtering, changelist grouping, and display formatting.
 
-`clutil_get_git_status` runs `git status --porcelain -z` with the `--untracked-files=all` flag and returns one entry per file: the two-character status code, the path and, for a rename or copy, the original path. The `-z` form gives paths exactly as they are, separated by NUL bytes; without it, Git quotes paths with spaces and writes non-ASCII characters such as umlauts as octal escapes, so they would not match the paths stored in changelists. `clutil_get_file_status_map` then maps each path to its status code. For a rename, the new path gets the rename status and the original path is recorded as a staged deletion (`D `), as it is in the index. Paths are converted to repository-root-relative form using `Path.relative_to(git_root).as_posix()` for consistent internal representation, and the result is returned as a `dict[str, str]` mapping paths to status codes.
+`clutil_get_git_status` runs `git status --porcelain -z`, with `--untracked-files=all` when untracked files are included and `--untracked-files=no` when they are not (for example `git cl status --no-untracked`), and returns one entry per file: the two-character status code, the path and, for a rename or copy, the original path. The `-z` form gives paths exactly as they are, separated by NUL bytes; without it, Git quotes paths with spaces and writes non-ASCII characters such as umlauts as octal escapes, so they would not match the paths stored in changelists. `clutil_get_file_status_map` then maps each path to its status code. For a rename, the new path gets the rename status and the original path is recorded as a staged deletion (`D `), as it is in the index. Paths are converted to repository-root-relative form using `Path.relative_to(git_root).as_posix()` for consistent internal representation, and the result is returned as a `dict[str, str]` mapping paths to status codes.
 
 During parsing, codes are filtered against an allowlist rather than a denylist. The `INTERESTING_CODES` set contains the common working-directory states (`??`, ` M`, `M `, `MM`, `A `, `AM`, ` D`, `D `, `R `, `RM`) together with the seven merge-conflict codes (`UU`, `AA`, `DD`, `AU`, `UA`, `DU`, `UD`). Merge conflicts are included in the default view because they require immediate user action; rare codes like type changes (`T `) and copy renames are filtered unless `--all` is passed. Files with filtered codes are counted and reported with a summary note, so the user knows something was hidden.
 
@@ -268,9 +268,9 @@ The colour rules are:
 - Staged-only (`X `) — green (ready to commit)
 - Unstaged-only (` X`) — red (working-directory changes)
 - Merge conflict (`UU`, `AA`, etc.) — red (blocking state, matches git's own convention)
-- Mixed staged+unstaged (`XX`) — magenta (both staged and unstaged changes in the same file)
+- Mixed staged+unstaged (`XX`, for example `MM` or `AM`) — magenta (both staged and unstaged changes in the same file)
 
-The merge-conflict branch sits at the top of the colour-selection chain in `clutil_format_file_status`. Without that placement, codes like `AA` would fall through to the `staged == 'A'` branch and render green, which would be actively misleading for a file that actually needs resolving.
+The merge-conflict branch sits at the top of the colour-selection chain in `clutil_format_file_status`. Without that placement, codes like `AA` would fall through to the mixed branch and render magenta like an ordinary file with staged and unstaged changes, hiding that it actually needs resolving.
 
 If the `colorama` module isn't available, the formatter falls back to plain text via dummy colour objects, so output works uncoloured rather than failing.
 
@@ -292,17 +292,17 @@ Files must have unstaged changes, be newly added to the index, or be untracked (
 
 ### Unstash Conflict Detection
 
-Unstashing a changelist needs to distinguish file states that genuinely block `git stash pop` from states that merely look concerning but are fine. Being too conservative here would make unstash refuse in cases where it would actually succeed; being too permissive would let users hit cryptic Git errors mid-operation.
+Unstashing a changelist needs to distinguish file states that genuinely block `git stash apply` from states that merely look concerning but are fine. Being too conservative here would make unstash refuse in cases where it would actually succeed; being too permissive would let users hit cryptic Git errors mid-operation.
 
 `clutil_check_unstash_conflicts_optimized` performs this check using a lookup table (`UNSTASH_STATUS_ANALYSIS`) keyed on the two-character status code. Real blocking conflicts are untracked files at the target path (which would be overwritten by the stash restoration) and working-directory modifications or deletions (which would conflict with the stashed changes). Staged changes and clean files are safe — the stash applies on top without collision. Missing files are treated as ideal: the stash will restore them with no conflict at all.
 
-When conflicts are detected, `clutil_suggest_workflow_actions` produces context-specific advice — for example, suggesting `git checkout -- <file>` for working-directory modifications or `git rm` for files deleted in the working directory. The suggestions are tailored to the stash→branch→unstash workflow that `cl_branch` automates, since that's where most unstash operations happen in practice.
+With `--force`, this check is skipped, and `git stash apply` itself decides; it still refuses to overwrite changes it would lose. When conflicts are detected, `clutil_suggest_workflow_actions` produces context-specific advice — for example, suggesting `git checkout -- <file>` for working-directory modifications or `git rm` for files deleted in the working directory. The suggestions are tailored to the stash→branch→unstash workflow that `cl_branch` automates, since that's where most unstash operations happen in practice.
 
 ### Branching Workflow
 
 `cl_branch` automates the stash→branch→unstash sequence in a single operation, so users can move a changelist to its own branch without manually coordinating the three steps.
 
-Before doing anything destructive, the command performs three safety checks. `clutil_validate_branch_preconditions` ensures the target changelist exists and is active (not already stashed). `clutil_check_branch_exists` refuses if a branch with the target name already exists. `clutil_check_unassigned_changes` detects uncommitted changes that aren't assigned to any changelist and aborts with an error — this prevents accidental data loss, since unassigned changes would otherwise get caught up in the stash-all step with no clear way to identify them afterwards.
+Before stashing anything, the command performs these safety checks. `clutil_validate_changelists_stashable` checks that every active changelist can be stashed, not only the target one, because all of them are stashed; with more than one changelist it also refuses files with staged changes, since a path-limited stash records the whole index and would carry them into every stash. `clutil_validate_branch_preconditions` ensures the target changelist exists and is active (not already stashed). `clutil_check_branch_exists` refuses if a branch with the target name already exists, and `git check-ref-format --branch` rejects names that Git would not accept. The repository needs at least one commit. `clutil_check_unassigned_changes` detects uncommitted changes that aren't assigned to any changelist, including a submodule that points to a new commit, and aborts with an error. Only changelists are stashed, so unassigned changes would otherwise be carried onto the new branch and mix unrelated work into it. Untracked files and uncommitted changes inside a submodule do not stop it.
 
 Once the checks pass, `clutil_stash_all_changelists` stashes every active changelist (including the target), leaving a clean working directory. `clutil_create_branch` creates and checks out the new branch from the specified base, or from the current HEAD if `--from` wasn't given. `clutil_unstash_changelist` then restores only the target changelist onto the new branch. The other changelists stay stashed and can be restored later with `git cl unstash`.
 

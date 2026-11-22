@@ -128,6 +128,7 @@ Then make it executable with `chmod +x .git/hooks/post-commit`.
 
 Good to know:
 
+- Hooks in `.git/hooks/` are not shared when you push or clone, so other people working on the repository are not affected.
 - In repositories without changelists, the hook does nothing.
 - The hook only acts on commits made outside git-cl. During [git cl commit](#25-commit-a-changelist), `git cl prune` does nothing, so a changelist committed with `--keep` is kept as usual.
 - Files you add to a changelist before editing them are removed by the next commit, because they have no changes yet. Leave the hook off if you plan changelists ahead like this.

@@ -857,8 +857,6 @@ def clutil_format_file_status(
         color = Fore.RED
     elif status == "??":
         color = Fore.BLUE
-    elif staged == 'A':
-        color = Fore.GREEN
     elif staged != " " and unstaged == " ":
         color = Fore.GREEN
     elif staged == " " and unstaged != " ":
@@ -3141,7 +3139,8 @@ def clutil_validate_changelists_stashable(
             for stored_path, abs_path in existing_files:
                 rel = abs_path.relative_to(git_root).as_posix()
                 status = status_map.get(rel, "  ")
-                if status[0] not in (' ', '?'):
+                if (status[0] not in (' ', '?')
+                        and stored_path not in known_unstashable):
                     messages.append(
                         f"{stored_path} (staged - remove from index "
                         "before stashing)")
@@ -3957,6 +3956,7 @@ def cl_delete(args: argparse.Namespace) -> bool:
     Deletes one or more changelists by name, or all with --all.
     """
     changelists = clutil_load()
+    stashes = clutil_load_stashes()
 
     if args.all and args.names:
         clutil_print_error("Error: Cannot specify changelist names and --all together.")
@@ -3983,6 +3983,11 @@ def cl_delete(args: argparse.Namespace) -> bool:
             del changelists[name]
             print(f"Deleted changelist '{name}'")
             deleted = True
+        elif name in stashes:
+            clutil_print_error(f"Error: Changelist '{name}' is stashed. "
+                               "Delete only removes active changelists.")
+            clutil_print_error(f"Unstash it first with 'git cl unstash {name}'.")
+            missing = True
         else:
             clutil_print_error(f"Error: Changelist '{name}' not found.")
             missing = True
@@ -4622,7 +4627,7 @@ def main() -> None:
             "git-cl: A Git subcommand for managing named changelists \n"
             "        Group files into logical changelists before staging "
             "or committing.\n\n"
-            "        NOTE: Commit/stage commands only operate on tracked files"
+            "        NOTE: Commit/stage commands only operate on tracked files;"
             "\n              untracked files in changelists are safely "
             "ignored."),
         epilog=(
@@ -4874,14 +4879,15 @@ def main() -> None:
     stash_parser = subparsers.add_parser('stash', aliases=['sh'],
                                          help='Stash changes in changelist(s)',
                                          description=(
-                                             "Stash all unstaged changes for "
-                                             "files in the specified "
-                                             "changelist. Only files with "
-                                             "unstaged changes can be "
-                                             "stashed. Use --all to stash "
-                                             "all active changelists at once "
-                                             "for multi-feature branch "
-                                             "workflow."))
+                                             "Stash the changes of the files "
+                                             "in the specified changelist: "
+                                             "unstaged changes, newly added "
+                                             "files and untracked files. A "
+                                             "changelist with files that "
+                                             "have only staged changes or "
+                                             "no changes is refused. Use "
+                                             "--all to stash all active "
+                                             "changelists at once."))
     stash_group = stash_parser.add_mutually_exclusive_group(required=True)
     stash_group.add_argument('name', nargs='?', metavar='CHANGELIST',
                              help='Name of the changelist to stash')

@@ -147,6 +147,7 @@ git cl add <changelist-name> <file1> <file2> ...
 
 - Groups files under a named changelist.
 - A file can only belong to one changelist at a time; it will be moved if already assigned elsewhere.
+- Files and names of a [stashed changelist](#31-stash-and-unstash-changelists) cannot be added until it is unstashed.
 
 #### Example
 
@@ -245,11 +246,14 @@ Without colorama, `git cl status` works the same but prints plain text.
 git cl diff <changelist-name>
 git cl diff <changelist1> <changelist2>
 git cl diff <changelist-name> --staged
+git cl diff <changelist-name> --both
 ```
 
 - Shows a unified diff ([git diff](https://git-scm.com/docs/git-diff)) of the files in the changelist.
 - When you specify multiple changelists, shows a combined diff of all files from those changelists.
 - Uses `git diff --cached` when `--staged` is provided.
+- With `--both`, shows the unstaged changes first and then the staged ones, each under its own heading.
+- Deleted files are shown as deletions.
 
 #### Example
 
@@ -257,6 +261,7 @@ git cl diff <changelist-name> --staged
 git cl diff docs          # Show diff for 'docs' changelist only
 git cl diff docs tests    # Show combined diff for both 'docs' and 'tests'
 git cl diff docs --staged # Show staged changes for 'docs' changelist
+git cl diff docs --both   # Show unstaged, then staged changes
 ```
 
 ### 2.4 Stage and Unstage a Changelist
@@ -320,8 +325,6 @@ git cl commit <changelist-name> [<changelist-name> ...] -F commit.txt
 - Several changelists can be combined into a single commit. If any of the named changelists does not exist, nothing is committed.
 - The changelist is deleted after committing, unless you use `--keep`.
 
-Important: This command automatically stages tracked files before committing them, so you don't need to run `git add` or [git cl stage](#24-stage-and-unstage-a-changelist) first. However, untracked files (`[??]`) in the changelist are safely ignored and will remain untracked.
-
 This allows you to commit grouped changes directly, without touching the Git staging area manually.
 
 #### Example
@@ -362,6 +365,7 @@ git cl delete <changelist1> <changelist2> ...
 
 - Deletes one or more named changelists.
 - Files remain in the working directory and will appear under “No Changelist” next time you run [git cl st](#22-view-status-by-changelist).
+- A stashed changelist is not deleted. [Unstash](#31-stash-and-unstash-changelists) it first.
 
 You can also delete all changelists at once with:
 
@@ -384,7 +388,7 @@ git cl co <changelist-name>
 - Reverts all files in the changelist to their last committed state ([HEAD](https://git-scm.com/book/en/v2/Git-Tools-Reset-Demystified.html#_the_head)).
 - Useful for discarding local changes by intent, not just by filename.
 - Accepts one or more changelist names.
-- Prompts for confirmation before proceeding; use `--force` (or `-f`) to skip the prompt.
+- Prompts for confirmation before proceeding; use `--force` (or `-f`) to skip the prompt, for example in scripts.
 - Deleted files (`[ D]`, `[D ]`) are restored.
 - Untracked files (`[??]`) and new files (`[A ]`, `[AM]`) are skipped with a warning, because they have no committed state to revert to. They stay as they are: `git cl checkout` never deletes a file.
 - Shows a summary of reverted files.
@@ -430,6 +434,7 @@ git cl stash <changelist-name>
 
 - Saves files with unstaged changes, newly added files (`[A ]`) and untracked files from the changelist.
 - The stash is named after your changelist and timestamped.
+- While a changelist is stashed, [git cl status](#22-view-status-by-changelist) lists it under 'Stashed Changelists', and its name and files cannot be used for another changelist until you unstash it.
 - Refuses to stash the changelist if any of its files has only staged changes (e.g. `[M ]`) or no changes at all, and lists those files. Git's stash cannot set them aside on their own, so commit or unstage them first, or [remove](#26-remove-files-from-changelists) them from the changelist.
 
 #### Unstash a changelist
@@ -440,7 +445,9 @@ git cl unstash <changelist-name>
 
 - Restores the previously stashed changes, including which of them were staged: a file with staged and unstaged changes comes back as `[MM]`, an untracked file as `[??]`.
 - If a file has changed on the current branch since it was stashed, its staged changes are restored as unstaged changes, and git-cl lists the file.
-- Warns if files conflict with current working directory.
+- Refuses, and lists the files, if a file of the changelist has changes in your working directory or an untracked file is in its place. Commit, stash or discard those changes first. With `--force`, git-cl skips this check, but Git still refuses to overwrite changes it would lose.
+- Also refuses in a detached HEAD state, for example during a rebase, or when you unstash onto another branch whose working directory has uncommitted changes, unless you use `--force`.
+- If the stash was popped or dropped with plain `git stash`, unstash cannot restore it and points to [git cl prune](#33-prune-stale-entries).
 - If applying the stash stops with conflicts, the changelist is restored and its changes are in the working directory with conflict markers, as with `git stash pop`. Resolve the files and mark them as resolved with `git add`. The stash is kept until you drop it with `git stash drop`.
 
 #### Stash all changelists
@@ -450,6 +457,7 @@ git cl stash --all
 ```
 
 - Stashes all active changelists at once.
+- `git cl unstash --all` restores all stashed changelists.
 
 Tip: Your files aren’t deleted — they’re just “put in a box” until you bring them back with unstash.
 
@@ -472,6 +480,8 @@ What happens under the hood:
 3. Restores only the chosen changelist on that branch — the other changelists remain stashed and can be restored with `git cl unstash` later.
 
 Before it starts, `git cl branch` checks that every modified tracked file belongs to a changelist. Only files in changelists are stashed, so unassigned changes would stay in your working directory and be carried onto the new branch, mixing unrelated work into it. If any changes are not assigned to a changelist, it stops without changing anything. Add them to a changelist (or commit or discard them), then run the command again.
+
+Because `git cl branch` stashes all your changelists, each of them must be stashable: a changelist with files that have only staged changes or no changes stops it, even if it is not the one you are branching ([Why does git cl stash refuse my changelist?](#why-does-git-cl-stash-refuse-my-changelist)). With more than one changelist, files with staged changes of any kind (`[M ]`, `[A ]`, `[MM]`) stop it too, because Git would carry them into every stash. Unstage them first with `git cl unstage`.
 
 Untracked files (`[??]`) that are not in any changelist do not stop `git cl branch`. They are not stashed, so they stay in your working directory and follow you to the new branch, just as they would with `git checkout -b`.
 
@@ -723,7 +733,7 @@ No. Changelists are stored locally in `.git/cl.json` and are not version-control
 Yes — changelists are local and independent of [branches](https://git-scm.com/docs/git-branch). This means:
 
 - You can keep working on the same files across branches
-- But beware: a changelist may reference files that don't exist in the new branch
+- But beware: a changelist may reference files that don't exist in the new branch. They are shown as `[XX]`, and [git cl prune](#33-prune-stale-entries) would remove them.
 
 If things get messy, delete a stale changelist:
 
@@ -737,7 +747,11 @@ Use `git cl stash <name>`, then switch branches and [git cl unstash](#31-stash-a
 
 ### Why does git cl branch refuse to run?
 
-[git cl branch](#32-create-a-branch-from-a-changelist) stops if you have modified tracked files that are not in any changelist. It only stashes the files in changelists, so unassigned changes would be carried onto the new branch along with the changelist you chose. Untracked files outside any changelist do not stop it; they simply stay in your working directory. Run [git cl status](#22-view-status-by-changelist) to see what is listed under 'No Changelist', then add those files to a changelist, commit them, or discard them, and try again.
+[git cl branch](#32-create-a-branch-from-a-changelist) stops if you have modified tracked files that are not in any changelist. It only stashes the files in changelists, so unassigned changes would be carried onto the new branch along with the changelist you chose. Untracked files outside any changelist do not stop it; they simply stay in your working directory. Run [git cl status](#22-view-status-by-changelist) to see what is listed under 'No Changelist', then add those files to a changelist, commit them, or discard them, and try again. It also stops if one of your changelists cannot be stashed; the message lists the files, and [Section 3.2](#32-create-a-branch-from-a-changelist) explains why.
+
+### Why do git-cl commands refuse during a merge conflict?
+
+While any file in the repository has a merge conflict (`[UU]`, `[AA]` and similar), `git cl stage`, `unstage`, `commit`, `checkout`, `stash` and `unstash` refuse to run, even for changelists that do not contain the conflicted file. Running Git commands on a half-merged repository would fail with unclear errors or leave it in an unclear state. Resolve the conflicts first and mark them as resolved with `git add`; the message tells you how to complete or abort the merge, rebase or cherry-pick if one is in progress. `git cl status`, `diff`, `add`, `remove` and `delete` keep working, so you can still reorganise your changelists.
 
 ### Why does git cl stash refuse my changelist?
 
@@ -775,7 +789,7 @@ The file stays in its changelist with its remaining changes. Note that `git cl s
 git cl add my-changelist $(git diff --staged --name-only)
 ```
 
-This is useful when you've already staged a meaningful set of changes and want to capture that grouping as a changelist. The files remain staged in git's index — if you also want to unstage them, follow up with git cl unstage my-changelist.
+Run it from the repository root, because `git diff --name-only` prints paths relative to the root. The shell splits the list at spaces, so for file names with spaces add those files by name. This is useful when you've already staged a meaningful set of changes and want to capture that grouping as a changelist. The files remain staged in git's index — if you also want to unstage them, follow up with git cl unstage my-changelist.
 
 ### Do changelists work with Git worktrees?
 
@@ -805,7 +819,7 @@ Run:
 git cl --version
 ```
 
-This prints the installed version, for example `git-cl 1.2.0`. It is useful when [reporting a bug](https://github.com/BHFock/git-cl/issues/new?template=bug_report.md) or checking whether you have the [latest version](https://raw.githubusercontent.com/BHFock/git-cl/main/git-cl).
+This prints the installed version, for example `git-cl 1.2.0`. [git cl help](#29-getting-help-from-the-command-line) shows it as well. It is useful when [reporting a bug](https://github.com/BHFock/git-cl/issues/new?template=bug_report.md) or checking whether you have the [latest version](https://raw.githubusercontent.com/BHFock/git-cl/main/git-cl).
 
 [↑ Back to top](#git-cl-a-git-subcommand-for-changelist-management)
 
@@ -818,18 +832,18 @@ This prints the installed version, for example `git-cl 1.2.0`. It is useful when
 | Task                            | Command                                                   | Alias         | 
 | ------------------------------- | --------------------------------------------------------- | ------------- |
 | Add files to a changelist       | `git cl add <name> <files...>`                            | `git cl a`    |
-| View grouped status             | `git cl status [--all] [--no-untracked] [--no-color]`     | `git cl st`   |
-| Show diff for changelist(s)     | `git cl diff <name1> [<name2> ...] [--staged]`            |               |
+| View grouped status             | `git cl status [<name>...] [--include-no-cl] [--all] [--no-untracked] [--no-color]` | `git cl st`, `git cl s` |
+| Show diff for changelist(s)     | `git cl diff <name1> [<name2> ...] [--staged \| --both]`  |               |
 | Stage a changelist              | `git cl stage <name>... [--delete]`                       |               |
 | Unstage a changelist            | `git cl unstage <name>... [--delete]`                     |               |
 | Commit with inline message      | `git cl commit <name>... -m "Message" [--keep]`           | `git cl ci`   |
 | Commit using message from file  | `git cl commit <name>... -F message.txt [--keep]`         |               |
-| Revert changelist to HEAD       | `git cl checkout <name>`                                  | `git cl co`   |
-| Remove files from changelists   | `git cl remove <file1> <file2> ...`                       | `git cl rm`   |
+| Revert changelist to HEAD       | `git cl checkout <name>... [--force] [--delete]`          | `git cl co`   |
+| Remove files from changelists   | `git cl remove <file1> <file2> ...`                       | `git cl rm`, `git cl r` |
 | Delete changelists              | `git cl delete <name1> <name2> ...`                       | `git cl del`  | 
 | Prune stale entries             | `git cl prune [--dry-run] [--quiet] [--exit-code]`        |               |
-| Stash a changelist              | `git cl stash <name>`                                     |               |
-| Unstash a changelist            | `git cl unstash <name> [--force]`                         |               |
+| Stash a changelist              | `git cl stash <name>` or `git cl stash --all`            | `git cl sh`   |
+| Unstash a changelist            | `git cl unstash <name> [--force]` or `git cl unstash --all` | `git cl us`   |
 | Create branch from changelist   | `git cl branch <name> [<branch>] [--from <base>]`         | `git cl br`   |
 | Show help                       | `git cl help`                                             |               |
 

@@ -199,6 +199,27 @@ def run_tests(repo: TestRepo):
     repo.assert_in("no-such-list", repo.last_stderr,
                     "error message on stderr mentions the changelist name")
 
+    # =================================================================
+    # Test: Delete a stashed changelist
+    # =================================================================
+
+    repo.section("Delete a stashed changelist")
+
+    repo.write_file("stashed.txt", "committed")
+    repo.run("git add stashed.txt", check=True)
+    repo.run(["git", "commit", "--quiet", "-m", "Add stashed.txt"], check=True)
+    repo.write_file("stashed.txt", "changed")
+    repo.run("git cl add parked stashed.txt")
+    repo.run("git cl stash parked")
+
+    repo.run("git cl delete parked")
+    repo.assert_exit_code(1, "deleting a stashed changelist fails")
+    repo.assert_in("is stashed", repo.last_stderr,
+                   "says the changelist is stashed")
+    repo.assert_true("parked" in repo.load_stash_json(),
+                     "the stashed changelist is kept")
+    repo.run("git cl unstash parked")
+
 
 # =================================================================
 # Entry point

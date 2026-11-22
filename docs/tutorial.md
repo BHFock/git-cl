@@ -500,13 +500,14 @@ See [Section 4.3](#43-late-binding-branching-with-git-cl-branch) for a worked ex
 git cl prune [--dry-run] [--quiet] [--exit-code]
 ```
 
-When you commit with plain `git commit` — or an IDE or AI assistant commits for you — the committed files stay in their changelist with nothing left to change. Files you delete and commit stay listed as `[XX]`. `git cl prune` tidies this up across all changelists in one go.
+When you commit with plain `git commit` — or an IDE or AI assistant commits for you — the committed files stay in their changelist with nothing left to change. Files you delete and commit stay listed as `[XX]`. `git cl prune` tidies this up across all changelists in one go:
 
-- Removes every entry that Git reports no status for: files without changes (`[  ]`) and files that no longer exist (`[XX]`).
-- Keeps every file that has a Git status — modified, staged, deleted, untracked or conflicted.
-- Keeps a directory entry as long as any file inside it has changes.
-- Deletes changelists that end up empty.
-- Leaves file contents untouched, and stashed changelists too — unless their stash was popped or dropped with plain `git stash`. Such a record can never be unstashed and blocks its files from other changelists, so `git cl prune` removes it and shows how to group the files again.
+- It removes every entry that Git reports no status for: files without changes (`[  ]`) and files that no longer exist (`[XX]`).
+- It keeps every file that has a Git status — modified, staged, deleted, untracked or conflicted — and a directory entry as long as any file inside it has changes.
+- It deletes changelists that end up empty.
+- It never touches file contents.
+
+Stashed changelists are left alone, unless their stash was popped or dropped with plain `git stash`. Such a record can never be unstashed and blocks its files from other changelists, so `git cl prune` removes it and shows how to group the files again.
 
 Use `--dry-run` (or `-n`) to see what would be removed without changing anything, and `--quiet` (or `-q`) to suppress the output.
 

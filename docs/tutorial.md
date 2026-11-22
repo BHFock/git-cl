@@ -204,14 +204,9 @@ If you want to include unassigned files alongside named changelists, use the `--
 git cl st docs --include-no-cl
 ```
 
-#### Showing all Git status codes
+#### All Git status codes
 
-By default, `git cl status` shows common status codes (like [M ], [??], [ D]) together with merge-conflict codes ([UU], [AA], etc.), since conflicts require your immediate attention. Less common codes such as type changes ([T ]) are hidden to keep the output readable.
-To include every Git status code, use the `--all` flag:
-
-```
-git cl st --all
-```
+`git cl status` shows every status code that Git reports, just like `git status`: the common ones such as `[M ]`, `[??]` and `[ D]`, merge conflicts such as `[UU]`, and rarer ones such as a type change (`[ T]`). [Section 6.2](#62-git-status-code-reference) explains them. The `--all` option of earlier versions is still accepted, but no longer needed.
 
 #### Example
 
@@ -761,12 +756,12 @@ Git's stash can only set aside files with unstaged changes, newly added files an
 
 ### Why don’t I see all files in git cl status?
 
-By default, [git cl status](#22-view-status-by-changelist) shows the status codes you normally need to act on — common working-directory states plus merge conflicts — while hiding rare codes like [T ] (type change) to keep output clean.
-To include every Git status code without filtering, use the `--all` flag:
+[git cl status](#22-view-status-by-changelist) shows every file that Git reports a status for, with every status code. A file can still be missing from the output for one of these reasons:
 
-```
-git cl status --all
-```
+- You passed changelist names, for example `git cl st docs`. Files in no changelist are then hidden unless you add `--include-no-cl`.
+- You used `--no-untracked`, which hides untracked files (`[??]`).
+- The file is ignored by `.gitignore`. Like `git status`, git-cl does not list ignored files.
+- The file has no changes and is in no changelist. Only files in a changelist are shown without changes, as `[  ]`.
 
 ### Can I reuse a changelist name later?
 
@@ -834,7 +829,7 @@ This prints the installed version, for example `git-cl 1.2.0`. [git cl help](#29
 | Task                            | Command                                                   | Alias         | 
 | ------------------------------- | --------------------------------------------------------- | ------------- |
 | Add files to a changelist       | `git cl add <name> <files...>`                            | `git cl a`    |
-| View grouped status             | `git cl status [<name>...] [--include-no-cl] [--all] [--no-untracked] [--no-color]` | `git cl st`, `git cl s` |
+| View grouped status             | `git cl status [<name>...] [--include-no-cl] [--no-untracked] [--no-color]` | `git cl st`, `git cl s` |
 | Show diff for changelist(s)     | `git cl diff <name1> [<name2> ...] [--staged \| --both]`  |               |
 | Stage a changelist              | `git cl stage <name>... [--delete]`                       |               |
 | Unstage a changelist            | `git cl unstage <name>... [--delete]`                     |               |
@@ -869,17 +864,15 @@ This prints the installed version, for example `git-cl 1.2.0`. [git cl help](#29
 | `[RM]` | Renamed + Modified     | Renamed and then modified before staging           |
 | `[UU]` | Unmerged (conflict)    | Both sides modified; resolve before staging        |
 
-To show all codes, including rare ones, use:
-
-```
-git cl status --all
-```
-
 #### Additional Codes
+
+These are rarer, but `git cl status` shows them as well:
 
 | Code   | Description                                                                 |
 | ------ | --------------------------------------------------------------------------- |
-| `[T ]` | Type change                                                                 |
+| `[ T]` | Type change, for example a file replaced by a symbolic link (`[T ]` once staged) |
+| `[MD]` | Change staged, then the file deleted in the working directory (`[AD]` for a new file) |
+| `[ A]` | Marked with `git add -N` (intent to add): Git knows the file, but its content is not staged yet |
 | `[  ]` | No changes — the file is in a changelist but has nothing to stage or commit |
 | `[XX]` | Missing — the file is in a changelist but does not exist (git-cl only)      |
 

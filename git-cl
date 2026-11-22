@@ -760,21 +760,20 @@ def clutil_note_split_renames(
 
 
 def clutil_get_file_status_map(
-        show_all: bool = False,
         include_untracked: bool = True) -> dict[str, str]:
     """
     Get a mapping of files to their Git 2-letter status codes.
 
-    By default, only a predefined set of common status codes are included.
-    Files with uncommon status codes (e.g. merge conflicts, type changes)
-    are skipped and counted for a warning message — unless `--all` is used.
+    Every status code Git reports is included, as with 'git status'.
+    Until 1.6.x, uncommon codes such as type changes ('T ') were left
+    out by default. Files in a changelist with such a code were then
+    shown with a wrong status, for example 'MD' as missing ('[XX]') or
+    ' A' (intent to add) as unchanged ('[  ]').
 
-    Ignored files (status code '! ') are silently excluded from both the
-    output and the warning, since `git status --porcelain` does not include
-    them unless explicitly requested with `--ignored`.
+    Ignored files are not included, since 'git status --porcelain' does
+    not list them unless explicitly requested with '--ignored'.
 
     Args:
-        show_all (bool): If True, include all files regardless of status code.
         include_untracked (bool): If True (default), list every untracked file.
             If False, untracked files are excluded entirely from the status map.
 
@@ -785,14 +784,7 @@ def clutil_get_file_status_map(
     git_root = clutil_get_git_root()
     output = clutil_get_git_status(include_untracked=include_untracked)
 
-    # Allowlist of known meaningful status codes
-    INTERESTING_CODES = {
-        '??', ' M', 'M ', 'MM', 'A ', 'AM', ' D', 'D ', 'R ', 'RM',
-        'UU', 'AA', 'DD', 'AU', 'UA', 'DU', 'UD',  # merge conflicts
-    }
-
     status_map: dict[str, str] = {}
-    skipped: dict[str, list[str]] = {}
 
     for code, raw_path, old_path in output:
         # Handle renamed files. In the index the old path is a staged
@@ -802,18 +794,7 @@ def clutil_get_file_status_map(
             old_rel = clutil_status_path_to_rel(old_path, git_root)
             status_map.setdefault(old_rel, 'D ')
 
-        rel_path = clutil_status_path_to_rel(raw_path, git_root)
-
-        if show_all or code in INTERESTING_CODES:
-            status_map[rel_path] = code
-        else:
-            skipped.setdefault(code, []).append(rel_path)
-
-    if skipped and not show_all:
-        skipped_count = sum(len(v) for v in skipped.values())
-        print(f"Note: {clutil_plural(skipped_count, 'file')} with uncommon Git "
-              "status codes "
-              "were not shown. Use 'git cl st --all' to include them.")
+        status_map[clutil_status_path_to_rel(raw_path, git_root)] = code
 
     return status_map
 
@@ -938,7 +919,7 @@ def clutil_is_file_untracked_cached(
     Looks the path up directly in the status map rather than shelling out
     to `git status` per file, which matters inside loops over changelist
     files. The caller is responsible for obtaining the status map once via
-    clutil_get_file_status_map(show_all=True) before the loop.
+    clutil_get_file_status_map() before the loop.
 
     Args:
         file_path_rel_to_git_root: File path relative to git repository root
@@ -1310,7 +1291,7 @@ def clutil_check_unstash_conflicts_optimized(
         - real_conflicts: Files that will actually prevent unstashing
         - file_status_info: Dict of file -> status description for user info
     """
-    status_map = clutil_get_file_status_map(show_all=True)
+    status_map = clutil_get_file_status_map()
     real_conflicts = []
     file_status_info = {}
 
@@ -3046,7 +3027,7 @@ def clutil_check_unassigned_changes(changelists: dict,
     changes of their own. A submodule whose recorded commit changed is
     reported, because the change would move to a new branch unnoticed.
     """
-    status_map = clutil_get_file_status_map(show_all=True)
+    status_map = clutil_get_file_status_map()
 
     # Get all files assigned to changelists
     assigned_files = set()
@@ -3099,7 +3080,7 @@ def clutil_validate_changelists_stashable(
         changelists: Active (non-empty) changelists to validate
         git_root: Git repository root
         status_map: Precomputed status map from
-                    clutil_get_file_status_map(show_all=True)
+                    clutil_get_file_status_map()
 
     Returns:
         Mapping of changelist name to a list of human-readable problem
@@ -3330,7 +3311,7 @@ def cl_add(args: argparse.Namespace) -> bool:
                                f"{args.name}', or choose another name.")
         return False
 
-    status_map = clutil_get_file_status_map(show_all=True,
+    status_map = clutil_get_file_status_map(
                                             include_untracked=True)
 
     submodules = clutil_get_submodule_paths(git_root)
@@ -3445,7 +3426,7 @@ def cl_stage(args: argparse.Namespace) -> bool:
     git_root = clutil_get_git_root()
 
     # Fetch git status once and reuse for all files in the changelists
-    status_map = clutil_get_file_status_map(show_all=True)
+    status_map = clutil_get_file_status_map()
 
     if clutil_refuse_on_merge_conflict(status_map, "stage"):
         return False
@@ -3506,7 +3487,7 @@ def cl_unstage(args: argparse.Namespace) -> bool:
     git_root = clutil_get_git_root()
 
     # Get current status to identify staged files
-    status_map = clutil_get_file_status_map(show_all=True)
+    status_map = clutil_get_file_status_map()
 
     if clutil_refuse_on_merge_conflict(status_map, "unstage"):
         return False
@@ -3556,7 +3537,6 @@ def cl_status(args: argparse.Namespace) -> bool:
     stashes = clutil_load_stashes()
     git_root = clutil_get_git_root()
     status_map = clutil_get_file_status_map(
-        show_all=args.all,
         include_untracked=not args.no_untracked)
 
     use_color = clutil_should_use_color(args)
@@ -3595,7 +3575,7 @@ def cl_status(args: argparse.Namespace) -> bool:
                 continue
             if full_status_map is None:
                 full_status_map = clutil_get_file_status_map(
-                    show_all=True, include_untracked=True)
+                    include_untracked=True)
             display = _relpath(clutil_resolve_file(git_root / entry), cwd)
             dir_notes.append(f"Note: '{display}' in changelist '{name}' is "
                              "a directory. Changelists contain files only.")
@@ -3772,7 +3752,7 @@ def cl_checkout(args: argparse.Namespace) -> bool:
     git_root = clutil_get_git_root()
 
     # Check for merge conflicts before doing anything destructive
-    status_map = clutil_get_file_status_map(show_all=True)
+    status_map = clutil_get_file_status_map()
     if clutil_refuse_on_merge_conflict(status_map, "checkout"):
         return False
 
@@ -4063,7 +4043,7 @@ def clutil_prune(args: argparse.Namespace) -> int:
 
     # Untracked files are listed individually so that an untracked file
     # inside an untracked directory still counts as having a status.
-    status_map = clutil_get_file_status_map(show_all=True,
+    status_map = clutil_get_file_status_map(
                                             include_untracked=True)
 
     def is_stale(stored_path: str) -> bool:
@@ -4160,7 +4140,7 @@ def cl_commit(args: argparse.Namespace) -> bool:
     git_root = clutil_get_git_root()
 
     # Fetch git status once and reuse for all files in the changelists
-    status_map = clutil_get_file_status_map(show_all=True)
+    status_map = clutil_get_file_status_map()
 
     if clutil_refuse_on_merge_conflict(status_map, "commit"):
         return False
@@ -4259,7 +4239,7 @@ def cl_stash(args: argparse.Namespace, quiet: bool = False) -> bool:
     existing_files, missing_files = clutil_prepare_stash_files(files, git_root)
 
     # Get file statuses and categorize
-    status_map = clutil_get_file_status_map(show_all=True)
+    status_map = clutil_get_file_status_map()
 
     if clutil_refuse_on_merge_conflict(status_map, "stash"):
         return False
@@ -4348,7 +4328,7 @@ def cl_unstash(args: argparse.Namespace, quiet: bool = False) -> bool:
     stashes = clutil_load_stashes()
     changelists = clutil_load()
 
-    status_map = clutil_get_file_status_map(show_all=True)
+    status_map = clutil_get_file_status_map()
     if clutil_refuse_on_merge_conflict(status_map, "unstash"):
         return False
 
@@ -4473,7 +4453,7 @@ def cl_branch(args: argparse.Namespace) -> bool:
         changed_submodules = [f for f in unassigned_changes if f in submodules]
         unassigned_files = [f for f in unassigned_changes
                             if f not in submodules]
-        status_map = clutil_get_file_status_map(show_all=True)
+        status_map = clutil_get_file_status_map()
         clutil_print_error("Error: There are uncommitted changes not in any "
                            "changelist:")
         for file_path in unassigned_changes[:10]:  # Show first 10
@@ -4511,7 +4491,7 @@ def cl_branch(args: argparse.Namespace) -> bool:
     # so a single such changelist would otherwise abort the workflow
     # halfway through and leave the repo inconsistent (issue #51).
     # Fail fast here, before any state is mutated.
-    status_map = clutil_get_file_status_map(show_all=True)
+    status_map = clutil_get_file_status_map()
     problems = clutil_validate_changelists_stashable(
         active_changelists, git_root, status_map)
     if problems:
@@ -4747,8 +4727,9 @@ def main() -> None:
                                      "also show files not assigned to any "
                                      "changelist"))
     status_parser.add_argument('--all', action='store_true',
-                               help=("Include files with uncommon Git "
-                                     "status codes"))
+                               help=("No longer needed: all Git status "
+                                     "codes are shown. Accepted for "
+                                     "existing scripts"))
     status_parser.add_argument('--no-untracked', action='store_true',
                                help='Hide untracked files (??) from output')
     status_parser.add_argument('--no-color', action='store_true',

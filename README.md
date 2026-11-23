@@ -120,7 +120,7 @@ git cl br docs-fix
 
 ## Ecosystem
 
-git-cl is CLI-only by design. Its stable metadata files and command interface allow editors and other tools to build on it. The [metadata compatibility rules](docs/design-notes.md#metadata-compatibility) describe the file format, what may change between releases, and the format history.
+git-cl is CLI-only by design. Its stable metadata files and command interface allow editors and other tools to build on it. The [metadata compatibility rules](https://github.com/BHFock/git-cl/blob/main/docs/design-notes.md#metadata-compatibility) describe the file format, what may change between releases, and the format history.
 
 - VS Code: [git-cl-vscode](https://github.com/WayLit/git-cl-vscode) (community maintained)
 
@@ -133,6 +133,7 @@ git-cl was mentioned in [Git Rev News Edition #140](https://git.github.io/rev_ne
 - Requires Python 3.9+ and Git
 - Coloured `git cl status` output needs the optional [colorama](https://pypi.org/project/colorama/) package (`pip install colorama`); without it, output is plain text
 - Local-only; designed for single-user workflows
+- Changes in each version are listed in the [release notes](https://github.com/BHFock/git-cl/releases)
 - Always inspect downloaded scripts before executing, see [source](https://github.com/BHFock/git-cl/blob/main/git-cl)
 - For security concerns, see [SECURITY](https://github.com/BHFock/git-cl/blob/main/SECURITY.md)
 

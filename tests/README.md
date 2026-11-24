@@ -82,7 +82,7 @@ git cl st
 | `test_prune.py` | `prune`, `--dry-run` / `-n`, `--quiet` / `-q`, `--exit-code`, post-commit hook |
 | `test_deleted_renamed.py` | `add`, `status`, `stage`, `commit` and `prune` with deleted and renamed files |
 | `test_directories.py` | `add` rejects directories with a file list; `status` points out old directory entries |
-| `test_special_paths.py` | file names with spaces, umlauts and quotes in `status`, `prune`, `stash` and `commit` |
+| `test_special_paths.py` | file names with spaces, umlauts, quotes, wildcards and a leading `:` in `status`, `prune`, `stage`, `stash` and `commit` |
 | `test_symlinks.py` | symbolic links in `add`, `status`, `commit`, `prune` and `stash` (skipped on Windows) |
 | `test_checkout.py` | `checkout` / `co`, `--delete`, `--force` |
 
@@ -99,6 +99,7 @@ git cl st
 |---|---|
 | `test_git_states.py` | All common Git status codes (`[ M]`, `[M ]`, `[MM]`, `[A ]`, `[AM]`, `[ D]`, `[D ]`, `[??]`) |
 | `test_subdirectory.py` | Path normalisation from subdirectories, cross-directory add, relative display |
+| `test_ignorecase.py` | Paths typed in another case with `core.ignorecase` true: `add` and `remove` use the spelling Git knows |
 | `test_validation.py` | Invalid names, reserved words, path traversal, missing arguments |
 | `test_edge_cases.py` | Empty states, reassignment, duplicate files, deleted files |
 | `test_exit_codes.py` | Exit codes `0`, `1` and `2`, errors and warnings on stderr, partial failure |

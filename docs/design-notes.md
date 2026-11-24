@@ -240,15 +240,20 @@ File paths in `git-cl` need to work consistently whether you're in a subdirector
 #### Key Functions:
 
 - `clutil_sanitize_path()` - validates user input and converts to repo-root relative format for storage
+- `clutil_match_case()` - uses the spelling Git knows for a path typed in another case, when Git ignores case
 - `clutil_format_file_status()` - converts stored paths to CWD-relative format for display
 
 #### Conversion Pipeline:
 
 **1. Input Validation** - `clutil_sanitize_path()` takes user-provided paths, resolves relative components (like ../), ensures they're within the Git repository, and rejects dangerous characters.
 
+**Case Matching** - On case-insensitive file systems (usually macOS and Windows), Git sets `core.ignorecase` to true, and `readme.md` opens the file `README.md`. Git still compares paths case-sensitively in `git status`, diffs and pathspecs, so an entry stored as `readme.md` would never match the file. When `core.ignorecase` is true, `git cl add` therefore stores the spelling Git knows (tracked, changed or already stored paths), or else the spelling on disk, via `clutil_match_case()`. `git cl remove` matches the stored entries the same way. With `core.ignorecase` false, `git-cl` does not look for another spelling.
+
 **2. Storage Normalisation** - The system converts all validated paths to repo-root relative format using [Path.relative_to](https://docs.python.org/3/library/pathlib.html#pathlib.PurePath.relative_to)(git_root).[as_posix()](https://docs.python.org/3/library/pathlib.html#pathlib.PurePath.as_posix) before storing in `.git/cl.json`.
 
 **3. Display Conversion** - `clutil_format_file_status()` converts stored repo-root relative paths back to CWD-relative paths using `os.path.relpath()` for user display and Git command compatibility.
+
+**Literal Pathspecs** - Git reads paths after `--` as pathspecs, in which `*`, `?` and `[` are wildcards and a leading `:` starts pathspec magic. A changelist entry `[ab].txt` would otherwise also stage, stash or commit `a.txt`. `clutil_literal_pathspecs()` therefore adds the `:(literal)` prefix to every stored path that `git-cl` passes to Git. The prefix applies to each path only; the global `--literal-pathspecs` option would also reach Git hooks run by `git cl commit` through the environment.
 
 This three-stage approach ensures repository portability (paths work regardless of where the repo is moved) while maintaining compatibility with standard Git commands that expect CWD-relative paths
 

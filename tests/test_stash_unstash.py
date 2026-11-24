@@ -454,6 +454,26 @@ def run_tests(repo: TestRepo):
     repo.assert_equal("xi changed again", repo.read_file("xi.txt"),
                       "its changes are restored")
 
+    # =================================================================
+    # Test: Suggested commands fit the current directory
+    # =================================================================
+
+    repo.section("Unstash suggests commands for the current directory")
+
+    repo.mkdir("notes")
+    repo.write_file("notes/my plan.txt", "plan")
+    repo.run(["git", "add", "notes/my plan.txt"], check=True)
+    repo.run(["git", "commit", "--quiet", "-m", "Add plan"], check=True)
+    repo.write_file("notes/my plan.txt", "plan in the changelist")
+    repo.run(["git", "cl", "add", "plan", "notes/my plan.txt"])
+    repo.run("git cl stash plan")
+    repo.write_file("notes/my plan.txt", "plan changed meanwhile")
+
+    repo.run_in("notes", "git cl unstash plan")
+    repo.assert_exit_code(1, "unstash is refused by the local change")
+    repo.assert_in("git checkout -- 'my plan.txt'", repo.last_stderr,
+                   "the path is quoted and relative to the current directory")
+
 
 # =================================================================
 # Entry point

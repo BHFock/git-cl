@@ -7,12 +7,17 @@ Covers:
     git cl prune     — changed files with such names are kept
     git cl commit    — a rename between such names is committed as one
     git cl stash     — such files are stashed and restored
+    git cl stage, stash, commit — names with wildcards or a leading ':'
+                       are taken literally and do not match other files
 
 What you'll learn:
     - git-cl handles any file name Git does, including spaces and
       non-ASCII characters such as umlauts
     - Git quotes such names in 'git status --porcelain'; git-cl reads the
       unquoted form ('-z'), so the names match the stored paths
+    - Git reads '*', '?', '[' and a leading ':' in paths as patterns;
+      git-cl marks stored paths as literal, so '[ab].txt' never stands
+      for a.txt
 
 Run:
     ./test_special_paths.py
@@ -21,6 +26,7 @@ Export as shell walkthrough:
     ./test_special_paths.py --export > walkthrough_special_paths.sh
 """
 
+import json
 import os
 import sys
 from pathlib import Path
@@ -34,6 +40,10 @@ NEW_UMLAUT = "neu ä.txt"
 RENAMED = "Grüße an alle.txt"
 # Windows does not allow double quotes in file names
 QUOTES = 'say "hi".txt' if os.name != "nt" else "say hi.txt"
+# '[ab].txt' is a pattern that matches a.txt. Windows does not allow
+# ':' in file names and reads a backslash as a directory separator.
+PATTERNS = (["[ab].txt", ":note.txt", "back\\slash.txt"] if os.name != "nt"
+            else ["[ab].txt"])
 
 
 def run_tests(repo: TestRepo):
@@ -128,6 +138,53 @@ def run_tests(repo: TestRepo):
     repo.run(["git", "cl", "commit", "rename", "-m", "Rename"])
     output = repo.run(["git", "show", "--name-status", "--format=", "HEAD"])
     repo.assert_in("R100", output, "commit records a rename")
+
+    # =================================================================
+    # Test: names that look like patterns are taken literally
+    # =================================================================
+
+    repo.section("names with wildcards or a leading ':' are taken literally")
+
+    for name in PATTERNS + ["a.txt"]:
+        repo.write_file(name, "base")
+    repo.run(["git", "--literal-pathspecs", "add", "--"] + PATTERNS
+             + ["a.txt"], check=True)
+    repo.run(["git", "commit", "--quiet", "-m", "Add pattern names"],
+             check=True)
+    for name in PATTERNS + ["a.txt"]:
+        repo.write_file(name, "changed")
+    if os.name != "nt":
+        repo.run(["git", "cl", "add", "patterns"] + PATTERNS)
+    else:
+        # On Windows, 'git cl' runs git-cl through Git's MSYS shell, which
+        # appears to expand wildcards in the arguments before git-cl sees
+        # them: in CI, '[ab].txt' arrived as 'a.txt'. The entry is
+        # therefore written directly, to test how git-cl passes it on.
+        changelists = repo.load_cl_json()
+        changelists["patterns"] = PATTERNS
+        repo.write_file(".git/cl.json", json.dumps(changelists))
+    repo.assert_equal(PATTERNS, repo.load_cl_json().get("patterns"),
+                      "the changelist holds the names as given")
+    output = repo.run("git cl st --no-color")
+    for name in PATTERNS:
+        repo.assert_in(f"[ M] {name}", output,
+                       f"{name} shown as modified in its changelist")
+
+    repo.run("git cl stage patterns")
+    repo.assert_exit_code(0, "stage succeeds")
+    repo.assert_equal(sorted(PATTERNS), sorted(repo.get_staged_files()),
+                      "only the files in the changelist are staged")
+    repo.run("git cl unstage patterns")
+
+    repo.run("git cl stash patterns")
+    repo.assert_exit_code(0, "stash succeeds")
+    repo.assert_equal("changed", repo.read_file("a.txt"),
+                      "a.txt is not stashed")
+    repo.run("git cl unstash patterns")
+
+    repo.run(["git", "cl", "commit", "patterns", "-m", "Patterns"])
+    output = repo.run(["git", "show", "--name-only", "--format=", "HEAD"])
+    repo.assert_not_in("a.txt", output, "a.txt is not committed")
 
 
 if __name__ == "__main__":

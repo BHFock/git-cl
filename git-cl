@@ -1441,6 +1441,14 @@ def clutil_suggest_workflow_actions(
     untracked_conflicts = []
     modified_conflicts = []
     deleted_conflicts = []
+    git_root = clutil_get_git_root()
+    cwd = Path.cwd().resolve()
+
+    def shell_paths(paths: list[str]) -> str:
+        # Stored paths are relative to the repository root; the suggested
+        # commands run in the current directory
+        return " ".join(shlex.quote(_relpath(git_root / path, cwd))
+                        for path in paths)
 
     for file_path in conflicting_files:
         status_desc = file_status_info[file_path]
@@ -1463,20 +1471,20 @@ def clutil_suggest_workflow_actions(
         for file_path in modified_conflicts:
             clutil_print_error(f"    {file_path}")
         clutil_print_error("  → Solution: Stage/commit these changes or revert them")
-        clutil_print_error(f"    git add {' '.join(modified_conflicts)} "
+        clutil_print_error(f"    git add {shell_paths(modified_conflicts)} "
                            "&& git commit -m 'Save current work'")
-        clutil_print_error(f"    # OR: git checkout -- {' '.join(modified_conflicts)}")
+        clutil_print_error(f"    # OR: git checkout -- {shell_paths(modified_conflicts)}")
 
     if deleted_conflicts:
         clutil_print_error("\n  Files deleted in working directory:")
         for file_path in deleted_conflicts:
             clutil_print_error(f"    {file_path}")
-        clutil_print_error("  → Solution: If intentional, stage the deletions;"
+        clutil_print_error("  → Solution: If intentional, stage the deletions; "
                            "if not, restore the files")
-        clutil_print_error(f"    git rm {' '.join(deleted_conflicts)} "
+        clutil_print_error(f"    git rm {shell_paths(deleted_conflicts)} "
                            "&& git commit -m 'Remove files'")
         clutil_print_error("    # OR: git checkout HEAD -- "
-                           f"{' '.join(deleted_conflicts)}")
+                           f"{shell_paths(deleted_conflicts)}")
 
 
 def clutil_get_current_branch() -> Optional[str]:

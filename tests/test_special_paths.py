@@ -26,6 +26,7 @@ Export as shell walkthrough:
     ./test_special_paths.py --export > walkthrough_special_paths.sh
 """
 
+import json
 import os
 import sys
 from pathlib import Path
@@ -152,7 +153,18 @@ def run_tests(repo: TestRepo):
              check=True)
     for name in PATTERNS + ["a.txt"]:
         repo.write_file(name, "changed")
-    repo.run(["git", "cl", "add", "patterns"] + PATTERNS)
+    if os.name != "nt":
+        repo.run(["git", "cl", "add", "patterns"] + PATTERNS)
+    else:
+        # On Windows, 'git cl' runs git-cl through Git's MSYS shell, which
+        # appears to expand wildcards in the arguments before git-cl sees
+        # them: in CI, '[ab].txt' arrived as 'a.txt'. The entry is
+        # therefore written directly, to test how git-cl passes it on.
+        changelists = repo.load_cl_json()
+        changelists["patterns"] = PATTERNS
+        repo.write_file(".git/cl.json", json.dumps(changelists))
+    repo.assert_equal(PATTERNS, repo.load_cl_json().get("patterns"),
+                      "the changelist holds the names as given")
     output = repo.run("git cl st --no-color")
     for name in PATTERNS:
         repo.assert_in(f"[ M] {name}", output,

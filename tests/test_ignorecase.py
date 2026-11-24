@@ -7,6 +7,7 @@ Covers:
     git cl add <new file in other case>  — stored in the spelling on disk
     git cl remove <path in other case>   — finds the stored entry
     core.ignorecase false                — paths are stored as typed
+                                           (case-sensitive file systems only)
 
 What you'll learn:
     - On macOS and Windows, file systems usually ignore case, and Git
@@ -14,7 +15,8 @@ What you'll learn:
     - Git still compares paths case-sensitively in status, diff and
       pathspecs. git cl therefore stores the spelling Git knows, so the
       file shows up in its changelist and can be staged and committed.
-    - With core.ignorecase false, git cl does not change any paths.
+    - With core.ignorecase false, git cl does not look for another
+      spelling.
 
 The test sets core.ignorecase itself, so it runs on case-sensitive file
 systems as well.
@@ -77,6 +79,12 @@ def run_tests(repo: TestRepo):
     # =================================================================
     # Without core.ignorecase, paths are stored as typed
     # =================================================================
+
+    # On a case-insensitive file system (Windows, usually macOS), Python
+    # itself may already return the spelling on disk when resolving the
+    # path, so this check only runs where the file system is case-sensitive
+    if (repo.repo_dir / "readme.md").exists():
+        return
 
     repo.section("core.ignorecase false: paths stored as typed")
 

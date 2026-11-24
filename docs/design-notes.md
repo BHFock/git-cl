@@ -253,6 +253,8 @@ File paths in `git-cl` need to work consistently whether you're in a subdirector
 
 **3. Display Conversion** - `clutil_format_file_status()` converts stored repo-root relative paths back to CWD-relative paths using `os.path.relpath()` for user display and Git command compatibility.
 
+**Literal Pathspecs** - Git reads paths after `--` as pathspecs, in which `*`, `?` and `[` are wildcards and a leading `:` starts pathspec magic. A changelist entry `[ab].txt` would otherwise also stage, stash or commit `a.txt`. `clutil_literal_pathspecs()` therefore adds the `:(literal)` prefix to every stored path that `git-cl` passes to Git. The prefix applies to each path only; the global `--literal-pathspecs` option would also reach Git hooks run by `git cl commit` through the environment.
+
 This three-stage approach ensures repository portability (paths work regardless of where the repo is moved) while maintaining compatibility with standard Git commands that expect CWD-relative paths
 
 ### Git Status Parsing

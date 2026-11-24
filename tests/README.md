@@ -99,6 +99,7 @@ git cl st
 |---|---|
 | `test_git_states.py` | All common Git status codes (`[ M]`, `[M ]`, `[MM]`, `[A ]`, `[AM]`, `[ D]`, `[D ]`, `[??]`) |
 | `test_subdirectory.py` | Path normalisation from subdirectories, cross-directory add, relative display |
+| `test_ignorecase.py` | Paths typed in another case with `core.ignorecase` true: `add` and `remove` use the spelling Git knows |
 | `test_validation.py` | Invalid names, reserved words, path traversal, missing arguments |
 | `test_edge_cases.py` | Empty states, reassignment, duplicate files, deleted files |
 | `test_exit_codes.py` | Exit codes `0`, `1` and `2`, errors and warnings on stderr, partial failure |

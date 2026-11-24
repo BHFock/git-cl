@@ -73,7 +73,7 @@ else:
     import fcntl
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Callable, Iterator, Optional
+from typing import Callable, Iterable, Iterator, Optional
 
 if sys.version_info < (3, 9):
     print("Error: git-cl requires Python 3.9+", file=sys.stderr)
@@ -682,6 +682,77 @@ def clutil_sanitize_path(file_path: str, git_root: Path) -> Optional[str]:
     except (OSError, ValueError, RuntimeError):
         # Any path resolution errors
         return None
+
+
+def clutil_ignores_case() -> bool:
+    """
+    Returns True if Git treats paths case-insensitively in this repository
+    (core.ignorecase, set by Git on macOS and Windows file systems).
+    """
+    result = subprocess.run(["git", "config", "--bool", "core.ignorecase"],
+                            capture_output=True, text=True, check=False)
+    return result.stdout.strip() == "true"
+
+
+def clutil_match_case(rel_path: str, known: Iterable[str],
+                      git_root: Path) -> str:
+    """
+    Returns the spelling of a path that Git and the file system use, for
+    a path typed in another case on a case-insensitive file system.
+
+    Git compares paths case-sensitively, so 'readme.md' typed for the
+    file 'README.md' would never match its status, diff or stage. The
+    spelling of a known path wins (Git's index, status or stored
+    changelist entries); otherwise each component is matched against the
+    directory listing. Only call this when clutil_ignores_case() is True.
+
+    Args:
+        rel_path: Path relative to the repository root, as typed.
+        known: Paths relative to the root whose spelling is authoritative.
+        git_root: The root directory of the Git repository.
+    Returns:
+        str: The matching spelling, or rel_path if there is no single match.
+    """
+    known = list(known)
+    if rel_path in known:
+        return rel_path
+    folded = rel_path.casefold()
+    matches = sorted({k for k in known if k.casefold() == folded})
+    if len(matches) == 1:
+        return matches[0]
+    if matches:
+        return rel_path
+
+    current = git_root
+    parts = []
+    for part in rel_path.split("/"):
+        try:
+            names = os.listdir(current)
+        except OSError:
+            return rel_path
+        if part not in names:
+            candidates = [n for n in names if n.casefold() == part.casefold()]
+            if len(candidates) != 1:
+                return rel_path
+            part = candidates[0]
+        parts.append(part)
+        current = current / part
+    return "/".join(parts)
+
+
+def clutil_known_paths(git_root: Path, status_map: dict[str, str],
+                       changelists: dict[str, list[str]]) -> list[str]:
+    """
+    Returns paths relative to the repository root whose spelling Git
+    knows: tracked files, changed files and stored changelist entries.
+    """
+    result = subprocess.run(["git", "ls-files", "-z"], cwd=git_root,
+                            capture_output=True, text=True, check=False)
+    known = [p for p in result.stdout.split("\0") if p]
+    known.extend(status_map)
+    for files in changelists.values():
+        known.extend(files)
+    return known
 
 
 def clutil_status_path_to_rel(raw_path: str, git_root: Path) -> str:
@@ -3317,10 +3388,15 @@ def cl_add(args: argparse.Namespace) -> bool:
     submodules = clutil_get_submodule_paths(git_root)
     cwd = Path.cwd().resolve()
 
+    known = (clutil_known_paths(git_root, status_map, changelists)
+             if clutil_ignores_case() else None)
+
     files = []
     skipped = False
     for file in args.files:
         sanitized = clutil_sanitize_path(file, git_root)
+        if sanitized and known is not None:
+            sanitized = clutil_match_case(sanitized, known, git_root)
         if sanitized:
             abs_path = clutil_resolve_file(git_root / sanitized)
             submodule = clutil_find_submodule(sanitized, submodules)
@@ -3906,12 +3982,16 @@ def cl_remove(args: argparse.Namespace) -> bool:
     failed = False
 
     git_root = clutil_get_git_root()
+    stored = ([f for files in changelists.values() for f in files]
+              if clutil_ignores_case() else None)
     for file in args.files:
         sanitized = clutil_sanitize_path(file, git_root)
         if sanitized is None:
             clutil_print_error(f"Error: Skipping invalid or unsafe path: '{file}'")
             failed = True
             continue
+        if stored is not None:
+            sanitized = clutil_match_case(sanitized, stored, git_root)
 
         found = False
         for name, files in changelists.items():

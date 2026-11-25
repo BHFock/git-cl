@@ -2685,6 +2685,106 @@ def clutil_report_unstash_conflicts(stash_ref: str, base_name: str) -> None:
     clutil_print_error(f"  git stash drop {stash_ref}")
 
 
+def clutil_stash_for_files(stash_ref: str, files: list[str],
+                           git_root: Path) -> str:
+    """
+    Returns a stash commit that holds only the changes of the given files.
+
+    'git stash push -- <paths>' records the whole index: the index commit
+    (<stash>^2) and the working-tree commit (<stash>) also contain files
+    outside <paths> that were staged at the time. 'git stash apply' would
+    apply those staged changes again, for example bring back a file
+    deleted since then. This builds a copy of the stash whose trees equal
+    the stash's base commit (<stash>^1) except for the given files, with
+    the same parents, and returns it. The copy is an ordinary commit that
+    'git stash apply' accepts; it is not added to the stash list.
+
+    Args:
+        stash_ref: Git stash reference
+        files: Files of the changelist, relative to the Git root
+        git_root: Path to the Git repository root
+    Returns:
+        str: The commit to apply; stash_ref itself if it holds nothing else.
+    Raises:
+        subprocess.CalledProcessError: If a Git command fails.
+        OSError: If the temporary index cannot be created.
+    """
+    git = ["git", "-C", str(git_root)]
+
+    def rev(spec: str) -> Optional[str]:
+        result = subprocess.run(git + ["rev-parse", "--verify", "--quiet",
+                                       spec],
+                                capture_output=True, text=True, check=False)
+        return result.stdout.strip() or None
+
+    base = rev(f"{stash_ref}^1")
+    index_commit = rev(f"{stash_ref}^2")
+    if base is None or index_commit is None:
+        return stash_ref
+    untracked_commit = rev(f"{stash_ref}^3")
+
+    git_dir = subprocess.run(git + ["rev-parse", "--absolute-git-dir"],
+                             capture_output=True, text=True,
+                             check=True).stdout.strip()
+    handle, temp_index = tempfile.mkstemp(prefix="cl-index-", dir=git_dir)
+    os.close(handle)
+    env = {**os.environ, "GIT_INDEX_FILE": temp_index}
+
+    def tree_with_files(commit: str) -> str:
+        # Start from the base commit and take only the given files
+        # from the commit
+        os.unlink(temp_index)
+        subprocess.run(git + ["read-tree", base], env=env, check=True,
+                       capture_output=True, text=True)
+        listing = subprocess.run(
+            git + ["ls-tree", "-r", "-z", commit, "--"]
+            + clutil_literal_pathspecs(files),
+            check=True, capture_output=True, text=True).stdout
+        # Each entry is "<mode> <type> <hash>\t<path>"
+        entries = [e.split("\t", 1) for e in listing.split("\0") if e]
+        present = {path for _, path in entries}
+        absent = [f for f in files if f not in present]
+        if absent:
+            subprocess.run(git + ["update-index", "--force-remove", "-z",
+                                  "--stdin"],
+                           input="".join(f + "\0" for f in absent), env=env,
+                           check=True, capture_output=True, text=True)
+        if entries:
+            # --index-info reads "<mode> <hash>\t<path>"
+            info = "".join(f"{meta.split()[0]} {meta.split()[2]}\t{path}\0"
+                           for meta, path in entries)
+            subprocess.run(git + ["update-index", "-z", "--index-info"],
+                           input=info, env=env, check=True,
+                           capture_output=True, text=True)
+        return subprocess.run(git + ["write-tree"], env=env, check=True,
+                              capture_output=True, text=True).stdout.strip()
+
+    try:
+        index_tree = tree_with_files(index_commit)
+        work_tree = tree_with_files(stash_ref)
+    finally:
+        try:
+            os.unlink(temp_index)
+        except OSError:
+            pass
+
+    if (index_tree == rev(f"{index_commit}^{{tree}}")
+            and work_tree == rev(f"{stash_ref}^{{tree}}")):
+        return stash_ref
+
+    def commit_tree(tree: str, parents: list[str], message: str) -> str:
+        args = git + ["commit-tree", tree]
+        for parent in parents:
+            args += ["-p", parent]
+        return subprocess.run(args + ["-m", message], check=True,
+                              capture_output=True, text=True).stdout.strip()
+
+    new_index = commit_tree(index_tree, [base], "git-cl: index of changelist")
+    parents = [base, new_index] + ([untracked_commit] if untracked_commit
+                                   else [])
+    return commit_tree(work_tree, parents, "git-cl: changes of changelist")
+
+
 def clutil_apply_stash(
     stash_ref: str,
     base_name: str,
@@ -2694,8 +2794,9 @@ def clutil_apply_stash(
     """
     Restore a stashed changelist, including which changes were staged.
 
-    Applies the stash, restores the staged part of its files with
-    clutil_restore_index_from_stash() and then drops the stash.
+    Applies the changes of the changelist's files from the stash (see
+    clutil_stash_for_files()), restores the staged part of these files
+    with clutil_restore_index_from_stash() and then drops the stash.
 
     If applying stops with conflicts, the changes are in the working
     directory with conflict markers, as with 'git stash pop'. The stash
@@ -2718,8 +2819,17 @@ def clutil_apply_stash(
         branch_info = f" to branch '{current_branch}'" if current_branch else ""
         print(f"Unstashing changelist '{base_name}'{branch_info}...")
 
+    git_root = clutil_get_git_root()
     try:
-        subprocess.run(["git", "stash", "apply", stash_ref],
+        to_apply = clutil_stash_for_files(stash_ref, stash_data["files"],
+                                          git_root)
+    except (subprocess.CalledProcessError, OSError):
+        # Applying the stash as it is still restores the changelist; only
+        # staged changes of other files may come back with it
+        to_apply = stash_ref
+
+    try:
+        subprocess.run(["git", "stash", "apply", to_apply],
                        capture_output=True, text=True, check=True)
     except subprocess.CalledProcessError as error:
         git_output = f"{error.stdout or ''}\n{error.stderr or ''}"
@@ -2732,7 +2842,6 @@ def clutil_apply_stash(
         clutil_print_error(f"The stash is kept as {stash_ref}.")
         return "failed"
 
-    git_root = clutil_get_git_root()
     untracked_files = stash_data.get("file_categories", {}).get("untracked", [])
     try:
         not_restored = clutil_restore_index_from_stash(

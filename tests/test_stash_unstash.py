@@ -26,6 +26,9 @@ What you'll learn:
       the stash is kept, as with 'git stash pop'
     - A stash is identified by its commit, so another stash with the same
       message, for example from another worktree, is never applied
+    - Git records the whole index in every stash, but unstashing brings
+      back only the changelist's files: staged files of other changelists
+      stay as they are now
 
 Run:
     ./test_stash_unstash.py
@@ -453,6 +456,40 @@ def run_tests(repo: TestRepo):
     repo.assert_exit_code(0, "a record without stash_commit unstashes")
     repo.assert_equal("xi changed again", repo.read_file("xi.txt"),
                       "its changes are restored")
+
+    # =================================================================
+    # Test: Staged files of other changelists are not unstashed
+    # =================================================================
+
+    repo.section("Unstash leaves staged files of other changelists alone")
+
+    repo.write_file("own.txt", "own")
+    repo.run("git add own.txt", check=True)
+    repo.run(["git", "commit", "--quiet", "-m", "Add own.txt"], check=True)
+    repo.write_file("own.txt", "own changed")
+    repo.write_file("dropped.txt", "dropped")
+    repo.write_file("restaged.txt", "first")
+    repo.run("git add dropped.txt restaged.txt", check=True)
+    repo.run("git cl add mine own.txt")
+    repo.run("git cl add theirs dropped.txt restaged.txt")
+    repo.run("git cl stash mine")
+
+    # Meanwhile, one staged file of 'theirs' is dropped, the other staged
+    # again with other content
+    repo.run("git rm --quiet --force dropped.txt", check=True)
+    repo.write_file("restaged.txt", "second")
+    repo.run("git add restaged.txt", check=True)
+
+    repo.run("git cl unstash mine")
+    repo.assert_exit_code(0, "unstash succeeds")
+    repo.assert_equal("own changed", repo.read_file("own.txt"),
+                      "the changelist's change is restored")
+    repo.assert_true(not (repo.repo_dir / "dropped.txt").exists(),
+                     "the dropped file does not come back")
+    repo.assert_equal("second", repo.read_file("restaged.txt"),
+                      "the file staged again keeps its content")
+    repo.assert_not_in("dropped.txt", repo.get_staged_files(),
+                       "the dropped file is not staged again")
 
     # =================================================================
     # Test: Suggested commands fit the current directory

@@ -15,6 +15,7 @@ This document describes the design of `git-cl` to help future maintenance.
   - [Path Resolution Algorithm](#path-resolution-algorithm)
   - [Git Status Parsing](#git-status-parsing)
   - [Stash Categorisation Rules](#stash-categorisation-rules)
+  - [Only the Changelist's Files Are Unstashed](#only-the-changelists-files-are-unstashed)
   - [Unstash Conflict Detection](#unstash-conflict-detection)
   - [Branching Workflow](#branching-workflow)
   - [Platform Considerations](#platform-considerations)
@@ -294,6 +295,10 @@ If the `colorama` module isn't available, the formatter falls back to plain text
 | Clean files (no changes)                                 | not stashable |
 
 Files must have unstaged changes, be newly added to the index, or be untracked (but explicitly included in the changelist) to be stashable. This matches `git stash push` behaviour, which cannot stash files that only have staged modifications without unstaged changes.
+
+### Only the Changelist's Files Are Unstashed
+
+`git stash push -- <paths>` limits the working-tree changes to the given paths, but it records the whole index: files outside the changelist that were staged at the time are part of the stash as well. Applied as it is, the stash would bring these staged changes back, for example a file deleted since then, or a conflict in a file that another changelist has staged again. `clutil_stash_for_files()` therefore builds a copy of the stash, with the same parent commits, in which every file outside the changelist is as in the commit the stash was made on. `git cl unstash` applies this copy and then drops the real stash. Stashes made by earlier versions are handled the same way. If the copy cannot be built, the stash is applied as it is.
 
 ### Unstash Conflict Detection
 

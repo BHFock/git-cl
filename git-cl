@@ -63,6 +63,7 @@ import argparse
 import datetime
 import json
 import os
+import re
 import shlex
 import subprocess
 import sys
@@ -156,6 +157,79 @@ def clutil_print_error(*values: object, **kwargs) -> None:
     same arguments as print().
     """
     print(*values, file=sys.stderr, **kwargs)
+
+
+# Control characters (C0, DEL and C1). A terminal acts on some of them: ESC
+# starts sequences that move the cursor, clear the screen or set the window
+# title. File names may contain them, so they are never printed as they are.
+_CONTROL_CHARS = re.compile("[\x00-\x1f\x7f-\x9f]")
+_CONTROL_ESCAPES = {"\a": "\\a", "\b": "\\b", "\t": "\\t", "\n": "\\n",
+                    "\v": "\\v", "\f": "\\f", "\r": "\\r"}
+
+
+def clutil_escape_control_chars(text: str, keep: str = "") -> str:
+    """
+    Replaces control characters with the escapes Git uses for file names.
+
+    'Notes\\x1b[2J.md' becomes 'Notes\\033[2J.md': common characters get a
+    short escape ('\\t', '\\n', ...), others the octal value of each of their
+    UTF-8 bytes, as in 'git status'. Other characters, including non-ASCII
+    letters, are kept.
+
+    Args:
+        text: The text to escape.
+        keep: Control characters to leave as they are, such as the newlines
+              of a multi-line message.
+
+    Returns:
+        str: The text without control characters other than those in keep.
+    """
+    def escape(match: "re.Match[str]") -> str:
+        char = match.group()
+        if char in keep:
+            return char
+        return _CONTROL_ESCAPES.get(char) or "".join(
+            f"\\{byte:03o}" for byte in char.encode("utf-8"))
+
+    return _CONTROL_CHARS.sub(escape, text)
+
+
+class ClutilEscapingStream:
+    """
+    Wraps sys.stdout or sys.stderr and escapes control characters.
+
+    Messages include file names from Git and from the metadata files, and
+    changelist names from the metadata files. main() installs this wrapper
+    for both streams, so that none of them can send control sequences to
+    the terminal. Newlines are kept. The coloured lines of 'git cl status'
+    go through write_unescaped(), see clutil_print_status_line().
+    """
+
+    def __init__(self, stream):
+        self._stream = stream
+
+    def write(self, text: str) -> int:
+        self._stream.write(clutil_escape_control_chars(text, keep="\n"))
+        return len(text)
+
+    def write_unescaped(self, text: str) -> int:
+        return self._stream.write(text)
+
+    def __getattr__(self, name: str):
+        return getattr(self._stream, name)
+
+
+def clutil_print_status_line(line: str) -> None:
+    """
+    Prints a line from clutil_format_file_status() on stdout.
+
+    The line may hold colour codes, which would be escaped like any other
+    control character on the way through ClutilEscapingStream. Its path has
+    already been escaped by clutil_format_file_status(), so it is written
+    without escaping.
+    """
+    write = getattr(sys.stdout, "write_unescaped", sys.stdout.write)
+    write(line + "\n")
 
 
 @contextmanager
@@ -909,10 +983,13 @@ def clutil_format_file_status(
         use_color: bool = True) -> str:
     """
     Format a file's Git status line with optional color-coded output.
-    Paths are shown relative to the current working directory.
+    Paths are shown relative to the current working directory, with
+    control characters escaped. Print the line with
+    clutil_print_status_line().
     """
     abs_file = clutil_resolve_file(git_root / file)
     rel_to_cwd = _relpath(abs_file, Path.cwd().resolve())
+    shown_path = clutil_escape_control_chars(rel_to_cwd)
 
     rel_to_git_root = abs_file.relative_to(git_root).as_posix()
     status = status_map.get(rel_to_git_root, "  ")
@@ -932,7 +1009,7 @@ def clutil_format_file_status(
     tag = f"[{status}]"
 
     if not use_color or not COLORAMA_AVAILABLE:
-        return f"  {tag} {rel_to_cwd}"
+        return f"  {tag} {shown_path}"
 
     staged, unstaged = status[0], status[1]
 
@@ -952,7 +1029,7 @@ def clutil_format_file_status(
     else:
         color = Style.RESET_ALL
 
-    return f"{color}  {tag} {rel_to_cwd}{Style.RESET_ALL}"
+    return f"{color}  {tag} {shown_path}{Style.RESET_ALL}"
 
 
 def clutil_read_commit_message_file(file_path: str) -> str:
@@ -3045,7 +3122,9 @@ def clutil_show_active_changelists(
             print(f"{cl_name}:")
             shown_any = True
             for file in files:
-                print(clutil_format_file_status(file, status_map, git_root, use_color))
+                clutil_print_status_line(
+                    clutil_format_file_status(file, status_map, git_root,
+                                              use_color))
 
     return shown_any, assigned_files
 
@@ -3796,7 +3875,9 @@ def cl_status(args: argparse.Namespace) -> bool:
                 print()  # Add spacing
             print("No Changelist:")
             for file in sorted(no_cl_files):
-                print(clutil_format_file_status(file, status_map, git_root, use_color))
+                clutil_print_status_line(
+                    clutil_format_file_status(file, status_map, git_root,
+                                              use_color))
 
     # Advise user about directory entries, which older versions accepted.
     # Changelists contain files only; the entry is left in place.
@@ -4840,6 +4921,12 @@ def main() -> None:
     Parses command-line arguments and dispatches to the appropriate
     subcommand handler (e.g., add, remove, stage, commit, etc.).
     """
+
+    # File and changelist names in messages must not reach the terminal
+    # with control characters in them. Output of Git commands that write
+    # to the terminal directly, such as 'git diff', is left to Git.
+    sys.stdout = ClutilEscapingStream(sys.stdout)
+    sys.stderr = ClutilEscapingStream(sys.stderr)
 
     parser = argparse.ArgumentParser(
         prog='git-cl',

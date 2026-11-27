@@ -82,7 +82,7 @@ git cl st
 | `test_prune.py` | `prune`, `--dry-run` / `-n`, `--quiet` / `-q`, `--exit-code`, post-commit hook |
 | `test_deleted_renamed.py` | `add`, `status`, `stage`, `commit` and `prune` with deleted and renamed files |
 | `test_directories.py` | `add` rejects directories with a file list; `status` points out old directory entries |
-| `test_special_paths.py` | file names with spaces, umlauts, quotes, wildcards and a leading `:` in `status`, `prune`, `stage`, `stash` and `commit` |
+| `test_special_paths.py` | file names with spaces, umlauts, quotes, wildcards, a leading `:` and control characters in `status`, `prune`, `stage`, `stash`, `commit` and `rm` |
 | `test_symlinks.py` | symbolic links in `add`, `status`, `commit`, `prune` and `stash` (skipped on Windows) |
 | `test_checkout.py` | `checkout` / `co`, `--delete`, `--force` |
 

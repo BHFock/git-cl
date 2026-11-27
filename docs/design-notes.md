@@ -208,6 +208,17 @@ Beyond path safety, all user inputs are validated:
 - **Commit message files** - `clutil_read_commit_message_file()` enforces 64KB size limits
 - **Length restrictions** - Changelist names capped at 100 characters
 
+#### Control Characters in Output
+
+File names can contain control characters such as ESC, which a terminal reads as the start of a command: to move the cursor, clear the screen or set the window title. Such names can come from a cloned repository, an unpacked archive or a metadata file edited by hand or by another tool. Printed as they are, they could hide or fake parts of the output.
+
+git-cl therefore escapes control characters (C0, DEL and C1) in everything it prints, in the form `git status` uses: `\t`, `\n` and similar for common ones, the octal value of each byte for the others (`\033` for ESC). Non-ASCII letters are shown as they are.
+
+- **Where** - `main()` wraps `sys.stdout` and `sys.stderr` in `ClutilEscapingStream`, so every message is covered, including those of argparse. Only the newlines of git-cl's own messages are kept
+- **Coloured status lines** - `clutil_format_file_status()` escapes the path itself, and `clutil_print_status_line()` writes the line without escaping it again, so that the colour codes still work
+- **Output of Git** - Commands that Git writes to the terminal directly, such as `git diff` in `git cl diff`, are left to Git, which quotes such names itself
+- **Hints** - A suggested command such as `git cl rm '<path>'` shows the escaped name as well, so for such a file it cannot be copied as it is. In Bash, `$'…'` quoting turns the escapes back into the characters: `git cl rm $'clear\033[2J.txt'`
+
 #### Filesystem and Git Safety
 
 Operations use defensive programming patterns:

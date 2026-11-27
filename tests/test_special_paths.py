@@ -9,6 +9,7 @@ Covers:
     git cl stash     — such files are stashed and restored
     git cl stage, stash, commit — names with wildcards or a leading ':'
                        are taken literally and do not match other files
+    git cl status, rm — control characters in names are shown as escapes
 
 What you'll learn:
     - git-cl handles any file name Git does, including spaces and
@@ -18,6 +19,8 @@ What you'll learn:
     - Git reads '*', '?', '[' and a leading ':' in paths as patterns;
       git-cl marks stored paths as literal, so '[ab].txt' never stands
       for a.txt
+    - Control characters such as ESC are shown as escapes ('\\033'), as
+      in 'git status', so a file name cannot control the terminal
 
 Run:
     ./test_special_paths.py
@@ -185,6 +188,42 @@ def run_tests(repo: TestRepo):
     repo.run(["git", "cl", "commit", "patterns", "-m", "Patterns"])
     output = repo.run(["git", "show", "--name-only", "--format=", "HEAD"])
     repo.assert_not_in("a.txt", output, "a.txt is not committed")
+
+    # =================================================================
+    # Test: control characters in names are escaped in the output
+    # =================================================================
+
+    repo.section("control characters in names are escaped in the output")
+
+    # Written into cl.json directly, as another tool or an edit by hand
+    # could do: Windows does not allow control characters in file names,
+    # and 'git cl add' only accepts valid changelist names
+    changelists = repo.load_cl_json()
+    changelists["ctl\x1b[2J"] = ["gone\x1b]0;title\x07.txt"]
+    repo.write_file(".git/cl.json", json.dumps(changelists))
+    output = repo.run("git cl st --no-color")
+    repo.assert_not_in("\x1b", output, "no ESC character in the output")
+    repo.assert_not_in("\x07", output, "no BEL character in the output")
+    repo.assert_in("ctl\\033[2J:", output,
+                   "changelist name shown with the escape")
+    repo.assert_in("[XX] gone\\033]0;title\\a.txt", output,
+                   "path shown with escapes, as git status shows it")
+    repo.run(["git", "cl", "delete", "ctl\x1b[2J"])
+
+    if os.name != "nt":
+        control_name = "clear\x1b[2Jscreen\ttab.txt"
+        repo.write_file(control_name, "new")
+        repo.run(["git", "cl", "add", "control", control_name])
+        repo.assert_exit_code(0, "a file with control characters is added")
+        output = repo.run("git cl st --no-color")
+        repo.assert_not_in("\x1b", output, "no ESC character in status")
+        repo.assert_in("[??] clear\\033[2Jscreen\\ttab.txt", output,
+                       "ESC and tab shown as escapes in status")
+        output = repo.run(["git", "cl", "rm", control_name])
+        repo.assert_not_in("\x1b", output,
+                           "no ESC character in the message of rm")
+        repo.assert_in("clear\\033[2Jscreen", output,
+                       "rm names the file with the escape")
 
 
 if __name__ == "__main__":

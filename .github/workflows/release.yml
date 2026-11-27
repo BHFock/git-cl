@@ -20,7 +20,7 @@ jobs:
         run: |
           grep -qx "version = ${GITHUB_REF_NAME}" setup.cfg
           grep -qx "__version__ = \"${GITHUB_REF_NAME}\"" git-cl
-          grep -qx "version: ${GITHUB_REF_NAME}" CITATION.cff
+          grep -qx "version: \"${GITHUB_REF_NAME}\"" CITATION.cff
       - run: pip install build twine
       - run: python -m build
       - run: twine check dist/*

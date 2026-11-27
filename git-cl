@@ -4469,11 +4469,12 @@ def cl_commit(args: argparse.Namespace) -> bool:
 
     to_commit, files_by_name = clutil_collect_changelist_files(
         names, changelists, git_root, status_map,
-        lambda path: not clutil_is_file_untracked_cached(path, status_map))
+        lambda path: path in status_map
+        and not clutil_is_file_untracked_cached(path, status_map))
 
     label = clutil_changelist_label(names)
     if not to_commit:
-        print(f"No tracked files to commit in {label}.")
+        print(f"No tracked files with changes to commit in {label}.")
         return True
 
     commit_message = clutil_resolve_commit_message(args)

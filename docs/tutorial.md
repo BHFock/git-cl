@@ -47,13 +47,23 @@ Use changelists as your own labelled workspace, keep unrelated edits separate, o
 
 ## 1. Installation
 
-### Method 1: Install via pip
+### Method 1: Install from PyPI
+
+With [pipx](https://pipx.pypa.io/), which installs command-line tools in an environment of their own:
+
+```
+pipx install git-changelists
+```
+
+To upgrade later, run `pipx upgrade git-changelists`; to remove git-cl, run `pipx uninstall git-changelists`.
+
+With pip:
 
 ```
 pip install git-changelists
 ```
 
-This is the easiest method if you already have Python and pip available.
+Many Linux distributions and Homebrew protect their Python installation, and pip then stops with the error `externally-managed-environment`. In that case, use pipx, or pip inside a [virtual environment](https://docs.python.org/3/library/venv.html).
 
 ### Method 2: Download the script
 
@@ -61,9 +71,11 @@ Download the script directly from the [git-cl repository](https://github.com/BHF
 
 ```
 mkdir -p ~/bin
-wget https://raw.githubusercontent.com/BHFock/git-cl/main/git-cl -O ~/bin/git-cl
+curl -fsSL https://raw.githubusercontent.com/BHFock/git-cl/main/git-cl -o ~/bin/git-cl
 chmod +x ~/bin/git-cl
 ```
+
+If you prefer wget, replace the `curl` line with `wget https://raw.githubusercontent.com/BHFock/git-cl/main/git-cl -O ~/bin/git-cl`.
 
 Make sure `~/bin` is in your `$PATH`. You can add this line to your shell config file if needed:
 
@@ -71,7 +83,7 @@ Make sure `~/bin` is in your `$PATH`. You can add this line to your shell config
 export PATH="$HOME/bin:$PATH"
 ```
 
-This downloads the current state of `main`, which can include changes that are not released yet. For a released version, replace `main` in the URL with a tag from the [releases page](https://github.com/BHFock/git-cl/releases), for example `1.7.2`. Installing via pip always gives you the latest release.
+This downloads the current state of `main`, which can include changes that are not released yet. For a released version, replace `main` in the URL with a tag from the [releases page](https://github.com/BHFock/git-cl/releases), for example `1.7.2`. Installing from PyPI always gives you the latest release.
 
 ### Method 3: Clone the repository
 
@@ -232,11 +244,19 @@ This is useful when working on a focused task and you only want to see files alr
 
 #### Coloured output
 
-Status codes are colour-coded (see the [colour key](#colour-key)) when the optional [colorama](https://pypi.org/project/colorama/) package is installed. `git-cl` itself has no dependencies, so `pip install git-changelists` does not install colorama for you. To get colour, install it separately:
+Status codes are colour-coded (see the [colour key](#colour-key)) when the optional [colorama](https://pypi.org/project/colorama/) package is installed. `git-cl` itself has no dependencies, so installing git-cl does not install colorama for you. To get colour, install it separately:
 
 ```
 pip install colorama
 ```
+
+After a pipx installation, add colorama to git-cl's own environment instead:
+
+```
+pipx inject git-changelists colorama
+```
+
+If pip stops with `externally-managed-environment`, install your distribution's package, for example `sudo apt install python3-colorama` on Debian and Ubuntu.
 
 Without colorama, `git cl status` works the same but prints plain text.
 
@@ -321,7 +341,7 @@ git cl commit <changelist-name> [<changelist-name> ...] -F commit.txt
 ```
 
 - Automatically stages and commits all tracked files in the changelist — no need to run [git add](https://git-scm.com/docs/git-add) or [git cl stage](#stage-a-changelist) first.
-- Untracked files ([see status codes](#common-status-codes)) are ignored unless you add them first with `git add`.
+- Untracked files ([see status codes](#common-status-codes)) are ignored unless you add them first with `git add`. Files without changes are left out; if no file has changes, nothing is committed and the changelist is kept.
 - Several changelists can be combined into a single commit. If any of the named changelists does not exist, nothing is committed.
 - The changelist is deleted after committing, unless you use `--keep`.
 

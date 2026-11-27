@@ -2024,10 +2024,10 @@ def clutil_report_stash_categorization(
             for file_path in other_unstashable:
                 clutil_print_error(f"    {file_path}")
 
-        clutil_print_error("\nStashable files must have:")
-        clutil_print_error("  - Unstaged changes (modified/deleted)")
-        clutil_print_error("  - Be newly added to index")
-        clutil_print_error("  - Be untracked (if explicitly in changelist)")
+        clutil_print_error("\nA file can be stashed if it:")
+        clutil_print_error("  - has unstaged changes (modified or deleted)")
+        clutil_print_error("  - is newly added to the index")
+        clutil_print_error("  - is untracked")
         return False
 
     return True
@@ -4469,11 +4469,12 @@ def cl_commit(args: argparse.Namespace) -> bool:
 
     to_commit, files_by_name = clutil_collect_changelist_files(
         names, changelists, git_root, status_map,
-        lambda path: not clutil_is_file_untracked_cached(path, status_map))
+        lambda path: path in status_map
+        and not clutil_is_file_untracked_cached(path, status_map))
 
     label = clutil_changelist_label(names)
     if not to_commit:
-        print(f"No tracked files to commit in {label}.")
+        print(f"No tracked files with changes to commit in {label}.")
         return True
 
     commit_message = clutil_resolve_commit_message(args)
@@ -4957,7 +4958,7 @@ def main() -> None:
         help=argparse.SUPPRESS)
 
     subparsers = parser.add_subparsers(dest='command', title='Commands',
-                                       prog='git cl')
+                                       prog='git cl', metavar='<command>')
 
     # ADD
     add_parser = subparsers.add_parser('add', aliases=['a'],

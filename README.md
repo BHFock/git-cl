@@ -37,18 +37,18 @@ git-cl is a minimal Git subcommand that brings changelist support to Git. Organi
 
 ## Quick Start
 
-### Install via pip
+### Install via pipx
 
 ```
-pip install git-changelists
+pipx install git-changelists
 ```
 
-The PyPI package is named git-changelists to avoid namespace conflicts; it installs the git-cl command.
+The PyPI package is named git-changelists to avoid namespace conflicts; it installs the git-cl command. `pip install git-changelists` works too, for example in a virtual environment.
 
-### Install via wget
+### Install via curl
 ```
 mkdir -p ~/bin
-wget https://raw.githubusercontent.com/BHFock/git-cl/main/git-cl -O ~/bin/git-cl
+curl -fsSL https://raw.githubusercontent.com/BHFock/git-cl/main/git-cl -o ~/bin/git-cl
 chmod +x ~/bin/git-cl
 ```
 Make sure `~/bin` is listed in your `$PATH`.
@@ -133,7 +133,7 @@ git-cl was mentioned in [Git Rev News Edition #140](https://git.github.io/rev_ne
 ## Notes
 
 - Requires Python 3.9+ and Git
-- Coloured `git cl status` output needs the optional [colorama](https://pypi.org/project/colorama/) package (`pip install colorama`); without it, output is plain text
+- Coloured `git cl status` output needs the optional [colorama](https://pypi.org/project/colorama/) package (`pip install colorama`, or `pipx inject git-changelists colorama` after a pipx installation); without it, output is plain text
 - Local-only; designed for single-user workflows
 - Changes in each version are listed in the [release notes](https://github.com/BHFock/git-cl/releases)
 - Always inspect downloaded scripts before executing, see [source](https://github.com/BHFock/git-cl/blob/main/git-cl)

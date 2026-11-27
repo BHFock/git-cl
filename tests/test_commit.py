@@ -17,6 +17,7 @@ What you'll learn:
     - The commit message can come from -m or from a file via -F
     - Several changelists can be combined into a single commit
     - If any named changelist is missing, nothing is committed
+    - Files without changes are left out
 
 Run:
     ./test_commit.py
@@ -265,6 +266,33 @@ def run_tests(repo: TestRepo):
 
     cl = repo.load_cl_json()
     repo.assert_true("real" in cl, "existing changelist is preserved")
+
+    # =================================================================
+    # Test: Files without changes are left out of the commit
+    # =================================================================
+
+    repo.section("Files without changes are left out of the commit")
+
+    repo.run("git cl delete real")
+    repo.run("git cl add clean file2.txt")
+    repo.run("git cl add mixed file1.txt file3.txt")
+
+    count_before = repo.run("git rev-list --count HEAD")
+
+    output = repo.run(["git", "cl", "commit", "clean", "-m", "Nothing"])
+    repo.assert_exit_code(0, "commit of unchanged files is not an error")
+    repo.assert_in("No tracked files with changes", output,
+                   "output says there is nothing to commit")
+    repo.assert_not_in("Error", output, "no error is reported")
+    repo.assert_equal(count_before, repo.run("git rev-list --count HEAD"),
+                      "no commit is created")
+
+    output = repo.run(["git", "cl", "commit", "mixed", "-m", "Mixed"])
+    repo.assert_exit_code(0, "commit of a mixed changelist succeeds")
+    files = repo.run("git show --name-only --format= HEAD")
+    repo.assert_in("file1.txt", files, "changed file is committed")
+    repo.assert_not_in("file3.txt", output,
+                       "unchanged file is not listed as committed")
 
 
 # =================================================================

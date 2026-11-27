@@ -57,7 +57,7 @@ This is the easiest method if you already have Python and pip available.
 
 ### Method 2: Download the script
 
-For the latest stable version, download directly from the [git-cl repository](https://github.com/BHFock/git-cl):
+Download the script directly from the [git-cl repository](https://github.com/BHFock/git-cl):
 
 ```
 mkdir -p ~/bin
@@ -70,6 +70,8 @@ Make sure `~/bin` is in your `$PATH`. You can add this line to your shell config
 ```
 export PATH="$HOME/bin:$PATH"
 ```
+
+This downloads the current state of `main`, which can include changes that are not released yet. For a released version, replace `main` in the URL with a tag from the [releases page](https://github.com/BHFock/git-cl/releases), for example `1.7.2`. Installing via pip always gives you the latest release.
 
 ### Method 3: Clone the repository
 
@@ -87,6 +89,8 @@ export PATH="$HOME/opt/git-cl:$PATH"
 ```
 
 You can add this line to your shell profile (`~/.bashrc`, `~/.zshrc`, etc.) to make it permanent.
+
+The clone is on `main`. To use a released version instead, check out its tag, for example `git -C ~/opt/git-cl checkout 1.7.2`.
 
 
 ### Verify Installation

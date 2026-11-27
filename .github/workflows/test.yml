@@ -16,6 +16,9 @@ on:
   schedule:
     # 1 Jan/Apr/Jul/Oct at 18:00 UTC (once per quarter)
     - cron: '0 18 1 1,4,7,10 *'
+# The tests only read the repository
+permissions:
+  contents: read
 jobs:
   test:
     strategy:
@@ -31,6 +34,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v7
         with:

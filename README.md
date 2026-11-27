@@ -53,6 +53,8 @@ chmod +x ~/bin/git-cl
 ```
 Make sure `~/bin` is listed in your `$PATH`.
 
+This downloads the current state of `main`, which can include changes that are not released yet. For a released version, replace `main` in the URL with a tag from the [releases page](https://github.com/BHFock/git-cl/releases), for example `1.7.2`.
+
 ### Verify installation
 ```
 git cl --version

@@ -2024,10 +2024,10 @@ def clutil_report_stash_categorization(
             for file_path in other_unstashable:
                 clutil_print_error(f"    {file_path}")
 
-        clutil_print_error("\nStashable files must have:")
-        clutil_print_error("  - Unstaged changes (modified/deleted)")
-        clutil_print_error("  - Be newly added to index")
-        clutil_print_error("  - Be untracked (if explicitly in changelist)")
+        clutil_print_error("\nA file can be stashed if it:")
+        clutil_print_error("  - has unstaged changes (modified or deleted)")
+        clutil_print_error("  - is newly added to the index")
+        clutil_print_error("  - is untracked")
         return False
 
     return True
@@ -4958,7 +4958,7 @@ def main() -> None:
         help=argparse.SUPPRESS)
 
     subparsers = parser.add_subparsers(dest='command', title='Commands',
-                                       prog='git cl')
+                                       prog='git cl', metavar='<command>')
 
     # ADD
     add_parser = subparsers.add_parser('add', aliases=['a'],

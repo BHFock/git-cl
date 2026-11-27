@@ -20,11 +20,11 @@ jobs:
         run: |
           grep -qx "version = ${GITHUB_REF_NAME}" setup.cfg
           grep -qx "__version__ = \"${GITHUB_REF_NAME}\"" git-cl
-          grep -qx "version: ${GITHUB_REF_NAME}" CITATION.cff
+          grep -qx "version: \"${GITHUB_REF_NAME}\"" CITATION.cff
       - run: pip install build twine
       - run: python -m build
       - run: twine check dist/*
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: dist
           path: dist/
@@ -39,7 +39,7 @@ jobs:
     permissions:
       id-token: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: dist
           path: dist/
@@ -53,10 +53,12 @@ jobs:
     permissions:
       id-token: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: dist
           path: dist/
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
           repository-url: https://test.pypi.org/legacy/
+          # A dry run may repeat a version that is already on TestPyPI
+          skip-existing: true

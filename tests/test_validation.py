@@ -59,6 +59,8 @@ def run_tests(repo: TestRepo):
         repo.assert_in("Invalid changelist name", output,
                         f"'{name}' rejected")
         repo.assert_exit_code(1, f"'{name}' gives exit code 1")
+        repo.assert_in("for example 'my-feature'", output,
+                       f"'{name}': message says which names are allowed")
 
     # =================================================================
     # Test: Accepted names with hyphens, underscores, dots

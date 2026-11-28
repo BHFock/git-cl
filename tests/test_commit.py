@@ -294,6 +294,29 @@ def run_tests(repo: TestRepo):
     repo.assert_not_in("file3.txt", output,
                        "unchanged file is not listed as committed")
 
+    # =================================================================
+    # Test: A rejecting pre-commit hook is reported clearly
+    # =================================================================
+
+    repo.section("A rejecting pre-commit hook is reported clearly")
+
+    hook = repo.repo_dir / ".git" / "hooks" / "pre-commit"
+    hook.write_text("#!/bin/sh\necho 'hook says no' >&2\nexit 1\n")
+    hook.chmod(0o755)
+    repo.write_file("file2.txt", "changed for the hook")
+    repo.run("git cl add hooked file2.txt")
+
+    output = repo.run(["git", "cl", "commit", "hooked", "-m", "Hooked"])
+    repo.assert_exit_code(1, "rejected commit exits with 1")
+    repo.assert_in("hook says no", output, "the hook's message is shown")
+    repo.assert_in("'git commit' failed (exit code 1)", output,
+                   "the failed Git command is named")
+    repo.assert_not_in("returned non-zero exit status", output,
+                       "no Python exception text")
+    repo.assert_true("hooked" in repo.load_cl_json(),
+                     "the changelist is kept")
+    hook.unlink()
+
 
 # =================================================================
 # Entry point

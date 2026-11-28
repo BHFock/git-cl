@@ -508,8 +508,21 @@ def run_tests(repo: TestRepo):
 
     repo.run_in("notes", "git cl unstash plan")
     repo.assert_exit_code(1, "unstash is refused by the local change")
-    repo.assert_in("git checkout -- 'my plan.txt'", repo.last_stderr,
+    repo.assert_in("git restore 'my plan.txt'", repo.last_stderr,
                    "the path is quoted and relative to the current directory")
+    repo.assert_in("[ M] my plan.txt", repo.last_stderr,
+                   "the file is listed with its status, relative to the "
+                   "current directory")
+    repo.assert_in("discards your changes", repo.last_stderr,
+                   "the discarding command is marked as such")
+    repo.assert_not_in("conflict", repo.last_stderr.lower(),
+                       "a local change is not called a conflict")
+    repo.run_in("notes", "git restore 'my plan.txt'")
+    output = repo.run_in("notes", "git cl unstash plan")
+    repo.assert_exit_code(0, "unstash succeeds after discarding the change")
+    repo.assert_in("Unstashed changelist 'plan' to branch", output,
+                   "one summary line")
+    repo.assert_not_in("Ready to work", output, "no closing slogan")
 
 
 # =================================================================

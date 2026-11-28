@@ -1198,6 +1198,29 @@ def clutil_refuse_on_merge_conflict(
     return True
 
 
+def clutil_refuse_on_intent_to_add(status_map: dict[str, str],
+                                   git_root: Path) -> bool:
+    """
+    Refuse to stash while files are marked with 'git add -N'.
+
+    Git cannot stash at all while the index holds such an entry, even for
+    other paths ("Entry ... not uptodate. Cannot merge."). Returns True if
+    the caller should stop.
+    """
+    marked = sorted(path for path, code in status_map.items() if code == " A")
+    if not marked:
+        return False
+    cwd = Path.cwd().resolve()
+    clutil_print_error("Error: Git cannot stash while files are marked with "
+                       "'git add -N':")
+    for path in marked:
+        clutil_print_error(f"  [ A] {_relpath(git_root / path, cwd)}")
+    paths = clutil_shell_paths(marked, git_root)
+    clutil_print_error(f"Add them (git add {paths}) or unmark them "
+                       f"(git rm --cached {paths}), then try again.")
+    return True
+
+
 def clutil_git_operation_in_progress() -> Optional[str]:
     """
     Tell which Git operation, if any, has stopped with conflicts.
@@ -2093,7 +2116,7 @@ def clutil_execute_git_stash(
             # If we added untracked files, we should reset them
             if untracked_files_for_git:
                 try:
-                    subprocess.run(["git", "reset", "HEAD", "--"] +
+                    subprocess.run(["git", "reset", "--quiet", "HEAD", "--"] +
                                    clutil_literal_pathspecs(
                                        untracked_files_for_git), check=True)
                     clutil_print_error("Reset temporarily added untracked files.")
@@ -2108,7 +2131,7 @@ def clutil_execute_git_stash(
         # Cleanup: Reset any untracked files we added
         if untracked_files_for_git:
             try:
-                subprocess.run(["git", "reset", "HEAD", "--"]
+                subprocess.run(["git", "reset", "--quiet", "HEAD", "--"]
                                + clutil_literal_pathspecs(untracked_files_for_git),
                                check=True)
                 clutil_print_error("Reset temporarily added untracked files after "
@@ -4479,6 +4502,10 @@ def cl_stash(args: argparse.Namespace, quiet: bool = False) -> bool:
                            "git cl commit <changelist> -m 'Initial commit'")
         return False
 
+    if clutil_refuse_on_intent_to_add(clutil_get_file_status_map(),
+                                      clutil_get_git_root()):
+        return False
+
     # Handle --all flag
     if getattr(args, 'all', False):
         success_count, total = clutil_stash_all_changelists(changelists,
@@ -4753,6 +4780,8 @@ def cl_branch(args: argparse.Namespace) -> bool:
     # halfway through and leave the repo inconsistent (issue #51).
     # Fail fast here, before any state is mutated.
     status_map = clutil_get_file_status_map()
+    if clutil_refuse_on_intent_to_add(status_map, git_root):
+        return False
     problems = clutil_validate_changelists_stashable(
         active_changelists, git_root, status_map)
     if problems:

@@ -149,8 +149,10 @@ def run_tests(repo: TestRepo):
     repo.run("git cl add only-new new.txt")
     repo.run("git cl stage only-new")
     repo.assert_exit_code(0, "staging a changelist without tracked files")
-    repo.assert_in("No tracked files to stage", repo.last_stdout,
-                   "message on stdout")
+    repo.assert_in("No tracked files with changes to stage",
+                   repo.last_stdout, "message on stdout")
+    repo.assert_in("git add <file>", repo.last_stdout,
+                   "hint on adding untracked files to Git")
     repo.run("git cl delete only-new")
 
     repo.run("git cl prune --dry-run")

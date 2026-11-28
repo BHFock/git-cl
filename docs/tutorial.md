@@ -292,7 +292,7 @@ git cl diff docs --both   # Show unstaged, then staged changes
 git cl stage <changelist-name> [<changelist-name> ...]
 ```
 
-- Stages all tracked files in the changelist.
+- Stages all tracked files in the changelist that have changes.
 - Untracked files ([??]) are ignored unless added with git add.
 - Several changelists can be staged at once. If any of the named changelists does not exist, nothing is staged.
 - By default, the changelist is kept unless `--delete` is used.
@@ -409,7 +409,7 @@ git cl co <changelist-name>
 - Useful for discarding local changes by intent, not just by filename.
 - Accepts one or more changelist names.
 - Prompts for confirmation before proceeding; use `--force` (or `-f`) to skip the prompt, for example in scripts.
-- Deleted files (`[ D]`, `[D ]`) are restored.
+- Deleted files (`[ D]`, `[D ]`) are restored. Files without changes are left out.
 - Untracked files (`[??]`) and new files (`[A ]`, `[AM]`) are skipped with a warning, because they have no committed state to revert to. They stay as they are: `git cl checkout` never deletes a file.
 - Shows a summary of reverted files.
 - The changelist is kept unless you pass `--delete`.

@@ -1237,6 +1237,16 @@ def clutil_resolve_changelist_names(
     return None
 
 
+def clutil_hint_untracked(names: list[str],
+                          changelists: dict[str, list[str]],
+                          status_map: dict[str, str]) -> None:
+    """Point out that untracked files of the changelists need 'git add'."""
+    if any(clutil_is_file_untracked_cached(path, status_map)
+           for name in names for path in changelists[name]):
+        print("Untracked files are left out until you add them to Git: "
+              "git add <file>")
+
+
 def clutil_collect_changelist_files(
         names: list[str], changelists: dict[str, list[str]],
         git_root: Path, status_map: dict[str, str],
@@ -3746,11 +3756,13 @@ def cl_stage(args: argparse.Namespace) -> bool:
 
     to_stage, files_by_name = clutil_collect_changelist_files(
         names, changelists, git_root, status_map,
-        lambda path: not clutil_is_file_untracked_cached(path, status_map))
+        lambda path: path in status_map
+        and not clutil_is_file_untracked_cached(path, status_map))
 
     label = clutil_changelist_label(names)
     if not to_stage:
-        print(f"No tracked files to stage in {label}.")
+        print(f"No tracked files with changes to stage in {label}.")
+        clutil_hint_untracked(names, changelists, status_map)
         return True
 
     # A staged deletion ('D ') is already fully staged and no longer exists
@@ -4117,7 +4129,9 @@ def cl_checkout(args: argparse.Namespace) -> bool:
         abs_path = clutil_resolve_file(git_root / stored_path)
 
         if stored_path in in_head:
-            checkout_files.append(_relpath(abs_path, Path.cwd().resolve()))
+            # Files without changes have nothing to revert
+            if stored_path in status_map:
+                checkout_files.append(_relpath(abs_path, Path.cwd().resolve()))
         elif clutil_is_file_untracked_cached(stored_path, status_map):
             untracked_files.append(stored_path)
         elif clutil_path_exists(abs_path):
@@ -4150,7 +4164,7 @@ def cl_checkout(args: argparse.Namespace) -> bool:
                            "--staged -- <files>")
 
     if not checkout_files:
-        print("No files to revert to HEAD.")
+        print("No files with changes to revert to HEAD.")
         return not missing_changelists
 
     # Show what will be affected and ask for confirmation unless --force
@@ -4475,6 +4489,7 @@ def cl_commit(args: argparse.Namespace) -> bool:
     label = clutil_changelist_label(names)
     if not to_commit:
         print(f"No tracked files with changes to commit in {label}.")
+        clutil_hint_untracked(names, changelists, status_map)
         return True
 
     commit_message = clutil_resolve_commit_message(args)

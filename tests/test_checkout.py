@@ -140,6 +140,25 @@ def run_tests(repo: TestRepo):
     repo.assert_in("ghost-list", output,
                    "error message mentions missing changelist")
 
+    # =================================================================
+    # Test: Files without changes are not offered for reverting
+    # =================================================================
+
+    repo.section("Files without changes are not offered for reverting")
+
+    repo.write_file("file2.txt", "changed again")
+    repo.run("git cl add calm file1.txt file2.txt")
+
+    output = repo.run("git cl checkout calm --force")
+    repo.assert_exit_code(0, "checkout succeeds")
+    repo.assert_in("file2.txt", output, "the changed file is reverted")
+    repo.assert_not_in("file1.txt", output,
+                       "the unchanged file is not listed")
+
+    output = repo.run("git cl checkout calm --force")
+    repo.assert_in("No files with changes to revert", output,
+                   "nothing left to revert")
+
 
 # =================================================================
 # Entry point

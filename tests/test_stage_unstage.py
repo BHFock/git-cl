@@ -282,6 +282,26 @@ def run_tests(repo: TestRepo):
     repo.assert_not_in("Unstaged changes after reset", output,
                        "git's own reset output is not shown")
 
+    # =================================================================
+    # Test: Stage leaves files without changes out
+    # =================================================================
+
+    repo.section("Stage leaves files without changes out")
+
+    repo.write_file("still.txt", "same")
+    repo.write_file("moved.txt", "before")
+    repo.run("git add still.txt moved.txt")
+    repo.run(["git", "commit", "--quiet", "-m", "Add still and moved"])
+    repo.write_file("moved.txt", "after")
+    repo.run("git cl add unchanged still.txt")
+    repo.run("git cl add partly still.txt moved.txt")
+
+    output = repo.run("git cl stage partly")
+    repo.assert_exit_code(0, "stage succeeds")
+    repo.assert_in("moved.txt", output, "the changed file is staged")
+    repo.assert_not_in("still.txt", output,
+                       "the unchanged file is not listed as staged")
+
 
 # =================================================================
 # Entry point

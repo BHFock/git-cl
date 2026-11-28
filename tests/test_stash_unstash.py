@@ -524,6 +524,42 @@ def run_tests(repo: TestRepo):
                    "one summary line")
     repo.assert_not_in("Ready to work", output, "no closing slogan")
 
+    # =================================================================
+    # Test: A file marked with 'git add -N' stops stash with a clear message
+    # =================================================================
+
+    repo.section("A file marked with 'git add -N' stops stash and branch")
+
+    repo.write_file("marked.txt", "intent to add")
+    repo.run(["git", "add", "-N", "marked.txt"], check=True)
+    repo.run("git cl add marked marked.txt")
+    repo.write_file("other.txt", "other")
+    repo.run(["git", "add", "other.txt"], check=True)
+    repo.run(["git", "commit", "--quiet", "-m", "Add other", "--",
+              "other.txt"], check=True)
+    repo.write_file("other.txt", "other changed")
+    repo.run("git cl add ordinary other.txt")
+    stashes_before = repo.run("git stash list")
+
+    repo.run("git cl stash ordinary")
+    repo.assert_exit_code(1, "stash is refused")
+    repo.assert_in("git add -N", repo.last_stderr, "the reason is named")
+    repo.assert_in("git rm --cached marked.txt", repo.last_stderr,
+                   "the way out is shown")
+    repo.assert_not_in("not uptodate", repo.last_stderr,
+                       "Git's own message is not reached")
+    repo.assert_equal(stashes_before, repo.run("git stash list"),
+                      "nothing is stashed")
+
+    repo.run("git cl branch ordinary ordinary-branch")
+    repo.assert_exit_code(1, "branch is refused")
+    repo.assert_in("git add -N", repo.last_stderr, "branch names the reason")
+
+    repo.run(["git", "rm", "--quiet", "--cached", "marked.txt"], check=True)
+    repo.run("git cl stash ordinary")
+    repo.assert_exit_code(0, "stash works after unmarking the file")
+    repo.run("git cl unstash ordinary")
+
 
 # =================================================================
 # Entry point

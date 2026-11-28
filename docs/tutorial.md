@@ -778,6 +778,8 @@ While any file in the repository has a merge conflict (`[UU]`, `[AA]` and simila
 
 Git's stash can only set aside files with unstaged changes, newly added files and untracked files. If a changelist contains a file that has only staged changes or no changes at all, [git cl stash](#31-stash-and-unstash-changelists) refuses the whole changelist and lists the files that are in the way. Commit or unstage them, or move them out of the changelist with [git cl remove](#26-remove-files-from-changelists). If the files have no changes left, [git cl prune](#33-prune-stale-entries) removes them from all changelists at once.
 
+Git cannot stash at all while a file is marked with `git add -N` (`[ A]`), even if the file is in another changelist or in none. `git cl stash` and `git cl branch` therefore refuse and list such files. Add them with `git add`, or unmark them with `git rm --cached`, which leaves the file in place as untracked.
+
 ### Why don’t I see all files in git cl status?
 
 [git cl status](#22-view-status-by-changelist) shows every file that Git reports a status for, with every status code. A file can still be missing from the output for one of these reasons:

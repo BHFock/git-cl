@@ -59,6 +59,10 @@ def colourise_line(line: str) -> list[tuple[str, tuple]]:
     """Parse a line of git-cl output and return coloured segments."""
     stripped = line.rstrip()
 
+    # Stashed changelists section (before the header rule, which it matches)
+    if stripped.startswith("Stashed Changelist"):
+        return [(stripped, YELLOW)]
+
     # Changelist header: "name:" at start of line
     if stripped.endswith(":") and not stripped.startswith(" "):
         return [(stripped, CL_NAME)]
@@ -83,16 +87,16 @@ def colourise_line(line: str) -> list[tuple[str, tuple]]:
         return [(stripped, DIM)]
 
     # Branch workflow messages
-    if stripped.startswith("Creating branch") or stripped.startswith("Ready to work"):
+    if stripped.startswith("Creating branch"):
         return [(stripped, STATUS_GREEN)]
+    if stripped.startswith("Still stashed"):
+        return [(stripped, YELLOW)]
     if stripped.startswith("Stashing") or stripped.startswith("Switched to") or stripped.startswith("Restored"):
         return [(stripped, FG)]
     if stripped.startswith("Note:"):
         return [(stripped, DIM)]
 
-    # Stashed changelists section
-    if stripped.startswith("Stashed Changelist"):
-        return [(stripped, YELLOW)]
+    # Stashed changelist entries
     if stripped.startswith("  ") and ("file" in stripped) and ("20" in stripped):
         return [(stripped, DIM)]
 
@@ -109,12 +113,17 @@ def setup_repo():
     """Create a temp repo, run the demo commands, return (command, output) pairs."""
     repo_dir = Path(tempfile.mkdtemp(prefix="git-cl-demo."))
 
-    env = {**os.environ, "NO_COLOR": "1", "PATH": os.path.expanduser("~/bin") + ":" + os.environ["PATH"]}
+    # Unbuffered output and one pipe for stdout and stderr keep git-cl's
+    # messages and Git's own ("Switched to a new branch") in terminal order
+    env = {**os.environ, "NO_COLOR": "1", "PYTHONUNBUFFERED": "1",
+           "PATH": os.path.expanduser("~/bin") + ":" + os.environ["PATH"]}
 
     def run(cmd_str):
         args = shlex.split(cmd_str)
-        result = subprocess.run(args, capture_output=True, text=True, cwd=repo_dir, env=env)
-        return (result.stdout + result.stderr).strip()
+        result = subprocess.run(args, stdout=subprocess.PIPE,
+                                stderr=subprocess.STDOUT, text=True,
+                                cwd=repo_dir, env=env)
+        return result.stdout.strip()
 
     # Set up repo
     run("git init --quiet")

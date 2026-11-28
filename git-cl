@@ -4994,8 +4994,8 @@ def main() -> None:
     remove_parser = subparsers.add_parser('remove', aliases=['r', 'rm'],
                                           help=("Remove files from any "
                                                 "changelist"),
-                                          description=("Removes files from "
-                                                       "any changelists they "
+                                          description=("Remove files from "
+                                                       "the changelists they "
                                                        "belong to."))
     remove_parser.add_argument('files', metavar='FILE', nargs='+',
                                help=("One or more files to remove "
@@ -5114,14 +5114,16 @@ def main() -> None:
                                                 "untracked or newly added, "
                                                 "are left as they are: "
                                                 "checkout never deletes a "
-                                                "file. By default, asks for "
+                                                "file. Files without changes "
+                                                "are left out. By default, "
+                                                "asks for "
                                                 "confirmation before "
                                                 "proceeding."))
     checkout_parser.add_argument('names', metavar='CHANGELIST', nargs='+',
                                  help='One or more changelists to checkout')
     checkout_parser.add_argument('--delete', action='store_true',
                                  help='Delete the changelist after checkout')
-    checkout_parser.add_argument('--force', '-f', action='store_true',
+    checkout_parser.add_argument('-f', '--force', action='store_true',
                                  help='Skip confirmation prompt')
     checkout_parser.set_defaults(func=cl_checkout)
 
@@ -5130,15 +5132,13 @@ def main() -> None:
                                          help=("Stage tracked files from "
                                                "one or more changelists"),
                                          description=(
-                                             "Stage all tracked files from "
-                                             "the specified changelist(s). "
-                                             "If any named changelist does "
-                                             "not exist, nothing is staged. "
-                                             "Only "
-                                             "files already tracked by Git "
-                                             "will be staged. Untracked files "
-                                             "in the changelist are safely "
-                                             "ignored and remain untracked. "
+                                             "Stage the tracked files with "
+                                             "changes from the specified "
+                                             "changelist(s). Untracked files "
+                                             "and files without changes are "
+                                             "left out. If any named "
+                                             "changelist does not exist, "
+                                             "nothing is staged. "
                                              "By default, the changelists "
                                              "are kept unless --delete is "
                                              "used."))
@@ -5177,13 +5177,12 @@ def main() -> None:
                                                 "(auto-stages, ignores "
                                                 "untracked)"),
                                           description=(
-                                              "Stage and commit all tracked "
-                                              "files from the specified "
-                                              "changelist(s) as a single "
-                                              "commit using the provided "
-                                              "message. Untracked files in "
-                                              "the changelists are ignored "
-                                              "and remain untracked. If any "
+                                              "Stage and commit the tracked "
+                                              "files with changes from the "
+                                              "specified changelist(s) as a "
+                                              "single commit. Untracked "
+                                              "files and files without "
+                                              "changes are left out. If any "
                                               "named changelist does not "
                                               "exist, nothing is committed. "
                                               "By default, the changelists "
@@ -5225,11 +5224,16 @@ def main() -> None:
                                            help=("Restore stashed "
                                                  "changelist(s)"),
                                            description=(
-                                               "Restore a previously stashed "
-                                               "changelist to the working "
-                                               "directory. Enforces clean "
-                                               "branch workflow by default "
-                                               "(use --force to override). "
+                                               "Restore a stashed changelist "
+                                               "to the working directory, "
+                                               "including which changes were "
+                                               "staged. Refuses if files of "
+                                               "the changelist have changes "
+                                               "in the working directory, in "
+                                               "a detached HEAD state, or on "
+                                               "another branch with "
+                                               "uncommitted changes; --force "
+                                               "skips these checks. "
                                                "Use --all to unstash all "
                                                "stashed changelists to the "
                                                "current branch."))
@@ -5239,27 +5243,31 @@ def main() -> None:
     unstash_group.add_argument('--all', action='store_true',
                                help='Unstash all stashed changelists')
     unstash_parser.add_argument('--force', action='store_true',
-                                help=("Force unstash even if branch/"
-                                      "conflicts detected"))
+                                help=("Skip the checks for changes in the "
+                                      "working directory and the branch"))
     unstash_parser.set_defaults(func=cl_unstash)
 
     # BRANCH
     branch_parser = subparsers.add_parser('branch', aliases=['br'],
-                                          help=("Create branch from "
-                                                "changelist workflow"),
+                                          help=("Create a branch from a "
+                                                "changelist"),
                                           description=(
                                               "Automate the changelist-to-"
                                               "branch workflow: stash all "
                                               "active changelists, create a "
                                               "new branch, and unstash the "
                                               "specified changelist to the "
-                                              "new branch. This provides a "
-                                              "clean way to move changelist "
-                                              "work to a dedicated "
-                                              "feature branch."))
+                                              "new branch. The other "
+                                              "changelists stay stashed; "
+                                              "restore them later with 'git "
+                                              "cl unstash'. Refuses if "
+                                              "changes are not assigned to a "
+                                              "changelist, or if a "
+                                              "changelist cannot be "
+                                              "stashed."))
     branch_parser.add_argument('changelist_name', metavar='CHANGELIST',
                                help=("Name of the changelist to "
-                                     "create branch for"))
+                                     "create a branch for"))
     branch_parser.add_argument('branch_name',
                                metavar='BRANCH', nargs='?',
                                help=("Name of the new branch "
@@ -5274,7 +5282,7 @@ def main() -> None:
     help_parser = subparsers.add_parser('help',
                                         help='Show this help message',
                                         description=(
-                                            "Displays a summary of "
+                                            "Show a summary of the "
                                             "available git-cl commands."))
     help_parser.set_defaults(func=cl_help, parser=parser)
 

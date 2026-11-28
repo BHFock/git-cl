@@ -78,6 +78,10 @@ def run_tests(repo: TestRepo):
     stash = repo.load_stash_json()
     repo.assert_true("feature-b" in stash,
                       "feature-b is stashed")
+    repo.assert_in("Still stashed: feature-b", output,
+                   "output names the changelists that stay stashed")
+    repo.assert_not_in("Stash reference updated", output,
+                       "no internal stash bookkeeping in the output")
 
     # beta.txt should be clean (feature-b was stashed)
     content = repo.read_file("beta.txt")

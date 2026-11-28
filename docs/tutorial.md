@@ -162,7 +162,7 @@ The following commands are the core of `git-cl`. Each helps you manage your chan
 git cl add <changelist-name> <file1> <file2> ...
 ```
 
-- Groups files under a named changelist.
+- Groups files under a named changelist. Names may contain letters, digits, `-`, `_` and `.` (at most 100 characters), for example `my-feature`.
 - A file can only belong to one changelist at a time; it will be moved if already assigned elsewhere.
 - Files and names of a [stashed changelist](#31-stash-and-unstash-changelists) cannot be added until it is unstashed.
 

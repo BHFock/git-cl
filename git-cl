@@ -311,6 +311,25 @@ def clutil_should_use_color(args) -> bool:
             COLORAMA_AVAILABLE)
 
 
+def clutil_report_failure(action: str, error: Exception) -> None:
+    """
+    Report a failed operation without Python's exception text.
+
+    A failed Git command has usually explained the problem already; output
+    that git-cl captured is shown here instead. Other errors (e.g. OSError)
+    are shown as they are.
+    """
+    if not isinstance(error, subprocess.CalledProcessError):
+        clutil_print_error(f"Error: {action}: {error}")
+        return
+    captured = error.stderr if isinstance(error.stderr, str) else ""
+    for line in captured.strip().splitlines():
+        clutil_print_error(line)
+    command = " ".join(error.cmd[:2]) if isinstance(error.cmd, list) else "git"
+    clutil_print_error(f"Error: {action}: '{command}' failed "
+                       f"(exit code {error.returncode}).")
+
+
 def clutil_resolve_commit_message(args: argparse.Namespace) -> Optional[str]:
     """
     Resolves the commit message from CLI arguments.
@@ -660,7 +679,7 @@ def clutil_get_git_status(
     try:
         output = subprocess.check_output(cmd)
     except subprocess.CalledProcessError as error:
-        clutil_print_error(f"Error getting git status: {error}")
+        clutil_report_failure("Could not read the Git status", error)
         sys.exit(1)
 
     # Decode as Git writes paths: UTF-8, keeping undecodable bytes intact
@@ -1510,6 +1529,12 @@ def clutil_check_unstash_conflicts_optimized(
     return real_conflicts, file_status_info
 
 
+def clutil_shell_paths(paths: list[str], git_root: Path) -> str:
+    """Quote stored paths for a suggested command run in the current directory."""
+    cwd = Path.cwd().resolve()
+    return " ".join(shlex.quote(_relpath(git_root / path, cwd)) for path in paths)
+
+
 def clutil_suggest_workflow_actions(
         conflicting_files: list[str],
         file_status_info: dict[str, str]) -> None:
@@ -1529,13 +1554,9 @@ def clutil_suggest_workflow_actions(
     modified_conflicts = []
     deleted_conflicts = []
     git_root = clutil_get_git_root()
-    cwd = Path.cwd().resolve()
 
     def shell_paths(paths: list[str]) -> str:
-        # Stored paths are relative to the repository root; the suggested
-        # commands run in the current directory
-        return " ".join(shlex.quote(_relpath(git_root / path, cwd))
-                        for path in paths)
+        return clutil_shell_paths(paths, git_root)
 
     for file_path in conflicting_files:
         status_desc = file_status_info[file_path]
@@ -1844,10 +1865,11 @@ def clutil_stash_all_changelists(changelists: dict[str, list[str]],
             if cl_stash(temp_args, quiet=quiet):
                 success_count += 1
             else:
-                clutil_print_error(f"Failed to stash changelist '{cl_name}'.")
+                clutil_print_error(f"Changelist '{cl_name}' was not stashed.")
         except (OSError, subprocess.CalledProcessError,
                 json.JSONDecodeError) as error:
-            clutil_print_error(f"Failed to stash '{cl_name}': {error}")
+            clutil_report_failure(f"Could not stash changelist '{cl_name}'",
+                                  error)
             continue
 
     if not quiet:
@@ -2089,7 +2111,8 @@ def clutil_prepare_files_for_git_stash(
                            + clutil_literal_pathspecs(untracked_files_for_git),
                            check=True)
         except subprocess.CalledProcessError as error:
-            clutil_print_error(f"Error adding untracked files: {error}")
+            clutil_report_failure("Could not add untracked files for stashing",
+                                  error)
             raise
 
     return files_for_git, untracked_files_for_git
@@ -2125,7 +2148,7 @@ def clutil_execute_git_stash(
 
         # Check if anything was actually stashed
         if "No local changes to save" in result.stderr:
-            clutil_print_error("Unexpected: No changes were stashed for changelist "
+            clutil_print_error("Error: Git stashed no changes for changelist "
                                f"'{name}'.")
             # If we added untracked files, we should reset them
             if untracked_files_for_git:
@@ -2140,9 +2163,7 @@ def clutil_execute_git_stash(
             raise ValueError("No changes were stashed")
 
     except subprocess.CalledProcessError as error:
-        clutil_print_error(f"Error creating stash: {error}")
-        if error.stderr:
-            clutil_print_error(f"Git error: {error.stderr}")
+        clutil_report_failure(f"Could not stash changelist '{name}'", error)
 
         # Cleanup: Reset any untracked files we added
         if untracked_files_for_git:
@@ -2496,10 +2517,11 @@ def clutil_unstash_all_changelists(
             if cl_unstash(temp_args):
                 success_count += 1
             else:
-                clutil_print_error(f"Failed to unstash changelist '{stash_name}'.")
+                clutil_print_error(f"Changelist '{stash_name}' was not unstashed.")
         except (OSError,
                 subprocess.CalledProcessError, json.JSONDecodeError) as error:
-            clutil_print_error(f"Failed to unstash '{stash_name}': {error}")
+            clutil_report_failure(
+                f"Could not unstash changelist '{stash_name}'", error)
             continue
 
     print(f"\nUnstashed {success_count}/{len(stash_items)} "
@@ -3489,7 +3511,8 @@ def clutil_handle_branch_creation_failure() -> None:
         cl_unstash(temp_unstash_args)
     except (OSError, subprocess.CalledProcessError,
             json.JSONDecodeError) as restore_error:
-        clutil_print_error(f"Error restoring stashes: {restore_error}")
+        clutil_report_failure("Could not restore the stashed changelists",
+                              restore_error)
         clutil_print_error("You may need to manually unstash: git cl unstash --all")
 
 
@@ -3610,8 +3633,10 @@ def cl_add(args: argparse.Namespace) -> bool:
     """
     if not clutil_validate_name(args.name):
         clutil_print_error(
-            f"Error: Invalid changelist name '{args.name}'. Names cannot "
-            "contain special characters or be Git reserved words.")
+            f"Error: Invalid changelist name '{args.name}'.\n"
+            "Use letters, digits, '-', '_' and '.' (at most 100 characters), "
+            "for example 'my-feature'.\nNames made only of dots and Git "
+            "names such as HEAD are not allowed.")
         return False
 
     changelists = clutil_load()
@@ -3779,7 +3804,7 @@ def cl_stage(args: argparse.Namespace) -> bool:
             subprocess.run(["git", "add", "--"]
                            + clutil_literal_pathspecs(to_add), check=True)
     except subprocess.CalledProcessError as error:
-        clutil_print_error(f"Error staging files: {error}")
+        clutil_report_failure(f"Could not stage {label}", error)
         return False
 
     clutil_print_files_by_changelist("Staged tracked files from", names,
@@ -3835,7 +3860,7 @@ def cl_unstage(args: argparse.Namespace) -> bool:
                        + clutil_literal_pathspecs(to_unstage),
                        check=True)
     except subprocess.CalledProcessError as error:
-        clutil_print_error(f"Error unstaging files: {error}")
+        clutil_report_failure(f"Could not unstage {label}", error)
         return False
 
     clutil_print_files_by_changelist("Unstaged files from", names,
@@ -4161,7 +4186,7 @@ def cl_checkout(args: argparse.Namespace) -> bool:
         for file_path in new_files:
             clutil_print_error(f"  {file_path}")
         clutil_print_error("To unstage them and keep the files: git restore "
-                           "--staged -- <files>")
+                           f"--staged -- {clutil_shell_paths(new_files, git_root)}")
 
     if not checkout_files:
         print("No files with changes to revert to HEAD.")
@@ -4173,7 +4198,7 @@ def cl_checkout(args: argparse.Namespace) -> bool:
     for file_path in checkout_files[:10]:  # Show first 10 files
         print(f"  {file_path}")
     if len(checkout_files) > 10:
-        print(f"  ... and {len(checkout_files) - 10} more files")
+        print(f"  ... and {clutil_plural(len(checkout_files) - 10, 'more file')}")
 
     if not args.force:
         try:
@@ -4217,7 +4242,7 @@ def cl_checkout(args: argparse.Namespace) -> bool:
                 clutil_save(changelists)
 
     except subprocess.CalledProcessError as error:
-        clutil_print_error(f"Error during checkout: {error}")
+        clutil_report_failure("Could not revert the files", error)
         clutil_print_error("Some files may not have been reverted.")
         return False
 
@@ -4508,7 +4533,9 @@ def cl_commit(args: argparse.Namespace) -> bool:
                        + clutil_literal_pathspecs(to_commit), check=True,
                        env={**os.environ, NO_PRUNE_ENV: "1"})
     except subprocess.CalledProcessError as error:
-        clutil_print_error(f"Error committing {label}: {error}")
+        clutil_report_failure(f"Could not commit {label}", error)
+        clutil_print_error("The changelist is kept. Fix the problem reported "
+                           "above, then run the command again.")
         return False
 
     clutil_print_files_by_changelist("Committed tracked files from", names,
@@ -4797,7 +4824,8 @@ def cl_branch(args: argparse.Namespace) -> bool:
         for file_path in unassigned_changes[:10]:  # Show first 10
             clutil_print_error(f"  [{status_map[file_path]}] {file_path}")
         if len(unassigned_changes) > 10:
-            clutil_print_error(f"  ... and {len(unassigned_changes) - 10} more files")
+            clutil_print_error("  ... and "
+                               f"{clutil_plural(len(unassigned_changes) - 10, 'more file')}")
         if unassigned_files:
             clutil_print_error("\nPlease assign these files to changelists first:")
             clutil_print_error("  git cl add <changelist-name> "
@@ -4865,7 +4893,7 @@ def cl_branch(args: argparse.Namespace) -> bool:
             active_changelists, quiet=True)
     except (subprocess.CalledProcessError,
             OSError, json.JSONDecodeError) as error:
-        clutil_print_error(f"Error during stash operation: {error}")
+        clutil_report_failure("Could not stash the changelists", error)
         clutil_print_error("Branch creation aborted.")
         return False
 
@@ -4884,8 +4912,9 @@ def cl_branch(args: argparse.Namespace) -> bool:
         # git checkout already reports "Switched to a new branch ..."
         clutil_create_branch(branch_name, base_branch, current_branch)
     except subprocess.CalledProcessError as error:
-        clutil_print_error(f"Error creating branch: {error}")
-        clutil_print_error("Attempting to restore stashed changelists...")
+        clutil_report_failure(f"Could not create branch '{branch_name}'",
+                              error)
+        clutil_print_error("Restoring the stashed changelists...")
         clutil_handle_branch_creation_failure()
         return False
 
@@ -4908,7 +4937,8 @@ def cl_branch(args: argparse.Namespace) -> bool:
 
     except (subprocess.CalledProcessError,
             OSError, json.JSONDecodeError) as error:
-        clutil_print_error(f"Error unstashing changelist: {error}")
+        clutil_report_failure(
+            f"Could not unstash changelist '{changelist_name}'", error)
         clutil_print_error(f"Branch '{branch_name}' was created but "
                            "changelist restore failed.")
         clutil_print_error(f"Changelist '{changelist_name}' is still "
